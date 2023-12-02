@@ -1,0 +1,30 @@
+.message-reply {
+  cursor: pointer;
+  padding: 7px 10px 7px 20px;
+  position: relative;
+  text-align: left;
+  &::before {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 10px;
+    width: 2px;
+    height: 70%;
+    transform: translateY(25%);
+    background: black;
+    opacity: .16;
+    border-radius: 1px;
+    content: "";
+  }
+  &:hover {
+    background: rgba(black, 0.1);
+  }
+  &_input {
+    &:hover {
+      background: none;
+    }
+  }
+  &__text {
+    color: inherit;
+  }
+}

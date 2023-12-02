@@ -1,0 +1,26 @@
+.room-content {
+  position: relative;
+  display: block;
+  overflow-y: auto;
+  padding-right: 5px;
+  height: 100%;
+  scroll-behavior: smooth;
+
+  &__wrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 5px;
+    min-height: 100%;
+  }
+
+  &__preview-modal {
+    width: 80vw;
+    height: 80vh;
+    min-width: 80vw;
+    min-height: 80vh;
+    max-width: 90vw;
+    max-height: 90vh;
+    background: transparent;
+  }
+}

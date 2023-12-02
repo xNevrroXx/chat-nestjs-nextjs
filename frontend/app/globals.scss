@@ -1,0 +1,87 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap');
+
+::-webkit-scrollbar {
+  height: 8px;
+  width: 8px; /* THIS WILL RESET THE DEFAULT SCROLLBAR STYLING */
+  background-color: white;
+}
+
+/* TO STYLE THE SCROLLBAR TRACK */
+::-webkit-scrollbar-track {
+  background-color: white; /* THIS WILL SET THE COLOR OF THE SCROLLBAR TRACK */
+}
+
+/* TO STYLE THE SCROLLBAR THUMB */
+::-webkit-scrollbar-thumb {
+  background-color: #d3d3d3;
+  border-radius: 10px;
+  height: 20px;
+}
+::-webkit-scrollbar-thumb:active {
+  background-color: #b4b4b4;
+}
+
+* {
+  scrollbar-width: thin;
+
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body, html {
+  min-height: 100vh;
+  background-color: #fdfdfd;
+}
+
+pre {
+  position: relative;
+  overflow: hidden;
+  border-radius: 4px;
+  margin: 4px 0;
+  div.code-block-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-weight: 600;
+    padding: 3px 5px;
+    color: rgb(82 120 156 / 86%);
+    background-color: rgb(168 168 168 / 33%);
+    cursor: pointer;
+    svg {
+      visibility: hidden;
+      width: max-content;
+      height: 14px;
+      vertical-align: middle;
+    }
+    &:hover {
+      svg {
+        visibility: visible;
+      }
+    }
+  }
+  code {
+    display: block;
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow-x: auto;
+    padding: 3px 5px
+  }
+  &::before {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 3px;
+    background: rgb(138 168 197);
+    border-radius: 1px;
+    content: "";
+  }
+}
+
+svg {
+  width: 24px;
+  height: 24px;
+  fill: rgb(22, 119, 255);
+  cursor: pointer;
+}

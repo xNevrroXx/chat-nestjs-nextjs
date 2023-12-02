@@ -1,0 +1,20 @@
+.auth {
+  height: 100vh;
+  text-align: center;
+  &__top {
+    margin-bottom: 50px;
+  }
+
+  &__form {
+    margin-bottom: 30px;
+  }
+
+  &__submit {
+    width: 100%;
+  }
+
+  &__change-form {
+    color: #6aadff;
+    cursor: pointer;
+  }
+}

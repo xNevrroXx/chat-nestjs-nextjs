@@ -1,0 +1,30 @@
+.pinned-messages {
+  position: relative;
+  height: 2.25rem;
+  margin: 0.125rem 0;
+  width: 0.125rem;
+  min-width: 0.125rem;
+  overflow: hidden;
+  &__border {
+    clip-path: url(#clipPath4);
+    width: 2px;
+    height: 36px;
+    transform: translateY(0px);
+    background-color: blue;
+    position: relative;
+    will-change: transform;
+    transition: transform 0.25s ease-in-out;
+  }
+  &__mark {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 0.125rem;
+    background: black;
+    border-radius: 0.0625rem;
+    will-change: transform;
+    transition: transform 0.25s ease-in-out;
+    transform: translateY(0);
+    height: 7px;
+  }
+}

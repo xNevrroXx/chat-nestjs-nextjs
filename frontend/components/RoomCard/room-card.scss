@@ -1,0 +1,18 @@
+.room-card {
+  padding: 11px 12px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  background: transparent;
+  position: relative;
+  transition: 125ms;
+  &:hover {
+    background: rgb(233 241 247);
+  }
+
+  &__photo {
+    /**/
+  }
+}

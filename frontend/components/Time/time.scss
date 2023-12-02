@@ -1,0 +1,40 @@
+.time {
+  visibility: hidden;
+  user-select: none;
+  line-height: 1;
+  vertical-align: middle;
+  pointer-events: none;
+  display: inline-flex;
+  z-index: 1;
+  direction: ltr;
+  float: right;
+  cursor: pointer;
+  padding-right: 10px;
+  margin-left: -3px;
+  font-size: 12px;
+  height: 12px;
+  span {
+    width: max-content;
+    height: max-content;
+  }
+  &__part {
+    margin-right: 3px;
+  }
+  &__inner {
+    height: 12px;
+    display: flex;
+    align-items: center;
+    bottom: 6px;
+    pointer-events: all;
+    position: absolute;
+    right: 0;
+    line-height: 1;
+    padding: inherit;
+    white-space: nowrap;
+    visibility: visible;
+  }
+  svg {
+    width: max-content;
+    height: 14px;
+  }
+}

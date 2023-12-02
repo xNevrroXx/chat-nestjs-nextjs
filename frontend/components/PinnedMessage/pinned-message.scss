@@ -1,0 +1,22 @@
+.pinned-message {
+  cursor: pointer;
+  padding: 7px 10px 7px 20px;
+  position: relative;
+  top: 0;
+  left: 0;
+  text-align: left;
+  p {
+    width: 100%;
+    max-width: 100%;
+    white-space: pre-wrap;
+    line-break: anywhere;
+    img {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      margin-left: 1px;
+      margin-right: 1px;
+      vertical-align: bottom;
+    }
+  }
+}

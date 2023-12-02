@@ -1,0 +1,90 @@
+.dialog {
+  padding: 11px 12px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  background: transparent;
+  position: relative;
+  transition: 125ms;
+
+  &_active {
+    background: rgb(190 225 248);
+
+    &:hover {
+      background: rgb(190 225 248) !important;
+    }
+
+    &::after {
+      content: none !important;
+    }
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    display: block;
+    width: 70%;
+    height: 1px;
+    background: #abbfd2;
+    transition: 125ms;
+  }
+
+  &:hover {
+    background: rgb(233 241 247);
+
+    &::after {
+      width: 100%;
+    }
+  }
+
+  &__photo {
+    /**/
+  }
+
+  &__right {
+    width: 100%;
+  }
+
+  &__message {
+    max-width: 100%;
+    white-space: normal;
+    line-break: anywhere;
+    img {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      margin-left: 1px;
+      margin-right: 1px;
+      vertical-align: bottom;
+    }
+  }
+
+  &__message-status {
+    position: absolute;
+    width: 25px;
+    height: 25px;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-top-left-radius: 60%;
+    background: white;
+  }
+
+  &__read svg {
+    width: 50%;
+    height: 50%;
+  }
+
+  &__not-read {
+    width: 10px;
+    height: 10px;
+    background: #0099fa;
+    border-radius: 50%;
+  }
+}

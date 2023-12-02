@@ -1,0 +1,72 @@
+.input-message {
+  text-align: center;
+
+  &__btn-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  &__field {
+    flex-grow: 1;
+    .react-input-emoji--container {
+      margin: 0;
+      padding: 0;
+    }
+    .react-input-emoji--button {
+      align-self: flex-end;
+      &:focus-visible {
+        outline: 4px solid #91caff;
+        outline-offset: 1px;
+        transition: outline-offset 0s,outline 0s;
+      }
+      svg {
+        fill: rgb(22, 119, 255);
+      }
+    }
+  }
+  &__textbox {
+    max-width: 100%;
+    word-break: break-word;
+    font-size: 14px;
+    min-height: 40px !important;
+    max-height: 15vh !important;
+    img {
+      pointer-events: none;
+    }
+    &:focus-visible {
+      outline: 1px solid #91caff;
+      outline-offset: 1px;
+      transition: outline-offset 0s, outline 0s;
+    }
+  }
+
+  &__wrapper-picker {
+    position: relative;
+  }
+
+  &__emoji-picker {
+    position: absolute;
+    bottom: 30px;
+    right: 0;
+  }
+
+  &__placeholder {
+    font-size: 13px;
+    z-index: 1;
+    position: absolute;
+    left: 13px;
+    top: 9px;
+    opacity: 0.6;
+
+    &_hidden {
+      display: none;
+    }
+  }
+
+  &__input-buttons {
+    z-index: 2;
+    cursor: pointer;
+    display: flex;
+  }
+}

@@ -1,0 +1,204 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "mysql"
+    url      = env("DATABASE_URL")
+}
+
+// tables
+model User {
+    id          String  @id @default(uuid())
+    displayName String  @map("display_name")
+    givenName   String  @map("given_name")
+    familyName  String  @map("family_name")
+    email       String
+    age         Int?
+    sex         Sex?
+    password    String?
+
+    createdAt DateTime  @default(now()) @map("created_at")
+    updatedAt DateTime? @map("updated_at")
+
+    userOnline      UserOnline?   @relation("user_online")
+    userTyping      UserTyping?   @relation("user_typing")
+    refreshToken    RefreshToken? @relation("refresh_token")
+    room            Room[]        @relation("room")
+    messages        Message[]     @relation("messages")
+    deletedMessages Message[]     @relation("deleted_messages")
+    friendshipUser1 Friendship[]  @relation("user1")
+    friendshipUser2 Friendship[]  @relation("user2")
+    participant     Participant[] @relation("participant")
+
+    @@unique([email])
+    @@map("user")
+}
+
+model UserTyping {
+    id       String  @id @default(uuid())
+    userId   String  @map("user_id")
+    roomId   String  @map("room_id")
+    isTyping Boolean @default(false) @map("is_typing")
+
+    updatedAt DateTime @default(now()) @map("updated_at")
+
+    user User @relation("user_typing", fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    room Room @relation("users_typing", fields: [roomId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+    @@unique([userId])
+    @@map("user_typing")
+}
+
+model UserOnline {
+    id       String  @id @default(uuid())
+    userId   String  @map("user_id")
+    isOnline Boolean @default(false) @map("is_online")
+
+    updatedAt DateTime @default(now()) @map("updated_at")
+
+    user User @relation("user_online", fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+    @@unique([userId])
+    @@map("user_online")
+}
+
+model Friendship {
+    userId1 String @map("user_id_1")
+    userId2 String @map("user_id_2")
+
+    createdAt DateTime @default(now()) @map("created_at")
+
+    user1 User @relation("user1", fields: [userId1], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    user2 User @relation("user2", fields: [userId2], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+    @@unique([userId1, userId2])
+    @@map("friendship")
+}
+
+model RefreshToken {
+    id     String @id @default(uuid())
+    userId String @map("user_id")
+    token  String @db.VarChar(255)
+
+    updatedAt DateTime @default(now()) @map("updated_at")
+
+    user User @relation("refresh_token", fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+    @@unique([userId])
+    @@map("refresh_token")
+}
+
+model Room {
+    id            String   @id @default(uuid())
+    creatorUserId String?  @map("user_id")
+    type          RoomType
+    name          String?
+
+    createdAt DateTime  @default(now()) @map("created_at")
+    updatedAt DateTime? @map("updated_at")
+
+    creatorUser    User?           @relation("room", fields: [creatorUserId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    messages       Message[]       @relation("room")
+    usersTyping    UserTyping[]    @relation("users_typing")
+    participants   Participant[]   @relation("participant")
+    pinnedMessages PinnedMessage[] @relation("room:pinned_messages")
+
+    @@map("room")
+}
+
+model Participant {
+    id     String @id @default(uuid())
+    userId String @map("user_id")
+    roomId String @map("room_id")
+
+    user User @relation("participant", fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    room Room @relation("participant", fields: [roomId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+    @@unique([userId, roomId])
+    @@map("participant")
+}
+
+model Message {
+    id                  String  @id @default(uuid())
+    senderId            String  @map("sender_id")
+    roomId              String  @map("room_id")
+    text                String? @db.Text()
+    hasRead             Boolean @default(false) @map("has_read")
+    isDeleteForEveryone Boolean @default(false)
+    replyToMessageId    String? @map("reply_to_message_id")
+    forwardedMessageId  String? @map("forwarded_message_id")
+
+    createdAt DateTime  @default(now()) @map("created_at")
+    updatedAt DateTime? @map("updated_at")
+
+    sender                  User            @relation("messages", fields: [senderId], references: [id], onDelete: NoAction, onUpdate: Cascade)
+    room                    Room            @relation("room", fields: [roomId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    replyToMessage          Message?        @relation("reply_to_message", fields: [replyToMessageId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+    repliesThisMessage      Message[]       @relation("reply_to_message")
+    forwardedMessage        Message?        @relation("forwarded_message", fields: [forwardedMessageId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+    forwardThisMessage      Message[]       @relation("forwarded_message")
+    usersDeletedThisMessage User[]          @relation("deleted_messages")
+    files                   File[]          @relation("files")
+    pinnedMessages          PinnedMessage[] @relation("message:pinned_messages")
+
+    @@map("message")
+}
+
+model PinnedMessage {
+    id        String @id @default(uuid())
+    messageId String @map("message_id")
+    roomId    String @map("room_id")
+
+    createdAt DateTime @default(now()) @map("created_at")
+
+    message Message @relation("message:pinned_messages", fields: [messageId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    room    Room    @relation("room:pinned_messages", fields: [roomId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+    @@map("pinned_message")
+}
+
+model File {
+    id           String   @id @default(uuid())
+    messageId    String   @map("message_id")
+    fileName     String   @map("file_name")
+    originalName String?  @map("original_name")
+    mimeType     String   @map("mime_type")
+    fileType     FileType @default(ATTACHMENT) @map("file_type")
+    extension    String?
+
+    createdAt DateTime @default(now()) @map("created_at")
+
+    message Message @relation("files", fields: [messageId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+    @@map("file")
+}
+
+model Session {
+    id        String   @id @default(uuid())
+    sid       String   @unique
+    data      String
+    expiresAt DateTime @map("expires_at")
+
+    @@map("session")
+}
+
+// enums
+enum Sex {
+    MALE
+    FEMALE
+}
+
+enum FileType {
+    VOICE_RECORD
+    VIDEO_RECORD
+    ATTACHMENT
+}
+
+enum RoomType {
+    PRIVATE
+    GROUP
+}

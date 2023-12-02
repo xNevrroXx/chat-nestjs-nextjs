@@ -1,0 +1,9 @@
+.messenger {
+  display: flex;
+  width: 70vw;
+  max-width: 70vw;
+  height: 100vh;
+  & > * {
+    flex-basis: 30% !important;
+  }
+}
