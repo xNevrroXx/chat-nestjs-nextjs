@@ -1,11 +1,11 @@
 import {FC, useCallback, useMemo} from "react";
 // own modules
-import DialogCard from "../DialogCard/DialogCard.tsx";
+import DialogCard from "@/components/DialogCard/DialogCard";
 // types
-import {checkIsMessage, IForwardedMessage, IMessage, IRoom} from "../../models/IStore/IRoom.ts";
-import {TValueOf} from "../../models/TUtils.ts";
-import {IUserDto} from "../../models/IStore/IAuthentication.ts";
-import {ILastMessageInfo} from "../../models/IRoom.ts";
+import {checkIsMessage, IForwardedMessage, IMessage, IRoom} from "@/models/IStore/IRoom";
+import {TValueOf} from "@/models/TUtils";
+import {IUserDto} from "@/models/IStore/IAuthentication";
+import {ILastMessageInfo} from "@/models/IRoom";
 // styles
 
 interface IDialogsProps {
@@ -21,7 +21,7 @@ const ListLocalDialogs: FC<IDialogsProps> = ({user, rooms, onClickDialog, active
         let sender: string | undefined = undefined;
         let text: string | undefined = undefined;
         // find last non-deleted message in the room
-        for (let length = room.messages.length,  i = 0; i <= length - 1; i++) {
+        for (let i = room.messages.length - 1; i >= 0; i--) {
             lastMessage = room.messages[i];
             if (lastMessage.isDeleted) {
                 continue;
@@ -30,6 +30,7 @@ const ListLocalDialogs: FC<IDialogsProps> = ({user, rooms, onClickDialog, active
             sender = lastMessage.senderId === user.id
                 ? "Вы"
                 : room.participants.find(participant => participant.userId === lastMessage!.senderId)!.nickname;
+
             if (!lastMessage.text) {
                 if (checkIsMessage(lastMessage)) {
                     text = "вложения - " + lastMessage.files.length.toString();
@@ -39,6 +40,7 @@ const ListLocalDialogs: FC<IDialogsProps> = ({user, rooms, onClickDialog, active
             else {
                 text = lastMessage.text;
             }
+            break;
         }
         if (!sender || !text || !lastMessage) {
             return null;

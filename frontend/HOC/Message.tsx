@@ -1,16 +1,16 @@
 import React, {FC, useCallback, useEffect, useMemo, useState} from "react";
 // own modules
-import DumbMessage from "../components/Message/Message.tsx";
+import DumbMessage from "@/components/Message/Message";
 // types
-import {checkIsMessage, FileType, IForwardedMessage, IMessage} from "../models/IStore/IRoom.ts";
-import {IUserDto} from "../models/IStore/IAuthentication.ts";
-import {TValueOf} from "../models/TUtils.ts";
+import {checkIsMessage, FileType, IForwardedMessage, IMessage} from "@/models/IStore/IRoom";
+import {IUserDto} from "@/models/IStore/IAuthentication";
+import {TValueOf} from "@/models/TUtils";
 import {
     IKnownAndUnknownFiles,
     MessageAction,
     TAttachmentType,
     TMessageForAction
-} from "../models/IRoom.ts";
+} from "@/models/IRoom";
 
 type TMessageProps = {
     userId: TValueOf<Pick<IUserDto, "id">>;
@@ -37,12 +37,6 @@ const Message: FC<TMessageProps> = ({
         }
 
         if (message.files[0].fileType === FileType[FileType.VOICE_RECORD]) {
-            // const blob = message.files[0].blob;
-            // const blobUrl = URL.createObjectURL(blob);
-            // const voiceInfo = {
-            //     ...message.files[0],
-            //     blobUrl
-            // };
             setFilesWithBlobUrls({
                 known: [{
                     ...message.files[0],

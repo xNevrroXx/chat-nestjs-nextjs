@@ -18,10 +18,10 @@ import {
     IEditMessage,
     IForwardMessage,
     IPinMessage,
-    IRoom,
+    IRoom, TCreateRoom,
     TSendMessage,
     TSendUserTyping,
-    TTemporarilyRoomBySearch
+    TTemporarilyRoomOrUserBySearch
 } from "@/models/IStore/IRoom";
 import {RootState} from "@/store";
 
@@ -199,7 +199,7 @@ const getAll = createAsyncThunk(
     }
 );
 
-const createRoom = createAsyncThunk<IRoom, TTemporarilyRoomBySearch>(
+const createRoom = createAsyncThunk<IRoom, TTemporarilyRoomOrUserBySearch | TCreateRoom>(
     "room/create",
     async (newRoomData, thunkAPI) => {
         try {

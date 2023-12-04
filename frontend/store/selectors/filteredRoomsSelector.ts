@@ -1,12 +1,13 @@
 import {createSelector} from "@reduxjs/toolkit";
 import {stringSimilarity} from "string-similarity-js";
-import {RootState} from "../index.ts";
+import {RootState} from "@/store";
+import { IRoom } from "@/models/IStore/IRoom";
 
 
 const filteredRoomsSelector = createSelector(
     [
         (state: RootState) => state.room.rooms,
-        (_: RootState, query: string) => query,
+        (_: RootState, query: string) => query
     ],
     (rooms, query) => {
         if (!query || query.length === 0) return rooms;

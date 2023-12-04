@@ -7,7 +7,6 @@ const transform = (node: HTMLElement, children: React.ReactNode[]): React.ReactN
     ];
 
     if (node.namespaceURI && namespaces.includes(node.namespaceURI)) {
-        console.log("node: ", node);
         const attributes: { [att: string]: string | null } = {};
         node.getAttributeNames().forEach(attName => {
             attributes[attName] = node.getAttribute(attName);

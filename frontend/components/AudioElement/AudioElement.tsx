@@ -90,14 +90,14 @@ const AudioElement: FC<IVoiceRecording> = ({
                     <Button
                         type={"text"}
                         onClick={pauseAudio}
-                        icon={<PauseCircleOutlined/>}
+                        icon={<PauseCircleOutlined className="custom"/>}
                         size="large"
                     />
                     :
                     <Button
                         type={"text"}
                         onClick={playAudio}
-                        icon={<PlayCircleOutlined/>}
+                        icon={<PlayCircleOutlined />}
                         size="large"
                     />
                 }

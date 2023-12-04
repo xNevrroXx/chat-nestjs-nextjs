@@ -10,20 +10,18 @@ import Dialogs from "@/modules/Dialogs/Dialogs";
 // selectors & actions
 import {createRoom, forwardMessageSocket} from "@/store/thunks/room";
 // own types
-import type {IForwardMessage, IRoom, TTemporarilyRoomBySearch} from "@/models/IStore/IRoom";
+import type {IForwardMessage, IRoom, TTemporarilyRoomOrUserBySearch} from "@/models/IStore/IRoom";
 import type {TValueOf} from "@/models/TUtils";
 // styles
 import "./main.scss";
 import {createRoute} from "@/router/createRoute";
 import {ROUTES} from "@/router/routes";
 import {useRouter} from "next/navigation";
+import CreateGroupModal from "@/modules/CreateGroupModal/CreateGroupModal";
+import { TCreateRoom } from "@/models/IStore/IRoom";
 
 const {Content} = Layout;
 
-// async function GetRooms(): Promise<TRoomsResponse> {
-//     const response = await RoomService.getAll();
-//     return response.data;
-// }
 
 const Main = () => {
     const router = useRouter();
@@ -31,7 +29,8 @@ const Main = () => {
     const user = useAppSelector(state => state.authentication.user!);
     const rooms = useAppSelector(state => state.room.rooms);
     const [activeRoom, setActiveRoom] = useState<IRoom | null>(null);
-    const [isOpenModalForForwardMessage, setIsOpenModalForForwardMessage] = useState<boolean>(false);
+    const [isOpenModalToForwardMessage, setIsOpenModalToForwardMessage] = useState<boolean>(false);
+    const [isOpenModalToCreateGroup, setIsOpenModalToCreateGroup] = useState<boolean>(false);
     const [forwardedMessageId, setForwardedMessageId] = useState<TValueOf<Pick<IForwardMessage, "forwardedMessageId">> | null>(null);
 
     useEffect(() => {
@@ -53,12 +52,12 @@ const Main = () => {
         setActiveRoom(targetRoom);
     }, [rooms]);
 
-    const onCreateNewDialog = useCallback((remoteRoom: TTemporarilyRoomBySearch) => {
+    const onCreateNewDialog = useCallback((remoteRoom: TTemporarilyRoomOrUserBySearch | TCreateRoom) => {
         void dispatch(createRoom(remoteRoom));
     }, [dispatch]);
 
     const onClickRoom = (room: IRoom) => {
-        setIsOpenModalForForwardMessage(false);
+        setIsOpenModalToForwardMessage(false);
         if (!forwardedMessageId) {
             return;
         }
@@ -70,14 +69,22 @@ const Main = () => {
             })
         );
     };
-    const openUsersListForForwardMessage = useCallback((forwardedMessageId: TValueOf<Pick<IForwardMessage, "forwardedMessageId">>) => {
+    const openModalToForwardMessage = useCallback((forwardedMessageId: TValueOf<Pick<IForwardMessage, "forwardedMessageId">>) => {
         setForwardedMessageId(forwardedMessageId);
-        setIsOpenModalForForwardMessage(true);
+        setIsOpenModalToForwardMessage(true);
     }, []);
 
-    const onCloseForwardModal = () => {
-        setIsOpenModalForForwardMessage(false);
-    };
+    const onCloseForwardModal = useCallback(() => {
+        setIsOpenModalToForwardMessage(false);
+    }, []);
+
+    const openModalToCreateGroup = useCallback(() => {
+        setIsOpenModalToCreateGroup(true);
+    }, []);
+
+    const closeModalToCreateGroup = useCallback(() => {
+        setIsOpenModalToCreateGroup(false);
+    }, []);
 
     return (
         <Fragment>
@@ -88,22 +95,29 @@ const Main = () => {
                     onChangeDialog={onChangeDialog}
                     onCreateNewDialog={onCreateNewDialog}
                     activeRoomId={activeRoom ? activeRoom.id : null}
+                    openModalToCreateGroup={openModalToCreateGroup}
                 />
                 <ActiveRoom
                     room={activeRoom}
                     user={user}
-                    openUsersListForForwardMessage={openUsersListForForwardMessage}
+                    openModalToForwardMessage={openModalToForwardMessage}
                 />
             </Content>
             <Modal
                 title="Переслать сообщение"
-                open={isOpenModalForForwardMessage}
+                open={isOpenModalToForwardMessage}
                 onCancel={onCloseForwardModal}
                 okButtonProps={{ style: {display: "none"} }}
                 cancelButtonProps={{ style: {display: "none"} }}
             >
                 <ListRooms rooms={rooms} onClickRoom={onClickRoom}/>
             </Modal>
+
+            <CreateGroupModal
+                onOk={(roomInfo: TCreateRoom) => onCreateNewDialog(roomInfo)}
+                onCloseModal={closeModalToCreateGroup}
+                isOpen={isOpenModalToCreateGroup}
+            />
         </Fragment>
     );
 };

@@ -47,9 +47,9 @@ const logout = createAsyncThunk<void, void, { state: RootState }>(
 
 const registration = createAsyncThunk<void, IUserAuth, { state: RootState }>(
     "authentication/register",
-    async ({ email, name, surname, password, sex, age }: IUserAuth, thunkAPI) => {
+    async ({ email, givenName, familyName, password, sex, age, displayName }: IUserAuth, thunkAPI) => {
         try {
-            await AuthService.registration({ email, name, surname, password, sex, age });
+            await AuthService.registration({ email, givenName, familyName, password, sex, age, displayName });
 
             const dispatch = thunkAPI.dispatch;
             void dispatch(login({ email, password }));

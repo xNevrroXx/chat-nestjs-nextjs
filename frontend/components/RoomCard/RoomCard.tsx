@@ -1,11 +1,12 @@
 import React, {FC} from "react";
-import * as classNames from "classnames";
+import classNames from "classnames";
 import {Avatar, Typography} from "antd";
 // own modules
-import {useAppSelector} from "../../hooks/store.hook.ts";
-import {IRoom, RoomType} from "../../models/IStore/IRoom.ts";
+import {useAppSelector} from "@/hooks/store.hook";
+import {IRoom, RoomType} from "@/models/IStore/IRoom";
 // styles
 import "./room-card.scss";
+import { getNameInitials } from "@/utils/getNameInitials";
 
 const {Title, Text} = Typography;
 
@@ -28,9 +29,10 @@ const RoomCard:FC<IUserCardProps> = ({room, onClick}) => {
         >
             <div className="room-card__left">
                 <Avatar size={48} className="room-card__photo">
-                    { room.type === RoomType.PRIVATE
-                        ? room.name[0] + room.name.split(" ")[1][0]
-                        : room.name.slice(0, 1)
+                    {
+                        getNameInitials({
+                            name: room.name,
+                        })
                     }
                 </Avatar>
             </div>

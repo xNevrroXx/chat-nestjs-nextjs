@@ -9,11 +9,12 @@ import React, {
     useTransition
 } from "react";
 import {AxiosRequestConfig} from "axios";
-import {Divider, Input, Layout, Space, theme, Typography} from "antd";
+import { Button, Divider, Flex, Input, Layout, Space, theme, Typography } from "antd";
+import { PlusCircleOutlined } from "@ant-design/icons";
 // own modules
 import {IUserDto} from "@/models/IStore/IAuthentication";
 import {TValueOf} from "@/models/TUtils";
-import {IRoom, TTemporarilyRoomBySearch} from "@/models/IStore/IRoom";
+import {IRoom, TTemporarilyRoomOrUserBySearch} from "@/models/IStore/IRoom";
 import {useAppSelector} from "@/hooks/store.hook";
 import {filteredRoomsSelector} from "@/store/selectors/filteredRoomsSelector";
 import {FetchingStatus, useFetch} from "@/hooks/useFetch.hook";
@@ -32,17 +33,18 @@ interface IDialogsProps {
     rooms: IRoom[],
     activeRoomId: TValueOf<Pick<IRoom, "id">> | null,
     onChangeDialog: (roomId: TValueOf<Pick<IRoom, "id">>) => void,
-    onCreateNewDialog: (room: TTemporarilyRoomBySearch) => void
+    onCreateNewDialog: (room: TTemporarilyRoomOrUserBySearch) => void,
+    openModalToCreateGroup: () => void
 }
 
-const Dialogs: FC<IDialogsProps> = ({user, activeRoomId, onChangeDialog, onCreateNewDialog}) => {
+const Dialogs: FC<IDialogsProps> = ({user, activeRoomId, onChangeDialog, onCreateNewDialog, openModalToCreateGroup}) => {
     const {token} = useToken();
     const {
         status,
         data,
         request,
         clear
-    } = useFetch<TTemporarilyRoomBySearch[]>((process.env.NEXT_PUBLIC_BASE_URL || "").concat("/room/find-by-query"));
+    } = useFetch<TTemporarilyRoomOrUserBySearch[]>((process.env.NEXT_PUBLIC_BASE_URL || "").concat("/room/find-by-query"));
     const [dialogQueryString, setDialogQueryString] = useState<string>("");
     const filteredLocalDialogs = useAppSelector(state => filteredRoomsSelector(state, dialogQueryString));
     const [isPending, startTransition] = useTransition();
@@ -146,21 +148,33 @@ const Dialogs: FC<IDialogsProps> = ({user, activeRoomId, onChangeDialog, onCreat
         <Sider
             theme="light"
             className="dialogs"
-            // style={{
-            //     width: "30%",
-            //     maxWidth: "auto",
-            //     flexGrow: "0"
-            // }}
         >
-            <Space direction="vertical" className="dialogs__header">
+            <Space
+                direction="vertical"
+                className="dialogs__header"
+                size="small"
+                style={{marginBottom: 0}}
+            >
                 <Title style={{color: token.colorTextSecondary}} level={4}>Диалоги</Title>
                 <Input
                     value={dialogQueryString}
                     onChange={onChange}
                     placeholder={"Поиск диалогов и пользователей..."}
                 />
+                <Flex wrap="wrap">
+                    <Button
+                        block={true}
+                        style={{marginTop: "20px"}}
+                        size="small"
+                        shape="round"
+                        icon={<PlusCircleOutlined />}
+                        onClick={openModalToCreateGroup}
+                    >
+                        Создать групповой чат
+                    </Button>
+                </Flex>
             </Space>
-            <Divider/>
+            <Divider />
             <Space
                 direction="vertical"
                 className="dialogs__lists"

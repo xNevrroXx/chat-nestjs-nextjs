@@ -1,17 +1,18 @@
 import React, {FC} from "react";
 import {Avatar, Typography} from "antd";
 import {CheckOutlined} from "@ant-design/icons";
-import * as classNames from "classnames";
+import classNames from "classnames";
 import {Markup} from "interweave";
 import emojiParser from "universal-emoji-parser";
 // own modules
-import {IUserDto} from "../../models/IStore/IAuthentication.ts";
-import {TValueOf} from "../../models/TUtils.ts";
-import {IRoom, RoomType} from "../../models/IStore/IRoom.ts";
-import {ILastMessageInfo} from "../../models/IRoom.ts";
+import {IUserDto} from "@/models/IStore/IAuthentication";
+import {TValueOf} from "@/models/TUtils";
+import {IRoom, RoomType} from "@/models/IStore/IRoom";
+import {ILastMessageInfo} from "@/models/IRoom";
 import clip from "text-clipper";
 // styles
 import "./dialog.scss";
+import { getNameInitials } from "@/utils/getNameInitials";
 
 const {Title, Text, Paragraph} = Typography;
 
@@ -33,7 +34,13 @@ const DialogCard: FC<IDialogCardProps> = ({id, dialogName, lastMessageInfo, onCl
             onClick={onClick}
         >
             <div className="dialog__left">
-                <Avatar size={48} className="dialog__photo"></Avatar>
+                <Avatar size={48} className="dialog__photo">
+                    {
+                        getNameInitials({
+                            name: dialogName,
+                        })
+                    }
+                </Avatar>
             </div>
             <div className="dialog__right">
                 <Title level={5} style={{margin: 0}}>{dialogName}</Title>
@@ -44,7 +51,6 @@ const DialogCard: FC<IDialogCardProps> = ({id, dialogName, lastMessageInfo, onCl
                             <Markup
                                 noWrap={true}
                                 disableLineBreaks={true}
-                                noHtml={true}
                                 content={
                                     emojiParser.parse(
                                         clip(lastMessageInfo.text, 50, {html: true})

@@ -22,8 +22,9 @@ const RegisterForm = () => {
     const formik = useFormik<TRegisterFormData>({
         initialValues: {
             email: "",
-            name: "",
-            surname: "",
+            displayName: "",
+            givenName: "",
+            familyName: "",
             sex: Sex.MALE,
             age: 12,
             password: "",
@@ -50,6 +51,7 @@ const RegisterForm = () => {
     });
 
     const checkValidationStatus = (field: keyof TRegisterFormData): TValueOf<Pick<FormItemProps<TRegisterFormData>, "validateStatus">> => {
+        console.log("formik.errors: ", formik.errors);
         if (!formik.errors[field]) {
             return formik.values[field] ? "success" : undefined;
         }
@@ -65,7 +67,7 @@ const RegisterForm = () => {
         <Form
             className="auth__form"
             name="basic"
-            initialValues={{remember: true}}
+            initialValues={{...formik.values, remember: true}}
             onFinish={formik.handleSubmit}
             autoComplete="off"
             onChange={formik.handleChange}
@@ -84,26 +86,39 @@ const RegisterForm = () => {
             </Form.Item>
 
             <Form.Item
-                validateStatus={checkValidationStatus("name")}
-                help={formik.errors.name}
+                validateStatus={checkValidationStatus("displayName")}
+                help={formik.errors.displayName}
                 hasFeedback
             >
                 <Input
-                    name="name"
-                    value={formik.values.name}
+                    name="displayName"
+                    value={formik.values.displayName}
+                    placeholder="Псевдоним"
+                    size="large"
+                />
+            </Form.Item>
+
+            <Form.Item
+                validateStatus={checkValidationStatus("givenName")}
+                help={formik.errors.givenName}
+                hasFeedback
+            >
+                <Input
+                    name="givenName"
+                    value={formik.values.givenName}
                     placeholder="Ваше имя"
                     size="large"
                 />
             </Form.Item>
 
             <Form.Item
-                validateStatus={checkValidationStatus("surname")}
-                help={formik.errors.surname}
+                validateStatus={checkValidationStatus("familyName")}
+                help={formik.errors.familyName}
                 hasFeedback
             >
                 <Input
-                    name="surname"
-                    value={formik.values.surname}
+                    name="familyName"
+                    value={formik.values.familyName}
                     placeholder="Ваша фамилия"
                     size="large"
                 />

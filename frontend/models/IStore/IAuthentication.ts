@@ -1,4 +1,4 @@
-import {TValueOf} from "@/models/TUtils";
+import { TPartialBy, TValueOf } from "@/models/TUtils";
 
 export interface IUser {
     displayName: string,
@@ -14,7 +14,7 @@ export enum Sex {
     FEMALE = "FEMALE"
 }
 
-export interface IUserAuth extends IUser {
+export interface IUserAuth extends TPartialBy<IUser, "displayName"> {
     password: string;
 }
 
@@ -37,5 +37,8 @@ export interface IAuthentication {
     isAuthenticated: boolean
 }
 
-export type TLoginFormData = Omit<IUserAuth, "name" | "surname" | "sex" | "age">;
-export type TRegisterFormData = IUserAuth & { passwordConfirmation: TValueOf<Pick<IUserAuth, "password">> };
+export type TLoginFormData = Pick<IUserAuth, "email" | "password">;
+export type TRegisterFormData = Omit<IUserAuth, "displayName"> & {
+    displayName?: TValueOf<Pick<IUserAuth, "displayName">>,
+    passwordConfirmation: TValueOf<Pick<IUserAuth, "password">>
+};

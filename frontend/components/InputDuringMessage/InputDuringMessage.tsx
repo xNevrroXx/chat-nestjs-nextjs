@@ -54,7 +54,7 @@ const InputDuringMessage = forwardRef<HTMLDivElement, IInputDuringMessageProps>(
                     <Button
                         ref={buttonAddFilesRef}
                         type="text"
-                        icon={<PlusCircleTwoTone/>}
+                        icon={<PlusCircleTwoTone className="custom"/>}
                         onClick={onClickButtonFiles}
                         size="large"
                     />
@@ -98,7 +98,7 @@ const InputDuringMessage = forwardRef<HTMLDivElement, IInputDuringMessageProps>(
                     <Button
                         ref={emojiButtonRef}
                         type="text"
-                        icon={<SmileOutlined/>}
+                        icon={<SmileOutlined className="custom"/>}
                         onClick={sendMessage}
                         size="large"
                     />
@@ -107,7 +107,7 @@ const InputDuringMessage = forwardRef<HTMLDivElement, IInputDuringMessageProps>(
                     { message || files.length > 0 ?
                             <Button
                                 type="text"
-                                icon={<SendOutlined/>}
+                                icon={<SendOutlined className="custom"/>}
                                 onClick={sendMessage}
                                 size="large"
                             />

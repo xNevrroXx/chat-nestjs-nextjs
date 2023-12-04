@@ -199,7 +199,7 @@ const Message: FC<IMessageProps> = ({
                         type="text"
                         size="small"
                         title="Изменить"
-                        icon={<EditOutlined/>}
+                        icon={<EditOutlined className="custom"/>}
                         onClick={onChooseMessageForEdit}
                     />
                 }
@@ -221,7 +221,7 @@ const Message: FC<IMessageProps> = ({
                     type="text"
                     size="small"
                     title="Удалить"
-                    icon={<DeleteOutlined/>}
+                    icon={<DeleteOutlined className="custom"/>}
                     onClick={onChooseMessageForDelete}
                 />
             </div>

@@ -38,10 +38,10 @@ const {Text, Title} = Typography;
 interface IActiveChatProps {
     user: IUserDto;
     room: IRoom | null
-    openUsersListForForwardMessage: (forwardedMessageId: TValueOf<Pick<IForwardMessage, "forwardedMessageId">>) => void;
+    openModalToForwardMessage: (forwardedMessageId: TValueOf<Pick<IForwardMessage, "forwardedMessageId">>) => void;
 }
 
-const ActiveRoom: FC<IActiveChatProps> = ({user, room, openUsersListForForwardMessage}) => {
+const ActiveRoom: FC<IActiveChatProps> = ({user, room, openModalToForwardMessage}) => {
     const {token} = useToken();
     const dispatch = useAppDispatch();
     const typingTimoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -82,7 +82,7 @@ const ActiveRoom: FC<IActiveChatProps> = ({user, room, openUsersListForForwardMe
 
     const onTyping = useCallback(() => {
         if (!room) return;
-        
+
         if (typingTimoutRef.current) {
             // if the user has recently typed
             clearTimeout(typingTimoutRef.current);
@@ -240,15 +240,15 @@ const ActiveRoom: FC<IActiveChatProps> = ({user, room, openUsersListForForwardMe
                     </div>
                     <div className="active-room__space"></div>
                     <div className="active-room__options">
-                        <PhoneTwoTone/>
-                        <MenuFoldOutlined/>
+                        <PhoneTwoTone className="custom"/>
+                        <MenuFoldOutlined className="custom"/>
                     </div>
                 </div>
 
                 { room.pinnedMessages.length > 0 &&
                     <PinnedMessages pinnedMessages={room.pinnedMessages}/>
                 }
-                
+
                 <RoomContent
                     className="active-room__content"
                     ref={refChatContent}
@@ -256,7 +256,7 @@ const ActiveRoom: FC<IActiveChatProps> = ({user, room, openUsersListForForwardMe
                     room={room}
                     isNeedScrollToLastMessage={isNeedScrollToLastMessage}
                     onChooseMessageForAction={onChooseMessageForAction}
-                    onOpenUsersListForForwardMessage={openUsersListForForwardMessage}
+                    onOpenUsersListForForwardMessage={openModalToForwardMessage}
                 />
 
                 <div className="active-room__footer">

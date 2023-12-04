@@ -1,18 +1,18 @@
 import {FC, useMemo} from "react";
 // own modules
-import DialogCard from "../DialogCard/DialogCard.tsx";
+import DialogCard from "@/components/DialogCard/DialogCard";
 // types
-import {IRoom, TTemporarilyRoomBySearch} from "../../models/IStore/IRoom.ts";
-import {TValueOf} from "../../models/TUtils.ts";
-import {IUserDto} from "../../models/IStore/IAuthentication.ts";
+import {IRoom, TTemporarilyRoomOrUserBySearch} from "@/models/IStore/IRoom";
+import {TValueOf} from "@/models/TUtils";
+import {IUserDto} from "@/models/IStore/IAuthentication";
 // styles
 
 
 interface IDialogsProps {
     user: IUserDto,
-    rooms: TTemporarilyRoomBySearch[],
+    rooms: TTemporarilyRoomOrUserBySearch[],
     activeRoomId: TValueOf<Pick<IRoom, "id">> | null,
-    onCreateNewDialog: (room: TTemporarilyRoomBySearch) => void,
+    onCreateNewDialog: (room: TTemporarilyRoomOrUserBySearch) => void,
 }
 
 const ListRemoteDialogs: FC<IDialogsProps> = ({rooms, onCreateNewDialog, activeRoomId}) => {

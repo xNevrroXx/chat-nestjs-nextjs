@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Post, Req, UseGuards } from "@nestjs/common";
+import {
+    Body,
+    Controller,
+    Get,
+    Post,
+    Query,
+    Req,
+    UseGuards,
+} from "@nestjs/common";
 import { stringSimilarity } from "string-similarity-js";
 import { Request } from "express";
 import { AuthGuard } from "../auth/auth.guard";
@@ -7,7 +15,7 @@ import { MessageService } from "../message/message.service";
 import { ParticipantService } from "../participant/participant.service";
 import { Prisma, Room, RoomType, User } from "@prisma/client";
 import { UserService } from "../user/user.service";
-import { IRoom, TPreviewRooms } from "./IRooms";
+import { IRoom, TNewRoom, TPreviewRooms } from "./IRooms";
 import { TMessage } from "../message/IMessage";
 import { DatabaseService } from "../database/database.service";
 import { IUserSessionPayload } from "../user/IUser";
@@ -26,7 +34,7 @@ export class RoomController {
     @UseGuards(AuthGuard)
     async create(
         @Req() request,
-        @Body() { id, name, type }: TPreviewRooms
+        @Body() { memberIds, name, type }: TNewRoom
     ): Promise<IRoom> {
         const userInfo = request.user;
 
@@ -45,7 +53,7 @@ export class RoomController {
             };
         }>;
         switch (type) {
-            case "PRIVATE":
+            case "PRIVATE": {
                 newRoom = (await this.roomService.create({
                     data: {
                         type,
@@ -56,7 +64,7 @@ export class RoomController {
                                         userId: userInfo.id,
                                     },
                                     {
-                                        userId: id,
+                                        userId: memberIds[0],
                                     },
                                 ],
                             },
@@ -89,7 +97,8 @@ export class RoomController {
                     };
                 }>;
                 break;
-            case "GROUP":
+            }
+            case "GROUP": {
                 newRoom = (await this.roomService.create({
                     data: {
                         type,
@@ -100,9 +109,9 @@ export class RoomController {
                                     {
                                         userId: userInfo.id,
                                     },
-                                    {
+                                    ...memberIds.map((id) => ({
                                         userId: id,
-                                    },
+                                    })),
                                 ],
                             },
                         },
@@ -134,6 +143,7 @@ export class RoomController {
                     };
                 }>;
                 break;
+            }
         }
 
         const normalizedParticipants = newRoom.participants
@@ -314,48 +324,61 @@ export class RoomController {
 
     @Get("find-by-query")
     @UseGuards(AuthGuard)
-    async getManyBySearch(@Req() request: Request): Promise<TPreviewRooms[]> {
-        const userPayloadJWT = request.user as IUserSessionPayload;
-        const { query } = request.query;
+    async getManyBySearch(
+        @Req() request: Request,
+        @Query("query") query: string,
+        @Query("isOnlyUsers") isOnlyUsers?: boolean
+    ): Promise<TPreviewRooms[]> {
+        // todo add a boolean flag to specify whether to find users by their firstname + lastname or just by their nickname
+        const userPayload = request.user as IUserSessionPayload;
 
         const users = await this.prismaService.$queryRaw<User[]>`
             SELECT u.*, u.display_name as 'displayName'
             FROM user u
                 LEFT JOIN (participant as p
                     INNER JOIN participant as target_user_participant
-                        ON target_user_participant.user_id = ${
-                            userPayloadJWT.id
-                        }
-                        AND p.room_id = target_user_participant.room_id
+                        ON target_user_participant.user_id = ${userPayload.id}
+                            INNER JOIN room as intersecting_room
+                               ON target_user_participant.room_id = intersecting_room.id
+                       AND p.room_id = target_user_participant.room_id
+                       AND intersecting_room.type = "PRIVATE"
                 ) ON u.id = p.user_id
             WHERE
                 target_user_participant.user_id is null
                 AND
-                CONCAT(u.given_name, " ", u.family_name) LIKE ${
-                    "%" + query + "%"
-                };
+                    (
+                        u.display_name LIKE ${"%" + query + "%"}
+                        OR
+                        CONCAT(u.given_name, " ", u.family_name) LIKE ${
+                            "%" + query + "%"
+                        }
+                    )
+                AND u.id <> ${userPayload.id};
         `;
+        console.log("users: ", users);
 
-        const rooms = (await this.roomService.findMany({
-            where: {
-                AND: [
-                    {
-                        name: {
-                            contains: query as string,
-                        },
-                    },
-                    {
-                        participants: {
-                            every: {
-                                userId: {
-                                    not: userPayloadJWT.id,
-                                },
-                            },
-                        },
-                    },
-                ],
-            },
-        })) as Room[];
+        const rooms = isOnlyUsers
+            ? []
+            : ((await this.roomService.findMany({
+                  where: {
+                      AND: [
+                          {
+                              name: {
+                                  contains: query as string,
+                              },
+                          },
+                          {
+                              participants: {
+                                  every: {
+                                      userId: {
+                                          not: userPayload.id,
+                                      },
+                                  },
+                              },
+                          },
+                      ],
+                  },
+              })) as Room[]);
 
         const roomsAndUsers = users
             .map<TPreviewRooms>((user) => {
@@ -374,11 +397,11 @@ export class RoomController {
                     };
                 })
             )
-            .filter((room) =>
-                room.name
-                    .toLowerCase()
-                    .includes((query as string).toLowerCase())
-            )
+            // .filter((room) =>
+            //     room.name
+            //         .toLowerCase()
+            //         .includes((query as string).toLowerCase())
+            // )
             .sort((room1, room2) => {
                 return (
                     stringSimilarity(query as string, room2.name) -

@@ -12,7 +12,7 @@ class AuthService {
     }
 
     static async registration(user: IUserAuth): Promise<AxiosResponse<IAuthResponse>> {
-        return $api.post<IAuthResponse>(this.base + "/register", user);
+        return $api.post<IAuthResponse>(this.base + "/sign-up", user);
     }
 
     static async logout(): Promise<AxiosResponse<null>> {

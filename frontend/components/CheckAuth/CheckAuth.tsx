@@ -19,10 +19,17 @@ const CheckAuth = () => {
 
         isFetchedRef.current = true;
         void dispatch(checkAuthentication())
-            .then(() => {
-                router.push(
-                    createRoute({ path: ROUTES.MAIN })
-                );
+            .then((data) => {
+                if (data.meta.requestStatus === "fulfilled") {
+                    router.push(
+                        createRoute({ path: ROUTES.MAIN })
+                    );
+                }
+                else {
+                    router.push(
+                        createRoute({ path: ROUTES.AUTH })
+                    );
+                }
             });
     }, [dispatch, router]);
 

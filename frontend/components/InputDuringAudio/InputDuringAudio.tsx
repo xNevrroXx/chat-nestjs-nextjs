@@ -4,10 +4,10 @@ import {CloseCircleOutlined, SendOutlined} from "@ant-design/icons";
 // @ts-ignore
 import {LiveAudioVisualizer} from "react-audio-visualize";
 // own modules
-import {TValueOf} from "../../models/TUtils.ts";
-import {IUseAudioRecorderReturnType} from "../../hooks/useAudioRecorder.hook.ts";
-import StopCircleOutlined from "../../icons/StopCircleOutlined.tsx";
-import AudioElement from "../AudioElement/AudioElement.tsx";
+import {TValueOf} from "@/models/TUtils";
+import {IUseAudioRecorderReturnType} from "@/hooks/useAudioRecorder.hook";
+import StopCircleOutlined from "@/icons/StopCircleOutlined";
+import AudioElement from "@/components/AudioElement/AudioElement";
 
 interface IInputDuringAudioProps {
     mediaRecorder: MediaRecorder;
@@ -42,8 +42,8 @@ const InputDuringAudio: FC<IInputDuringAudioProps> = ({
             <div className="input-message__btn-wrapper">
                 <Button
                     type={"text"}
-                    onClick={cleanAudio} 
-                    icon={<CloseCircleOutlined/>}
+                    onClick={cleanAudio}
+                    icon={<CloseCircleOutlined className="custom"/>}
                     size="large"
                 />
             </div>
@@ -74,7 +74,7 @@ const InputDuringAudio: FC<IInputDuringAudioProps> = ({
             <div className="input-message__btn-wrapper">
                 <Button
                     type="text"
-                    icon={<SendOutlined/>}
+                    icon={<SendOutlined className="custom"/>}
                     onClick={sendVoiceMessage}
                     size="large"
                 />

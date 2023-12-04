@@ -1,5 +1,6 @@
-import { Room, RoomType } from "@prisma/client";
+import { Room, RoomType, User } from "@prisma/client";
 import { TMessage } from "../message/IMessage";
+import { TValueOf } from "../models/TUtils";
 
 export interface IRoom extends Room {
     messages: TMessage[];
@@ -10,6 +11,20 @@ export interface IRoom extends Room {
     }[];
 }
 
-export type TPreviewRooms = { id: string; name?: string; type: RoomType };
+export type TPreviewRooms = {
+    name?: string;
+    type: RoomType;
+    id: string;
+};
 
-export type TNewGroupRoom = { name: string; type: typeof RoomType.GROUP };
+export type TNewRoom =
+    | {
+          name: string;
+          type: typeof RoomType.GROUP;
+          memberIds: TValueOf<Pick<User, "id">>[];
+      }
+    | {
+          name: string;
+          type: typeof RoomType.PRIVATE;
+          memberIds: [TValueOf<Pick<User, "id">>];
+      };

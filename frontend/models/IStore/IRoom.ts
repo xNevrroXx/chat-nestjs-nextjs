@@ -102,52 +102,7 @@ export interface IFile {
 }
 
 // HTTP response types
-export type TTemporarilyRoomBySearch = Pick<IRoom, "id" | "name" | "type">
-
-// export type TFileHTTP = Omit<IFile, "buffer" | "createdAt"> & {
-//     buffer: {
-//         type: "Buffer",
-//         data: number[]
-//     },
-//     createdAt: string
-// }
-//
-// export interface IInnerMessageHTTP extends IOriginalMessage {
-//     files: TFileHTTP[];
-//     replyToMessageId: TValueOf<Pick<IMessage, "id">> | undefined | null;
-// }
-//
-// export interface IMessageHTTP extends IInnerMessageHTTP {
-//     replyToMessage: IInnerMessageHTTP | IInnerForwardedMessage | undefined | null
-// }
-//
-// export interface IForwardedMessageHTTP extends IInnerForwardedMessage {
-//     forwardedMessage: IInnerMessageHTTP | IInnerForwardedMessage
-// }
-//
-// export type TRoomHTTP = Omit<IRoom, "messages"> & {
-//     messages: (IMessageHTTP | IForwardedMessageHTTP)[]
-// }
-//
-//
-//
-// // Socket response types
-// type TFileSocket = Omit<TFileHTTP, "buffer"> & {
-//     buffer: ArrayBuffer
-// }
-
-// export interface TInnerMessageSocket extends IOriginalMessage {
-//     files: TFileSocket[];
-//     replyToMessageId: TValueOf<Pick<IMessage, "id">> | undefined | null;
-// }
-//
-// export interface IMessageSocket extends TInnerMessageSocket {
-//     replyToMessage: IInnerMessage | IInnerForwardedMessage | undefined | null
-// }
-//
-// export interface IForwardedMessageSocket extends IInnerForwardedMessage {
-//     forwardedMessage: IInnerMessage | IInnerForwardedMessage
-// }
+export type TTemporarilyRoomOrUserBySearch = Pick<IRoom, "id" | "name" | "type">
 
 export interface IEditedMessageSocket extends IEditMessage {
     roomId: TValueOf<Pick<IRoom, "id">>,
@@ -170,12 +125,12 @@ export interface IDeletedMessageSocket {
 export type TCreateRoom = TCreatePrivateRoom | TCreateGroupRoom;
 export type TCreateGroupRoom = {
     name: TValueOf<Pick<IRoom, "name">>,
-    roomType: RoomType.GROUP,
-    interlocutorsId: TValueOf<Pick<IUserDto, "id">>[]
+    type: RoomType.GROUP,
+    memberIds: TValueOf<Pick<IUserDto, "id">>[]
 }
 export type TCreatePrivateRoom = {
-    roomType: RoomType.PRIVATE,
-    interlocutorsId: [TValueOf<Pick<IUserDto, "id">>]
+    type: RoomType.PRIVATE,
+    memberIds: [TValueOf<Pick<IUserDto, "id">>]
 };
 
 export type TSendUserTyping = Omit<IUserTyping, "updatedAt" | "userId">
@@ -220,21 +175,6 @@ export interface IPinMessage {
 
 
 // check methods
-// export function checkIsInnerMessageSocket(obj: TInnerMessageSocket | IInnerForwardedMessage): obj is TInnerMessageSocket {
-//     const message = obj as TInnerMessageSocket;
-//     return message.files !== undefined;
-// }
-//
-// export function checkIsInnerMessageHTTP(obj: IInnerMessageHTTP | IInnerForwardedMessage): obj is IInnerMessageHTTP {
-//     const message = obj as IInnerMessageHTTP;
-//     return message.files !== undefined;
-// }
-//
-// export function checkIsMessageHTTP(obj: IMessageHTTP | IForwardedMessageHTTP): obj is IMessageHTTP {
-//     const message = obj as IMessageHTTP;
-//     return message.files !== undefined;
-// }
-
 export function checkIsMessage(obj: IMessage | IForwardedMessage): obj is IMessage {
     const message = obj as IMessage;
     return message.files !== undefined;

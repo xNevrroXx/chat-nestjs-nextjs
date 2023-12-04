@@ -23,8 +23,15 @@ const loginUserValidation =
 const registerUserValidation =
     loginUserValidation
         .extend({
-            name: zod.string({required_error: "Обязательное поле"}),
-            surname: zod.string({required_error: "Обязательное поле"}),
+            displayName: zod.string()
+                .regex(/^[a-z.&:\d]+$/i, "Может содержать латинские буквы, цифры и символы: .&:")
+                .optional(),
+            givenName: zod.string({required_error: "Обязательное поле"})
+                .min(2, "Минимум 2 символа")
+                .regex(/^([а-яё]+|[a-z]+)$/i, "Либо латинские, либо русские буквы"),
+            familyName: zod.string({required_error: "Обязательное поле"})
+                .min(2, "Минимум 2 символа")
+                .regex(/^([а-яё]+|[a-z]+)$/i, "Либо латинские, либо русские буквы"),
             sex: zod.nativeEnum(Sex, {required_error: "Обязательное поле"}),
             age: zod.number({required_error: "Обязательное поле"}).min(12, "Минимальное значение - 12 лет").max(120, "Максимальное значение - 120 лет\""),
             passwordConfirmation: passwordValidation
