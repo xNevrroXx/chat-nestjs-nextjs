@@ -1,8 +1,8 @@
-import {FC, useMemo} from "react";
+import { FC, useMemo } from "react";
 // own modules
 import DialogCard from "@/components/DialogCard/DialogCard";
 // types
-import {IRoom, TTemporarilyRoomOrUserBySearch} from "@/models/IStore/IRoom";
+import { IRoom, TPreviewExistingRoom } from "@/models/IStore/IRoom";
 import {TValueOf} from "@/models/TUtils";
 import {IUserDto} from "@/models/IStore/IAuthentication";
 // styles
@@ -10,12 +10,12 @@ import {IUserDto} from "@/models/IStore/IAuthentication";
 
 interface IDialogsProps {
     user: IUserDto,
-    rooms: TTemporarilyRoomOrUserBySearch[],
+    rooms: TPreviewExistingRoom[],
     activeRoomId: TValueOf<Pick<IRoom, "id">> | null,
-    onCreateNewDialog: (room: TTemporarilyRoomOrUserBySearch) => void,
+    onJoinRoom: (room: TPreviewExistingRoom) => void,
 }
 
-const ListRemoteDialogs: FC<IDialogsProps> = ({rooms, onCreateNewDialog, activeRoomId}) => {
+const ListRemoteDialogs: FC<IDialogsProps> = ({rooms, onJoinRoom, activeRoomId}) => {
 
     const list = useMemo(() => {
         return rooms.map(room => {
@@ -23,7 +23,7 @@ const ListRemoteDialogs: FC<IDialogsProps> = ({rooms, onCreateNewDialog, activeR
                 <DialogCard
                     key={room.id.toString() + "dialog card"}
                     id={room.id}
-                    onClick={() => onCreateNewDialog(room)}
+                    onClick={() => onJoinRoom(room)}
                     dialogName={room.name}
                     isActive={activeRoomId === room.id}
                     roomType={room.type}
@@ -31,7 +31,7 @@ const ListRemoteDialogs: FC<IDialogsProps> = ({rooms, onCreateNewDialog, activeR
                 />
             );
         });
-    }, [rooms, activeRoomId, onCreateNewDialog]);
+    }, [rooms, activeRoomId, onJoinRoom]);
 
     return (
         <ul className="dialogs__list">

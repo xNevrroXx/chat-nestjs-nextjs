@@ -51,7 +51,6 @@ const RegisterForm = () => {
     });
 
     const checkValidationStatus = (field: keyof TRegisterFormData): TValueOf<Pick<FormItemProps<TRegisterFormData>, "validateStatus">> => {
-        console.log("formik.errors: ", formik.errors);
         if (!formik.errors[field]) {
             return formik.values[field] ? "success" : undefined;
         }

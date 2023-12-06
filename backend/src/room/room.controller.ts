@@ -15,7 +15,7 @@ import { MessageService } from "../message/message.service";
 import { ParticipantService } from "../participant/participant.service";
 import { Prisma, Room, RoomType, User } from "@prisma/client";
 import { UserService } from "../user/user.service";
-import { IRoom, TNewRoom, TPreviewRooms } from "./IRooms";
+import { IRoom, TNewRoom, TRoomPreview } from "./IRooms";
 import { TMessage } from "../message/IMessage";
 import { DatabaseService } from "../database/database.service";
 import { IUserSessionPayload } from "../user/IUser";
@@ -38,7 +38,36 @@ export class RoomController {
     ): Promise<IRoom> {
         const userInfo = request.user;
 
-        let newRoom: Prisma.RoomGetPayload<{
+        const newRoom = (await this.roomService.create({
+            data: {
+                type,
+                name,
+                participants: {
+                    createMany: {
+                        data: [
+                            {
+                                userId: userInfo.id,
+                            },
+                            ...memberIds.map((id) => ({
+                                userId: id,
+                            })),
+                        ],
+                    },
+                },
+            },
+            include: {
+                participants: {
+                    include: {
+                        user: {
+                            include: {
+                                userOnline: true,
+                                userTyping: true,
+                            },
+                        },
+                    },
+                },
+            },
+        })) as Prisma.RoomGetPayload<{
             include: {
                 participants: {
                     include: {
@@ -52,114 +81,74 @@ export class RoomController {
                 };
             };
         }>;
-        switch (type) {
-            case "PRIVATE": {
-                newRoom = (await this.roomService.create({
-                    data: {
-                        type,
-                        participants: {
-                            createMany: {
-                                data: [
-                                    {
-                                        userId: userInfo.id,
-                                    },
-                                    {
-                                        userId: memberIds[0],
-                                    },
-                                ],
-                            },
-                        },
-                    },
-                    include: {
-                        participants: {
-                            include: {
-                                user: {
-                                    include: {
-                                        userOnline: true,
-                                        userTyping: true,
-                                    },
-                                },
-                            },
-                        },
-                    },
-                })) as Prisma.RoomGetPayload<{
-                    include: {
-                        participants: {
-                            include: {
-                                user: {
-                                    include: {
-                                        userOnline: true;
-                                        userTyping: true;
-                                    };
-                                };
-                            };
-                        };
-                    };
-                }>;
-                break;
-            }
-            case "GROUP": {
-                newRoom = (await this.roomService.create({
-                    data: {
-                        type,
-                        name,
-                        participants: {
-                            createMany: {
-                                data: [
-                                    {
-                                        userId: userInfo.id,
-                                    },
-                                    ...memberIds.map((id) => ({
-                                        userId: id,
-                                    })),
-                                ],
-                            },
-                        },
-                    },
-                    include: {
-                        participants: {
-                            include: {
-                                user: {
-                                    include: {
-                                        userOnline: true,
-                                        userTyping: true,
-                                    },
-                                },
-                            },
-                        },
-                    },
-                })) as Prisma.RoomGetPayload<{
-                    include: {
-                        participants: {
-                            include: {
-                                user: {
-                                    include: {
-                                        userOnline: true;
-                                        userTyping: true;
-                                    };
-                                };
-                            };
-                        };
-                    };
-                }>;
-                break;
-            }
-        }
 
         const normalizedParticipants = newRoom.participants
             .filter((participant) => participant.userId !== userInfo.id)
             .map(this.participantService.normalize);
 
-        let roomName: string;
-        if (newRoom.type === RoomType.GROUP) {
-            roomName = newRoom.name;
-        } else {
-            roomName = normalizedParticipants[0].nickname;
-        }
+        return {
+            ...newRoom,
+            participants: normalizedParticipants,
+            messages: [],
+            pinnedMessages: [],
+        } as IRoom;
+    }
+
+    @Post("join")
+    @UseGuards(AuthGuard)
+    async join(@Req() request, @Body() { id, type }: TRoomPreview) {
+        const userInfo = request.user;
+
+        const newRoom = (await this.roomService.create({
+            data: {
+                type,
+                participants: {
+                    createMany: {
+                        data: [
+                            {
+                                userId: userInfo.id,
+                            },
+                            {
+                                userId: id,
+                            },
+                        ],
+                    },
+                },
+            },
+            include: {
+                participants: {
+                    include: {
+                        user: {
+                            include: {
+                                userOnline: true,
+                                userTyping: true,
+                            },
+                        },
+                    },
+                },
+            },
+        })) as Prisma.RoomGetPayload<{
+            include: {
+                participants: {
+                    include: {
+                        user: {
+                            include: {
+                                userOnline: true;
+                                userTyping: true;
+                            };
+                        };
+                    };
+                };
+            };
+        }>;
+
+        const normalizedParticipants = newRoom.participants
+            .filter((participant) => participant.userId !== userInfo.id)
+            .map(this.participantService.normalize);
 
         return {
             ...newRoom,
-            name: roomName,
+            name: normalizedParticipants[0].nickname,
             participants: normalizedParticipants,
             messages: [],
             pinnedMessages: [],
@@ -328,7 +317,7 @@ export class RoomController {
         @Req() request: Request,
         @Query("query") query: string,
         @Query("isOnlyUsers") isOnlyUsers?: boolean
-    ): Promise<TPreviewRooms[]> {
+    ): Promise<TRoomPreview[]> {
         // todo add a boolean flag to specify whether to find users by their firstname + lastname or just by their nickname
         const userPayload = request.user as IUserSessionPayload;
 
@@ -355,7 +344,6 @@ export class RoomController {
                     )
                 AND u.id <> ${userPayload.id};
         `;
-        console.log("users: ", users);
 
         const rooms = isOnlyUsers
             ? []
@@ -381,7 +369,7 @@ export class RoomController {
               })) as Room[]);
 
         const roomsAndUsers = users
-            .map<TPreviewRooms>((user) => {
+            .map<TRoomPreview>((user) => {
                 return {
                     id: user.id,
                     name: user.displayName,
@@ -389,7 +377,7 @@ export class RoomController {
                 };
             })
             .concat(
-                ...rooms.map<TPreviewRooms>((room) => {
+                ...rooms.map<TRoomPreview>((room) => {
                     return {
                         id: room.id,
                         name: room.name,

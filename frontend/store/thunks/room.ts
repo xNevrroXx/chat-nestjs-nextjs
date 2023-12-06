@@ -21,7 +21,7 @@ import {
     IRoom, TCreateRoom,
     TSendMessage,
     TSendUserTyping,
-    TTemporarilyRoomOrUserBySearch
+    TPreviewExistingRoom
 } from "@/models/IStore/IRoom";
 import {RootState} from "@/store";
 
@@ -199,7 +199,7 @@ const getAll = createAsyncThunk(
     }
 );
 
-const createRoom = createAsyncThunk<IRoom, TTemporarilyRoomOrUserBySearch | TCreateRoom>(
+const createRoom = createAsyncThunk<IRoom, TCreateRoom>(
     "room/create",
     async (newRoomData, thunkAPI) => {
         try {
@@ -212,10 +212,23 @@ const createRoom = createAsyncThunk<IRoom, TTemporarilyRoomOrUserBySearch | TCre
     }
 );
 
+const joinRoom = createAsyncThunk<IRoom, TPreviewExistingRoom>(
+    "room/join",
+    async (roomData, thunkAPI) => {
+        try {
+            const response = await RoomService.join(roomData);
+            return response.data;
+        }
+        catch(error) {
+            return thunkAPI.rejectWithValue(error);
+        }
+    }
+);
+
 export {
     getAll,
+    joinRoom,
     createRoom,
-
     createSocketInstance,
     disconnectSocket,
     connectSocket,

@@ -56,7 +56,7 @@ class SocketRoomsInfo {
     /**
      * Leaving a room by a user.
      * @param {string} socketId - user's socket id;
-     * @return {IUserIdWithRoomsIDs} - the object contains the user's ID and his rooms;
+     * @return {IUserIdWithRoomsIDs} - the object contains the user IDs and their rooms;
      * */
     leave(socketId: string) {
         const { userId, roomIDs } = this._socketIDsToUserIDs[socketId];

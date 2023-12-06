@@ -5,7 +5,7 @@ import {IRoomSlice} from "@/models/IStore/IRoom";
 import {
     getAll,
     createRoom,
-    createSocketInstance
+    createSocketInstance, joinRoom
 } from "@/store/thunks/room";
 import {
     setUserId,
@@ -34,6 +34,9 @@ const room = createSlice({
                 state.rooms = action.payload;
             })
             .addCase(createRoom.fulfilled, (state, action) => {
+                state.rooms.push(action.payload);
+            })
+            .addCase(joinRoom.fulfilled, (state, action) => {
                 state.rooms.push(action.payload);
             })
             .addCase(setUserId, (state, action) => {

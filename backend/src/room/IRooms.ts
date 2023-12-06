@@ -11,20 +11,14 @@ export interface IRoom extends Room {
     }[];
 }
 
-export type TPreviewRooms = {
+export type TRoomPreview = {
     name?: string;
     type: RoomType;
     id: string;
 };
 
-export type TNewRoom =
-    | {
-          name: string;
-          type: typeof RoomType.GROUP;
-          memberIds: TValueOf<Pick<User, "id">>[];
-      }
-    | {
-          name: string;
-          type: typeof RoomType.PRIVATE;
-          memberIds: [TValueOf<Pick<User, "id">>];
-      };
+export type TNewRoom = {
+    name: string;
+    type: typeof RoomType.GROUP;
+    memberIds: TValueOf<Pick<User, "id">>[];
+};

@@ -2,7 +2,7 @@
 
 import { createSelector } from "@reduxjs/toolkit";
 import { RootState } from "@/store";
-import { RoomType, TTemporarilyRoomOrUserBySearch } from "@/models/IStore/IRoom";
+import { RoomType, TPreviewExistingRoom } from "@/models/IStore/IRoom";
 
 const filteredUsersSelector = createSelector(
     [
@@ -10,7 +10,7 @@ const filteredUsersSelector = createSelector(
     ],
     (users) => {
         return users
-            .map<TTemporarilyRoomOrUserBySearch>(user => {
+            .map<TPreviewExistingRoom>(user => {
                 return {
                     id: user.id,
                     name: user.displayName,

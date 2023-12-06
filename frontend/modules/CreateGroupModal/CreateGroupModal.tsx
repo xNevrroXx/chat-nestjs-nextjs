@@ -2,7 +2,7 @@
 
 import React, { ChangeEventHandler, FC, useCallback, useMemo, useState, useTransition } from "react";
 import Modal from "antd/es/modal/Modal";
-import { RoomType, TCreateGroupRoom, TCreateRoom, TTemporarilyRoomOrUserBySearch } from "@/models/IStore/IRoom";
+import { RoomType, TCreateGroupRoom, TCreateRoom, TPreviewExistingRoom } from "@/models/IStore/IRoom";
 import { Form, Input, Mentions } from "antd";
 import { useAppSelector } from "@/hooks/store.hook";
 import { filteredUsersSelector } from "@/store/selectors/filteredUsersSelector";
@@ -27,8 +27,7 @@ interface IProps {
 }
 
 const CreateGroupModal: FC<IProps> = ({ onCloseModal, isOpen, onOk: onSuccessAction }) => {
-    const users = useAppSelector<TTemporarilyRoomOrUserBySearch[]>(state => filteredUsersSelector(state));
-    console.log("filteredLocalUsers: ", users);
+    const users = useAppSelector<TPreviewExistingRoom[]>(state => filteredUsersSelector(state));
 
     const [stage, setStage] = useState<keyof IStages>(0);
     const [roomName, setRoomName] = useState<string>("");
@@ -47,6 +46,9 @@ const CreateGroupModal: FC<IProps> = ({ onCloseModal, isOpen, onOk: onSuccessAct
                 memberIds: memberIds,
                 type: RoomType.GROUP
             });
+            setStage(0);
+            setRoomName("");
+            setMemberIds([]);
             return;
         }
 
@@ -88,11 +90,7 @@ const CreateGroupModal: FC<IProps> = ({ onCloseModal, isOpen, onOk: onSuccessAct
                                     .join("")
                             }
                             onChange={onChangeMembers}
-                            onSelect={(e) => {
-                                console.log("select: ", e);
-                            }}
                             options={users/*.concat(data || [])*/.map(({ name, id }) => {
-                                console.log("users: ", users);
                                 const slicedId = id;
                                 const formattedName = name.match(/ /) ? "\"" + name + "\"" : name;
                                 return {

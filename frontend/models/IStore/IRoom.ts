@@ -102,7 +102,7 @@ export interface IFile {
 }
 
 // HTTP response types
-export type TTemporarilyRoomOrUserBySearch = Pick<IRoom, "id" | "name" | "type">
+export type TPreviewExistingRoom = Pick<IRoom, "id" | "name" | "type">
 
 export interface IEditedMessageSocket extends IEditMessage {
     roomId: TValueOf<Pick<IRoom, "id">>,

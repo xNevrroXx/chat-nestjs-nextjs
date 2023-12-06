@@ -8,9 +8,9 @@ import ListRooms from "@/modules/ListRooms/ListRooms";
 import ActiveRoom from "@/modules/ActiveRoom/ActiveRoom";
 import Dialogs from "@/modules/Dialogs/Dialogs";
 // selectors & actions
-import {createRoom, forwardMessageSocket} from "@/store/thunks/room";
+import { createRoom, forwardMessageSocket, joinRoom } from "@/store/thunks/room";
 // own types
-import type {IForwardMessage, IRoom, TTemporarilyRoomOrUserBySearch} from "@/models/IStore/IRoom";
+import type {IForwardMessage, IRoom, TPreviewExistingRoom} from "@/models/IStore/IRoom";
 import type {TValueOf} from "@/models/TUtils";
 // styles
 import "./main.scss";
@@ -52,8 +52,31 @@ const Main = () => {
         setActiveRoom(targetRoom);
     }, [rooms]);
 
-    const onCreateNewDialog = useCallback((remoteRoom: TTemporarilyRoomOrUserBySearch | TCreateRoom) => {
-        void dispatch(createRoom(remoteRoom));
+    const onJoinRoom = useCallback(async (remoteRoom: TPreviewExistingRoom) => {
+        try {
+            const actionResult = await dispatch(joinRoom(remoteRoom));
+            if (actionResult.meta.requestStatus === "rejected") {
+                throw new Error();
+            }
+            const newRoom = actionResult.payload as IRoom;
+            setActiveRoom(newRoom);
+        }
+        catch (error) {
+            return;
+        }
+    }, [dispatch]);
+
+    const onCreateRoom = useCallback(async (remoteRoom: TCreateRoom) => {
+        try {
+            const actionResult = await dispatch(createRoom(remoteRoom));
+            if (actionResult.meta.requestStatus === "rejected") {
+                throw new Error();
+            }
+            const newRoom = actionResult.payload as IRoom;
+            setActiveRoom(newRoom);
+        } catch (error) {
+            return;
+        }
     }, [dispatch]);
 
     const onClickRoom = (room: IRoom) => {
@@ -92,8 +115,8 @@ const Main = () => {
                 <Dialogs
                     user={user}
                     rooms={rooms}
-                    onChangeDialog={onChangeDialog}
-                    onCreateNewDialog={onCreateNewDialog}
+                    onChangeRoom={onChangeDialog}
+                    onJoinRoom={onJoinRoom}
                     activeRoomId={activeRoom ? activeRoom.id : null}
                     openModalToCreateGroup={openModalToCreateGroup}
                 />
@@ -114,7 +137,7 @@ const Main = () => {
             </Modal>
 
             <CreateGroupModal
-                onOk={(roomInfo: TCreateRoom) => onCreateNewDialog(roomInfo)}
+                onOk={(roomInfo: TCreateRoom) => onCreateRoom(roomInfo)}
                 onCloseModal={closeModalToCreateGroup}
                 isOpen={isOpenModalToCreateGroup}
             />
