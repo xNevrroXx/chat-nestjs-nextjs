@@ -1,7 +1,7 @@
 import React, {FC, useMemo} from "react";
 // own modules
 import RoomCard from "../../components/RoomCard/RoomCard.tsx";
-import {IRoom} from "../../models/IStore/IRoom.ts";
+import {IRoom} from "../../models/room/IRoom.store.ts";
 
 interface IRoomsProps {
     rooms: IRoom[];

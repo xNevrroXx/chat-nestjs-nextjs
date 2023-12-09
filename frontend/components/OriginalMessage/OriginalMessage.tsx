@@ -7,7 +7,7 @@ import {theme} from "antd";
 // own modules
 import Time from "@/components/Time/Time";
 import LinkPreviewer from "@/components/LinkPreviewer/LinkPreviewer";
-import {checkIsMessage, FileType, IForwardedMessage, IMessage} from "@/models/IStore/IRoom";
+import {checkIsMessage, FileType, IForwardedMessage, IMessage} from "@/models/room/IRoom.store";
 import {transform} from "@/utils/inrterweaveTransform";
 // styles
 import "./atelier-lakeside-light.scss";

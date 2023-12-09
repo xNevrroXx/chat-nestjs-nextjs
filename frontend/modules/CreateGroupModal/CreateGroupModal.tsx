@@ -1,8 +1,8 @@
 "use client";
 
-import React, { ChangeEventHandler, FC, useCallback, useMemo, useState, useTransition } from "react";
+import React, { FC, useCallback, useMemo, useState } from "react";
 import Modal from "antd/es/modal/Modal";
-import { RoomType, TCreateGroupRoom, TCreateRoom, TPreviewExistingRoom } from "@/models/IStore/IRoom";
+import { RoomType, TCreateGroupRoom, TPreviewExistingRoom } from "@/models/room/IRoom.store";
 import { Form, Input, Mentions } from "antd";
 import { useAppSelector } from "@/hooks/store.hook";
 import { filteredUsersSelector } from "@/store/selectors/filteredUsersSelector";
@@ -21,7 +21,7 @@ const STAGES: IStages = {
 const COUNT_STAGES = Object.keys(STAGES).length;
 
 interface IProps {
-    onOk: (roomInfo: TCreateRoom) => void;
+    onOk: (roomInfo: TCreateGroupRoom) => void;
     onCloseModal: () => void;
     isOpen: boolean;
 }

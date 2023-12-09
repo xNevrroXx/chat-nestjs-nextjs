@@ -6,9 +6,9 @@ import {
     IDeletedMessageSocket,
     TPinnedMessagesSocket,
     IForwardedMessage
-} from "@/models/IStore/IRoom";
+} from "@/models/room/IRoom.store";
 import {TValueOf} from "@/models/TUtils";
-import {IUserDto} from "@/models/IStore/IAuthentication";
+import {IUserDto} from "@/models/auth/IAuth.store";
 
 const setUserId = createAction<TValueOf<Pick<IUserDto, "id">>>("room/set-user-id");
 const handleMessageSocket = createAction<IMessage>("room/socket:handle-message");

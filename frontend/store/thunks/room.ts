@@ -18,11 +18,11 @@ import {
     IEditMessage,
     IForwardMessage,
     IPinMessage,
-    IRoom, TCreateRoom,
+    IRoom, TCreateGroupRoom,
     TSendMessage,
     TSendUserTyping,
     TPreviewExistingRoom
-} from "@/models/IStore/IRoom";
+} from "@/models/room/IRoom.store";
 import {RootState} from "@/store";
 
 const createSocketInstance = createAsyncThunk<SocketIOService, string, { state: RootState }>(
@@ -51,7 +51,7 @@ const connectSocket = createAsyncThunk<void, void, { state: RootState }>(
             socket?.on("room:toggle-typing", (data) => {
                 thunkApi.dispatch(handleChangeUserTypingSocket(data));
             });
-            socket?.on("message", (data) => {
+            socket?.on("message:standard", (data) => {
                 thunkApi.dispatch(handleMessageSocket(data));
             });
             socket?.on("message:pinned", (data) => {
@@ -94,7 +94,7 @@ const sendMessageSocket = createAsyncThunk<void, TSendMessage, { state: RootStat
                 throw new Error("There is no socket");
             }
 
-            socket.emit("message", [data]);
+            socket.emit("message:standard", [data]);
             return;
         } catch (error) {
             return thunkAPI.rejectWithValue(error);
@@ -199,7 +199,7 @@ const getAll = createAsyncThunk(
     }
 );
 
-const createRoom = createAsyncThunk<IRoom, TCreateRoom>(
+const createRoom = createAsyncThunk<IRoom, TCreateGroupRoom>(
     "room/create",
     async (newRoomData, thunkAPI) => {
         try {

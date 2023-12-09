@@ -10,7 +10,7 @@ import {messageOwnerSelector} from "@/store/selectors/messageOwnerSelector";
 import {
     IInnerMessage,
     IInnerForwardedMessage, checkIsInnerMessage
-} from "@/models/IStore/IRoom";
+} from "@/models/room/IRoom.store";
 // styles
 import "./message-reply.scss";
 

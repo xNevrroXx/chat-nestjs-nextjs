@@ -29,6 +29,35 @@ export class ParticipantService {
             include,
         });
     }
+    async update<T extends Prisma.ParticipantInclude>(params: {
+        where: Prisma.ParticipantWhereUniqueInput;
+        data: Prisma.ParticipantUpdateInput;
+        include?: T;
+    }): Promise<
+        Prisma.ParticipantGetPayload<{ include: T }> | Participant | null
+    > {
+        const { where, data, include } = params;
+
+        return this.prisma.participant.update({
+            where,
+            data,
+            include,
+        });
+    }
+
+    async create<T extends Prisma.ParticipantInclude>(params: {
+        data: Prisma.ParticipantCreateInput;
+        include?: T;
+    }): Promise<
+        Prisma.ParticipantGetPayload<{ include: T }> | Participant | null
+    > {
+        const { data, include } = params;
+
+        return this.prisma.participant.create({
+            data,
+            include,
+        });
+    }
 
     normalize(
         participant: Prisma.ParticipantGetPayload<{

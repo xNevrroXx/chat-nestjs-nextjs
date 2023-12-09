@@ -2,9 +2,9 @@ import { FC, useMemo } from "react";
 // own modules
 import DialogCard from "@/components/DialogCard/DialogCard";
 // types
-import { IRoom, TPreviewExistingRoom } from "@/models/IStore/IRoom";
+import { IRoom, TPreviewExistingRoom } from "@/models/room/IRoom.store";
 import {TValueOf} from "@/models/TUtils";
-import {IUserDto} from "@/models/IStore/IAuthentication";
+import {IUserDto} from "@/models/auth/IAuth.store";
 // styles
 
 

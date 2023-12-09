@@ -12,9 +12,9 @@ import {AxiosRequestConfig} from "axios";
 import { Button, Divider, Flex, Input, Layout, Space, theme, Typography } from "antd";
 import { PlusCircleOutlined } from "@ant-design/icons";
 // own modules
-import {IUserDto} from "@/models/IStore/IAuthentication";
+import {IUserDto} from "@/models/auth/IAuth.store";
 import {TValueOf} from "@/models/TUtils";
-import { IRoom, TPreviewExistingRoom } from "@/models/IStore/IRoom";
+import { IRoom, TPreviewExistingRoom } from "@/models/room/IRoom.store";
 import {useAppSelector} from "@/hooks/store.hook";
 import {filteredRoomsSelector} from "@/store/selectors/filteredRoomsSelector";
 import {FetchingStatus, useFetch} from "@/hooks/useFetch.hook";
@@ -72,7 +72,7 @@ const Dialogs: FC<IDialogsProps> = ({user, activeRoomId, onChangeRoom, onJoinRoo
     }, []);
 
     const onJoinRoom = useCallback((room: TPreviewExistingRoom) => {
-        setDialogQueryString("");
+        // setDialogQueryString("");
         onJoinRoomProp(room);
     }, [onJoinRoomProp]);
 

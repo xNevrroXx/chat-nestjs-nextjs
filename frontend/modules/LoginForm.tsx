@@ -8,7 +8,7 @@ import { toFormikValidationSchema } from "zod-formik-adapter";
 // own modules
 import SubmitButton from "@/components/SubmitButton/SubmitButton";
 import { loginUserValidation } from "@/validation";
-import { TLoginFormData } from "@/models/IStore/IAuthentication";
+import { TLoginFormData } from "@/models/auth/IAuth.store";
 import { TValueOf } from "@/models/TUtils";
 import { useAppDispatch } from "@/hooks/store.hook";
 import { login } from "@/store/thunks/authentication";

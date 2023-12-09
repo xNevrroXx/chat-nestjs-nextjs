@@ -8,7 +8,7 @@ import {PauseCircleOutlined} from "@ant-design/icons";
 import PlayCircleOutlined from "@/icons/PlayCircleOutlined";
 // styles
 import "./audio-element.scss";
-import {IFile} from "@/models/IStore/IRoom";
+import {IFile} from "@/models/room/IRoom.store";
 import {TValueOf} from "@/models/TUtils";
 
 const {useToken} = theme;

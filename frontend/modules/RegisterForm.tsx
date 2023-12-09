@@ -2,7 +2,7 @@
 
 import {Button, Form, FormItemProps, Input, Select} from "antd";
 import {useFormik} from "formik";
-import {IUserAuth, Sex, TRegisterFormData} from "@/models/IStore/IAuthentication";
+import {IUserAuth, Sex, TRegisterFormData} from "@/models/auth/IAuth.store";
 import {toFormikValidationSchema} from "zod-formik-adapter";
 import {registerUserValidation} from "@/validation";
 import {TValueOf} from "@/models/TUtils";

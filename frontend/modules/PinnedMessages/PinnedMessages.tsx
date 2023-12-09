@@ -1,6 +1,6 @@
 import {FC, useState} from "react";
 import {TValueOf} from "../../models/TUtils.ts";
-import {IRoom} from "../../models/IStore/IRoom.ts";
+import {IRoom} from "../../models/room/IRoom.store.ts";
 // styles
 import "./pinned-messages.scss";
 

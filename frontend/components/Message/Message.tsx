@@ -13,8 +13,8 @@ import ForwardOutlined from "@/icons/ForwardOutlined";
 import VideoPlayer from "@/components/VideoPlayer/VideoPlayer";
 import Time from "@/components/Time/Time";
 // types
-import {checkIsMessage, IFile, IForwardedMessage, IMessage} from "@/models/IStore/IRoom";
-import {IKnownAndUnknownFiles} from "@/models/IRoom";
+import {checkIsMessage, IFile, IForwardedMessage, IMessage} from "@/models/room/IRoom.store";
+import {IKnownAndUnknownFiles} from "@/models/room/IRoom.general";
 // styles
 import "./message.scss";
 

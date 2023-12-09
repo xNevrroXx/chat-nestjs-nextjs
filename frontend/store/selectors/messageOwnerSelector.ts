@@ -5,8 +5,8 @@ import {
     IInnerForwardedMessage,
     IInnerMessage,
     IMessage,
-} from "@/models/IStore/IRoom";
-import {IUserDto} from "@/models/IStore/IAuthentication";
+} from "@/models/room/IRoom.store";
+import {IUserDto} from "@/models/auth/IAuth.store";
 
 const messageOwnerSelector = createSelector(
     [

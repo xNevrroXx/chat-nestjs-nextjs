@@ -2,13 +2,13 @@ import {AxiosResponse} from "axios";
 // own modules
 import $api from "../http";
 // types
-import type {TUsersResponse} from "../models/IResponse/IUsersResponse.ts";
+import type {IUsersResponse} from "../models/users/IUser.response.ts";
 
 class UsersService {
     protected static base = "/user";
 
-    static async getAll(): Promise<AxiosResponse<TUsersResponse>> {
-        return $api.get<TUsersResponse>(this.base + "/all");
+    static async getAll(): Promise<AxiosResponse<IUsersResponse>> {
+        return $api.get<IUsersResponse>(this.base + "/all");
     }
 }
 

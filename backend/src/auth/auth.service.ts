@@ -37,7 +37,6 @@ export class AuthService {
             throw new UnauthorizedException();
         }
 
-        // to find the session info in the database - we have to unsign this one(like in express-session package) and get tre truthy session.id
         const sessionId = signedSession.slice(2).replace(/\..+/, "");
         const session = await this.sessionService.findOne({
             sid: sessionId,

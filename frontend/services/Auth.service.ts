@@ -2,8 +2,8 @@ import axios, {type AxiosResponse} from "axios";
 // own modules
 import $api, {API_URL} from "@/http";
 // types
-import type {IAuthResponse} from "@/models/IResponse/IAuthResponse";
-import type {IUserAuth} from "@/models/IStore/IAuthentication";
+import type {IAuthResponse} from "@/models/auth/IAuth.response";
+import type {IUserAuth} from "@/models/auth/IAuth.store";
 
 class AuthService {
     protected static base = "/auth";

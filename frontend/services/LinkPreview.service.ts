@@ -1,5 +1,5 @@
 import axios, {AxiosResponse} from "axios";
-import {ILinkPreviewInfo} from "../models/IResponse/ILinkPreviewInfo.ts";
+import {ILinkPreviewInfo} from "../models/other/ILinkPreviewInfo.ts";
 import {API_URL} from "../http";
 
 class LinkPreviewService {

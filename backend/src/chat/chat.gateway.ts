@@ -59,16 +59,17 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
     async handleConnection(@ConnectedSocket() client: Socket) {
-        const userId = await this.authService.verify(
+        const userInfo = await this.authService.verify(
             client.handshake.headers.sessionid as string
         );
+        this.socketRoomsInfo.initConnection(userInfo.id, client.id);
 
         const userRooms = await this.roomService.findMany({
             where: {
                 participants: {
                     some: {
                         userId: {
-                            equals: userId.id,
+                            equals: userInfo.id,
                         },
                     },
                 },
@@ -76,12 +77,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         });
 
         const userOnline = await this.userService.updateOnlineStatus({
-            userId: userId.id,
+            userId: userInfo.id,
             isOnline: true,
         });
 
         userRooms.forEach((room) => {
-            this.socketRoomsInfo.join(room.id, userId.id, client.id);
+            this.socketRoomsInfo.join(room.id, userInfo.id, client.id);
             client.join(room.id);
 
             client.broadcast.to(room.id).emit("user:toggle-online", userOnline);
@@ -89,7 +90,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
     async handleDisconnect(@ConnectedSocket() client) {
-        const { userId, roomIDs } = this.socketRoomsInfo.leave(client.id);
+        const userToRoomInfo = this.socketRoomsInfo.leave(client.id);
+        if (!userToRoomInfo) {
+            return;
+        }
+        const { userId, roomIDs } = userToRoomInfo;
 
         const userOnline = await this.userService.updateOnlineStatus({
             userId: userId,
@@ -297,7 +302,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     @UseGuards(WsAuthGuard)
     @SubscribeMessage("message:edit")
-    async handleEditedMessage(
+    async handleEditMessage(
         @ConnectedSocket() client,
         @MessageBody() message: TNewEditedMessage
     ) {
@@ -359,7 +364,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
             throw new WsException("Не найден отправитель сообщения");
         }
         const room = await this.roomService.findOne({
-            id: message.roomId,
+            where: { id: message.roomId },
         });
         if (!room) {
             throw new WsException("Комната не найдена");
@@ -429,7 +434,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
     @UseGuards(WsAuthGuard)
-    @SubscribeMessage("message")
+    @SubscribeMessage("message:standard")
     async handleMessage(
         @ConnectedSocket() client,
         @MessageBody() message: TNewMessage
@@ -451,7 +456,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         }
 
         const room = await this.roomService.findOne({
-            id: message.roomId,
+            where: { id: message.roomId },
         });
         if (!room) {
             throw new WsException("Комната не найдена");
@@ -567,6 +572,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
             newMessage
         );
 
-        this.server.to(message.roomId).emit("message", normalizedMessage);
+        this.server
+            .to(message.roomId)
+            .emit("message:standard", normalizedMessage);
     }
 }

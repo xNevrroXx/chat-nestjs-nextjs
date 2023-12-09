@@ -2,7 +2,7 @@ import {createSlice} from "@reduxjs/toolkit";
 // actions
 import {getAll} from "@/store/thunks/users";
 // types
-import type {IUsers} from "@/models/IStore/IUsers";
+import type {IUsers} from "@/models/users/IUsers.store";
 import {handleChangeUserOnlineSocket} from "@/store/actions/users";
 
 

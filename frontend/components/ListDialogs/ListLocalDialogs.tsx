@@ -2,10 +2,10 @@ import {FC, useCallback, useMemo} from "react";
 // own modules
 import DialogCard from "@/components/DialogCard/DialogCard";
 // types
-import {checkIsMessage, IForwardedMessage, IMessage, IRoom} from "@/models/IStore/IRoom";
+import {checkIsMessage, IForwardedMessage, IMessage, IRoom} from "@/models/room/IRoom.store";
 import {TValueOf} from "@/models/TUtils";
-import {IUserDto} from "@/models/IStore/IAuthentication";
-import {ILastMessageInfo} from "@/models/IRoom";
+import {IUserDto} from "@/models/auth/IAuth.store";
+import {ILastMessageInfo} from "@/models/room/IRoom.general";
 // styles
 
 interface IDialogsProps {

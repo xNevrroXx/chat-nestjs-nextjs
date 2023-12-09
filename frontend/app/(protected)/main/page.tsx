@@ -10,7 +10,7 @@ import Dialogs from "@/modules/Dialogs/Dialogs";
 // selectors & actions
 import { createRoom, forwardMessageSocket, joinRoom } from "@/store/thunks/room";
 // own types
-import type {IForwardMessage, IRoom, TPreviewExistingRoom} from "@/models/IStore/IRoom";
+import type {IForwardMessage, IRoom, TPreviewExistingRoom} from "@/models/room/IRoom.store";
 import type {TValueOf} from "@/models/TUtils";
 // styles
 import "./main.scss";
@@ -18,7 +18,7 @@ import {createRoute} from "@/router/createRoute";
 import {ROUTES} from "@/router/routes";
 import {useRouter} from "next/navigation";
 import CreateGroupModal from "@/modules/CreateGroupModal/CreateGroupModal";
-import { TCreateRoom } from "@/models/IStore/IRoom";
+import { TCreateGroupRoom } from "@/models/room/IRoom.store";
 
 const {Content} = Layout;
 
@@ -28,7 +28,7 @@ const Main = () => {
     const dispatch = useAppDispatch();
     const user = useAppSelector(state => state.authentication.user!);
     const rooms = useAppSelector(state => state.room.rooms);
-    const [activeRoom, setActiveRoom] = useState<IRoom | null>(null);
+    const [activeRoom, setActiveRoom] = useState<IRoom | TPreviewExistingRoom | null>(null);
     const [isOpenModalToForwardMessage, setIsOpenModalToForwardMessage] = useState<boolean>(false);
     const [isOpenModalToCreateGroup, setIsOpenModalToCreateGroup] = useState<boolean>(false);
     const [forwardedMessageId, setForwardedMessageId] = useState<TValueOf<Pick<IForwardMessage, "forwardedMessageId">> | null>(null);
@@ -54,19 +54,19 @@ const Main = () => {
 
     const onJoinRoom = useCallback(async (remoteRoom: TPreviewExistingRoom) => {
         try {
-            const actionResult = await dispatch(joinRoom(remoteRoom));
-            if (actionResult.meta.requestStatus === "rejected") {
-                throw new Error();
-            }
-            const newRoom = actionResult.payload as IRoom;
-            setActiveRoom(newRoom);
+            // const actionResult = await dispatch(joinRoom(remoteRoom));
+            // if (actionResult.meta.requestStatus === "rejected") {
+            //     throw new Error();
+            // }
+            // const newRoom = actionResult.payload as IRoom;
+            setActiveRoom(remoteRoom);
         }
         catch (error) {
             return;
         }
-    }, [dispatch]);
+    }, []);
 
-    const onCreateRoom = useCallback(async (remoteRoom: TCreateRoom) => {
+    const onCreateRoom = useCallback(async (remoteRoom: TCreateGroupRoom) => {
         try {
             const actionResult = await dispatch(createRoom(remoteRoom));
             if (actionResult.meta.requestStatus === "rejected") {
@@ -137,7 +137,7 @@ const Main = () => {
             </Modal>
 
             <CreateGroupModal
-                onOk={(roomInfo: TCreateRoom) => onCreateRoom(roomInfo)}
+                onOk={(roomInfo: TCreateGroupRoom) => onCreateRoom(roomInfo)}
                 onCloseModal={closeModalToCreateGroup}
                 isOpen={isOpenModalToCreateGroup}
             />

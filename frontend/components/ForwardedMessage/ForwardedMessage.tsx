@@ -6,7 +6,7 @@ import {useAppSelector} from "@/hooks/store.hook";
 import classNames from "classnames";
 // own modules
 import {messageOwnerSelector} from "@/store/selectors/messageOwnerSelector";
-import {IForwardedMessage} from "@/models/IStore/IRoom";
+import {IForwardedMessage} from "@/models/room/IRoom.store";
 // styles
 import "./forwarded-message.scss";
 

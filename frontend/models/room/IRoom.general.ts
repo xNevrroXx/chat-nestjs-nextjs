@@ -1,4 +1,4 @@
-import {IFile, IForwardedMessage, IMessage} from "@/models/IStore/IRoom";
+import {IFile, IForwardedMessage, IMessage} from "@/models/room/IRoom.store";
 
 export interface ILastMessageInfo {
     sender: string,

@@ -15,7 +15,12 @@ import { MessageService } from "../message/message.service";
 import { ParticipantService } from "../participant/participant.service";
 import { Prisma, Room, RoomType, User } from "@prisma/client";
 import { UserService } from "../user/user.service";
-import { IRoom, TNewRoom, TRoomPreview } from "./IRooms";
+import {
+    IRoom,
+    PrismaIncludeFullRoomInfo,
+    TNewRoom,
+    TRoomPreview,
+} from "./IRooms";
 import { TMessage } from "../message/IMessage";
 import { DatabaseService } from "../database/database.service";
 import { IUserSessionPayload } from "../user/IUser";
@@ -55,104 +60,19 @@ export class RoomController {
                     },
                 },
             },
-            include: {
-                participants: {
-                    include: {
-                        user: {
-                            include: {
-                                userOnline: true,
-                                userTyping: true,
-                            },
-                        },
-                    },
-                },
-            },
+            include: PrismaIncludeFullRoomInfo,
         })) as Prisma.RoomGetPayload<{
-            include: {
-                participants: {
-                    include: {
-                        user: {
-                            include: {
-                                userOnline: true;
-                                userTyping: true;
-                            };
-                        };
-                    };
-                };
-            };
+            include: typeof PrismaIncludeFullRoomInfo;
         }>;
 
-        const normalizedParticipants = newRoom.participants
-            .filter((participant) => participant.userId !== userInfo.id)
-            .map(this.participantService.normalize);
-
-        return {
-            ...newRoom,
-            participants: normalizedParticipants,
-            messages: [],
-            pinnedMessages: [],
-        } as IRoom;
+        return await this.roomService.normalize(userInfo.id, newRoom);
     }
 
     @Post("join")
     @UseGuards(AuthGuard)
-    async join(@Req() request, @Body() { id, type }: TRoomPreview) {
+    async join(@Req() request, @Body() roomInfo: TRoomPreview) {
         const userInfo = request.user;
-
-        const newRoom = (await this.roomService.create({
-            data: {
-                type,
-                participants: {
-                    createMany: {
-                        data: [
-                            {
-                                userId: userInfo.id,
-                            },
-                            {
-                                userId: id,
-                            },
-                        ],
-                    },
-                },
-            },
-            include: {
-                participants: {
-                    include: {
-                        user: {
-                            include: {
-                                userOnline: true,
-                                userTyping: true,
-                            },
-                        },
-                    },
-                },
-            },
-        })) as Prisma.RoomGetPayload<{
-            include: {
-                participants: {
-                    include: {
-                        user: {
-                            include: {
-                                userOnline: true;
-                                userTyping: true;
-                            };
-                        };
-                    };
-                };
-            };
-        }>;
-
-        const normalizedParticipants = newRoom.participants
-            .filter((participant) => participant.userId !== userInfo.id)
-            .map(this.participantService.normalize);
-
-        return {
-            ...newRoom,
-            name: normalizedParticipants[0].nickname,
-            participants: normalizedParticipants,
-            messages: [],
-            pinnedMessages: [],
-        } as IRoom;
+        return await this.roomService.joinRoom(userInfo.id, roomInfo);
     }
 
     @Get("all")
@@ -172,139 +92,14 @@ export class RoomController {
                     },
                 },
             },
-            include: {
-                participants: {
-                    include: {
-                        user: {
-                            include: {
-                                userOnline: true,
-                                userTyping: true,
-                            },
-                        },
-                    },
-                },
-                usersTyping: true,
-                creatorUser: true,
-                pinnedMessages: {
-                    include: {
-                        message: true,
-                    },
-                },
-                messages: {
-                    include: {
-                        files: true,
-                        replyToMessage: {
-                            include: {
-                                files: true,
-                            },
-                        },
-                        forwardedMessage: {
-                            include: {
-                                files: true,
-                                replyToMessage: {
-                                    include: {
-                                        files: true,
-                                    },
-                                },
-                            },
-                        },
-                        usersDeletedThisMessage: true,
-                    },
-                    orderBy: {
-                        createdAt: "asc",
-                    },
-                },
-            },
+            include: PrismaIncludeFullRoomInfo,
         })) as Prisma.RoomGetPayload<{
-            include: {
-                participants: {
-                    include: {
-                        user: {
-                            include: {
-                                userOnline: true;
-                                userTyping: true;
-                            };
-                        };
-                    };
-                };
-                usersTyping: true;
-                creatorUser: true;
-                pinnedMessages: {
-                    include: {
-                        message: true;
-                    };
-                };
-                messages: {
-                    include: {
-                        files: true;
-                        replyToMessage: {
-                            include: {
-                                files: true;
-                            };
-                        };
-                        forwardedMessage: {
-                            include: {
-                                files: true;
-                                replyToMessage: {
-                                    include: {
-                                        files: true;
-                                    };
-                                };
-                            };
-                        };
-                        usersDeletedThisMessage: true;
-                    };
-                };
-            };
+            include: typeof PrismaIncludeFullRoomInfo;
         }>[];
 
         const normalizedRoomPromises: Promise<IRoom>[] = unnormalizedRooms.map(
-            async (unnormalizedRoom) => {
-                const normalizedMessages =
-                    await unnormalizedRoom.messages.reduce<Promise<TMessage[]>>(
-                        async (prevPromise, unnormalizedMessage) => {
-                            const prev = await prevPromise;
-
-                            const normalizedMessage =
-                                await this.messageService.normalize(
-                                    userPayload.id,
-                                    unnormalizedMessage
-                                );
-
-                            prev.push(normalizedMessage);
-                            return prev;
-                        },
-                        Promise.resolve([])
-                    );
-
-                const normalizedParticipants = unnormalizedRoom.participants
-                    .filter(
-                        (participant) => participant.userId !== userPayload.id
-                    )
-                    .map(this.participantService.normalize);
-
-                let roomName: string;
-                if (unnormalizedRoom.type === RoomType.GROUP) {
-                    roomName = unnormalizedRoom.name;
-                } else {
-                    roomName = normalizedParticipants[0].nickname;
-                }
-
-                return {
-                    ...unnormalizedRoom,
-                    name: roomName,
-                    participants: normalizedParticipants,
-                    messages: normalizedMessages,
-                    pinnedMessages: unnormalizedRoom.pinnedMessages.map(
-                        (pinnedMessage) => {
-                            return {
-                                id: pinnedMessage.id,
-                                messageId: pinnedMessage.messageId,
-                                text: pinnedMessage.message.text,
-                            };
-                        }
-                    ),
-                };
+            (room) => {
+                return this.roomService.normalize(userPayload.id, room);
             }
         );
 
@@ -370,10 +165,19 @@ export class RoomController {
 
         const roomsAndUsers = users
             .map<TRoomPreview>((user) => {
+                // Here we have the FAKE room id, because we don't have the private room with this user,
+                // so we use the user interlocutor id
                 return {
                     id: user.id,
                     name: user.displayName,
                     type: RoomType.PRIVATE,
+                    participants: [
+                        {
+                            userId: user.id,
+                        },
+                    ],
+                    pinnedMessages: [],
+                    messages: [],
                 };
             })
             .concat(

@@ -9,10 +9,10 @@ import React, {
 import classNames from "classnames";
 // own modules
 import Message from "@/HOC/Message";
-import {IUserDto} from "@/models/IStore/IAuthentication";
-import {IForwardMessage, IRoom} from "../../models/IStore/IRoom";
+import {IUserDto} from "@/models/auth/IAuth.store";
+import { IForwardMessage, IRoom, TPreviewExistingRoom } from "@/models/room/IRoom.store";
 import {TValueOf} from "@/models/TUtils";
-import {TMessageForAction} from "@/models/IRoom";
+import {TMessageForAction} from "@/models/room/IRoom.general";
 // styles
 import "./room-content.scss";
 
@@ -20,7 +20,7 @@ import "./room-content.scss";
 interface IChatContentProps {
     className?: string,
     user: IUserDto;
-    room: IRoom,
+    room: IRoom | TPreviewExistingRoom,
     isNeedScrollToLastMessage: RefObject<boolean>,
     onChooseMessageForAction: (messageForAction: TMessageForAction) => void,
     onOpenUsersListForForwardMessage: (forwardedMessageId: TValueOf<Pick<IForwardMessage, "forwardedMessageId">>) => void

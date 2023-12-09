@@ -1,4 +1,4 @@
-import {IFile} from "@/models/IStore/IRoom";
+import {IFile} from "@/models/room/IRoom.store";
 import ReactPlayer from "react-player";
 // styles
 import "./video-player.scss";

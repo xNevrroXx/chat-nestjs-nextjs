@@ -13,7 +13,7 @@ import {
     IAttachment,
     TSendMessage,
     IEditMessage, IMessage, IForwardedMessage
-} from "@/models/IStore/IRoom";
+} from "@/models/room/IRoom.store";
 import {TValueOf} from "@/models/TUtils";
 // styles
 import "./input-message.scss";

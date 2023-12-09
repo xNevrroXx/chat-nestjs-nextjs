@@ -3,7 +3,7 @@ import {Flex, Typography, theme} from "antd";
 import * as classNames from "classnames";
 import emojiParser from "universal-emoji-parser";
 // own modules
-import {TPinnedMessage} from "../../models/IStore/IRoom.ts";
+import {TPinnedMessage} from "../../models/room/IRoom.store.ts";
 // styles
 import "./pinned-message.scss";
 import {Interweave} from "interweave";

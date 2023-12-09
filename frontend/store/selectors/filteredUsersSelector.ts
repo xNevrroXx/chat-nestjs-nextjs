@@ -2,7 +2,7 @@
 
 import { createSelector } from "@reduxjs/toolkit";
 import { RootState } from "@/store";
-import { RoomType, TPreviewExistingRoom } from "@/models/IStore/IRoom";
+import { RoomType, TPreviewExistingRoom } from "@/models/room/IRoom.store";
 
 const filteredUsersSelector = createSelector(
     [

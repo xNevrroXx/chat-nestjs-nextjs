@@ -1,5 +1,5 @@
 import {z as zod} from "zod";
-import {Sex, TLoginFormData, TRegisterFormData} from "@/models/IStore/IAuthentication";
+import {Sex, TLoginFormData, TRegisterFormData} from "@/models/auth/IAuth.store";
 
 const passwordValidation =
     zod.string({required_error: "Обязательное поле"})

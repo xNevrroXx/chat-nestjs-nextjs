@@ -2,9 +2,9 @@ import {createSlice} from "@reduxjs/toolkit";
 // actions
 import {login, logout, checkAuthentication} from "@/store/thunks/authentication";
 // types
-import type {IAuthentication} from "@/models/IStore/IAuthentication";
+import type {IAuth} from "@/models/auth/IAuth.store";
 
-const initialState: IAuthentication = {
+const initialState: IAuth = {
     user: null,
     isAuthenticated: false
 };

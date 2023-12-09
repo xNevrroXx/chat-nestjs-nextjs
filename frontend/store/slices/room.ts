@@ -1,6 +1,6 @@
 import {createSlice} from "@reduxjs/toolkit";
 // interfaces
-import {IRoomSlice} from "@/models/IStore/IRoom";
+import {IRoomSlice} from "@/models/room/IRoom.store";
 // actions
 import {
     getAll,

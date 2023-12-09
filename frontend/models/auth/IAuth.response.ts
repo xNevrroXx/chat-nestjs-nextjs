@@ -1,4 +1,4 @@
-import {IUserDto} from "../IStore/IAuthentication.ts";
+import {IUserDto} from "@/models/auth/IAuth.store";
 
 export interface IAuthResponse {
     accessToken: string,

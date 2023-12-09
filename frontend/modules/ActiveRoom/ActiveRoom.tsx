@@ -6,7 +6,7 @@ import {useScrollTrigger} from "@/hooks/useScrollTrigger.hook";
 import RoomContent from "@/components/RoomContent/RoomContent";
 import InputMessage from "@/modules/InputMessage/InputMessage";
 import ScrollDownButton from "@/components/ScrollDownButton/ScrollDownButton";
-import type {IUserDto} from "@/models/IStore/IAuthentication";
+import type {IUserDto} from "@/models/auth/IAuth.store";
 import type {TValueOf} from "@/models/TUtils";
 import {
     FileType,
@@ -14,10 +14,10 @@ import {
     IEditMessage,
     IForwardMessage,
     IRoom,
-    RoomType,
+    RoomType, TPreviewExistingRoom,
     TSendMessage
-} from "@/models/IStore/IRoom";
-import {MessageAction, TMessageForAction} from "@/models/IRoom";
+} from "@/models/room/IRoom.store";
+import {MessageAction, TMessageForAction} from "@/models/room/IRoom.general";
 import PinnedMessages from "../PinnedMessages/PinnedMessages";
 // actions
 import {useAppDispatch, useAppSelector} from "@/hooks/store.hook";
@@ -37,7 +37,7 @@ const {Text, Title} = Typography;
 
 interface IActiveChatProps {
     user: IUserDto;
-    room: IRoom | null
+    room: IRoom | TPreviewExistingRoom | null
     openModalToForwardMessage: (forwardedMessageId: TValueOf<Pick<IForwardMessage, "forwardedMessageId">>) => void;
 }
 

@@ -18,12 +18,19 @@ interface ISocketIDsToClientInfo {
 }
 
 class SocketRoomsInfo {
-    private readonly _data: ISocketRoomsInfo;
+    private readonly _roomIDsToUserInfo: ISocketRoomsInfo;
     private readonly _socketIDsToUserIDs: ISocketIDsToClientInfo;
 
     constructor() {
-        this._data = {};
+        this._roomIDsToUserInfo = {};
         this._socketIDsToUserIDs = {};
+    }
+
+    initConnection(userId: string, socketId: string): void {
+        this._socketIDsToUserIDs[socketId] = {
+            userId: userId,
+            roomIDs: new Set<TSocketIORoomID>(),
+        };
     }
 
     /**
@@ -33,8 +40,8 @@ class SocketRoomsInfo {
      * @param {string} socketId - user's socket id;
      * */
     join(roomId: string, userId: string, socketId: string) {
-        this._data[roomId] = {
-            ...this._data[roomId],
+        this._roomIDsToUserInfo[roomId] = {
+            ...this._roomIDsToUserInfo[roomId],
             [userId]: socketId,
         };
         const isExistClient = !!this._socketIDsToUserIDs[socketId];
@@ -62,7 +69,7 @@ class SocketRoomsInfo {
         const { userId, roomIDs } = this._socketIDsToUserIDs[socketId];
 
         roomIDs.forEach((roomId) => {
-            delete this._data[roomId][userId];
+            delete this._roomIDsToUserInfo[roomId][userId];
         });
         delete this._socketIDsToUserIDs[socketId];
 
@@ -74,7 +81,7 @@ class SocketRoomsInfo {
      * @return {IUserIDsToSocketIDs} the object which contains user IDs and their rooms.
      * */
     getRoomInfo(roomId: string): Readonly<IUserIDsToSocketIDs> {
-        return this._data[roomId];
+        return this._roomIDsToUserInfo[roomId];
     }
 }
 

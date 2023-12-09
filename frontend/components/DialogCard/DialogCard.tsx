@@ -5,10 +5,10 @@ import classNames from "classnames";
 import {Markup} from "interweave";
 import emojiParser from "universal-emoji-parser";
 // own modules
-import {IUserDto} from "@/models/IStore/IAuthentication";
+import {IUserDto} from "@/models/auth/IAuth.store";
 import {TValueOf} from "@/models/TUtils";
-import {IRoom, RoomType} from "@/models/IStore/IRoom";
-import {ILastMessageInfo} from "@/models/IRoom";
+import {IRoom, RoomType} from "@/models/room/IRoom.store";
+import {ILastMessageInfo} from "@/models/room/IRoom.general";
 import clip from "text-clipper";
 // styles
 import "./dialog.scss";

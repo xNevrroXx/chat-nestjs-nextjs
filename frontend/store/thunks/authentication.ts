@@ -7,9 +7,9 @@ import { AuthService } from "@/services/Auth.service";
 import { getAll as getAllUsers } from "@/store/thunks/users";
 import { setUserId } from "@/store/actions/room";
 // types
-import type { IUserAuth, TLoginFormData } from "@/models/IStore/IAuthentication";
+import type { IUserAuth, TLoginFormData } from "@/models/auth/IAuth.store";
 import { connectSocket, createSocketInstance, disconnectSocket, getAll as getAllChats } from "@/store/thunks/room";
-import { IAuthResponse } from "@/models/IResponse/IAuthResponse";
+import { IAuthResponse } from "@/models/auth/IAuth.response";
 import { RootState } from "@/store";
 import { getCookie } from "@/utils/getCookie";
 

@@ -32,7 +32,7 @@ export type TUserOnline = {
     updatedAt: string | undefined
 }
 
-export interface IAuthentication {
+export interface IAuth {
     user: IUserDto | null,
     isAuthenticated: boolean
 }

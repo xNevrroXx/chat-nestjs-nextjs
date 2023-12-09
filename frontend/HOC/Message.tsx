@@ -2,15 +2,15 @@ import React, {FC, useCallback, useEffect, useMemo, useState} from "react";
 // own modules
 import DumbMessage from "@/components/Message/Message";
 // types
-import {checkIsMessage, FileType, IForwardedMessage, IMessage} from "@/models/IStore/IRoom";
-import {IUserDto} from "@/models/IStore/IAuthentication";
+import {checkIsMessage, FileType, IForwardedMessage, IMessage} from "@/models/room/IRoom.store";
+import {IUserDto} from "@/models/auth/IAuth.store";
 import {TValueOf} from "@/models/TUtils";
 import {
     IKnownAndUnknownFiles,
     MessageAction,
     TAttachmentType,
     TMessageForAction
-} from "@/models/IRoom";
+} from "@/models/room/IRoom.general";
 
 type TMessageProps = {
     userId: TValueOf<Pick<IUserDto, "id">>;

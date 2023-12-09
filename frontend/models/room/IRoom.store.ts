@@ -1,7 +1,7 @@
-import {IUserDto} from "@/models/IStore/IAuthentication";
+import {IUserDto} from "@/models/auth/IAuth.store";
 import {TValueOf} from "@/models/TUtils";
 import {SocketIOService} from "@/services/SocketIO.service";
-import {ILinkPreviewInfo} from "@/models/IResponse/ILinkPreviewInfo";
+import {ILinkPreviewInfo} from "@/models/other/ILinkPreviewInfo";
 
 
 export enum FileType {
@@ -102,7 +102,7 @@ export interface IFile {
 }
 
 // HTTP response types
-export type TPreviewExistingRoom = Pick<IRoom, "id" | "name" | "type">
+export type TPreviewExistingRoom = Omit<IRoom, "createdAt" | "updatedAt">
 
 export interface IEditedMessageSocket extends IEditMessage {
     roomId: TValueOf<Pick<IRoom, "id">>,
@@ -122,16 +122,11 @@ export interface IDeletedMessageSocket {
 
 
 // only client types(without responses) to send data
-export type TCreateRoom = TCreatePrivateRoom | TCreateGroupRoom;
 export type TCreateGroupRoom = {
     name: TValueOf<Pick<IRoom, "name">>,
     type: RoomType.GROUP,
     memberIds: TValueOf<Pick<IUserDto, "id">>[]
 }
-export type TCreatePrivateRoom = {
-    type: RoomType.PRIVATE,
-    memberIds: [TValueOf<Pick<IUserDto, "id">>]
-};
 
 export type TSendUserTyping = Omit<IUserTyping, "updatedAt" | "userId">
 
