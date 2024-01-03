@@ -4,7 +4,8 @@
         "plugin:@typescript-eslint/recommended",
         "plugin:@typescript-eslint/recommended-requiring-type-checking",
         "plugin:react-hooks/recommended",
-        "next/core-web-vitals"
+        "next/core-web-vitals",
+        "plugin:prettier/recommended"
     ],
     "parserOptions": {
         "ecmaVersion": "latest",
@@ -12,13 +13,24 @@
         "project": true
     },
     "rules": {
-        "semi": [
+        "@typescript-eslint/naming-convention": [
             "error",
-            "always"
-        ],
-        "quotes": [
-            "error",
-            "double"
+            {
+                "selector": "interface",
+                "format": ["PascalCase"],
+                "custom": {
+                    "regex": "^I[A-Z]",
+                    "match": true
+                }
+            },
+            {
+                "selector": "typeAlias",
+                "format": ["PascalCase"],
+                "custom": {
+                    "regex": "^T[A-Z]",
+                    "match": true
+                }
+            }
         ],
         "no-unused-vars": "off",
         "@typescript-eslint/no-non-null-assertion": "off",

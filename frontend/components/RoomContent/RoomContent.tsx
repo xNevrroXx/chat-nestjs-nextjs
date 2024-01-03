@@ -9,70 +9,87 @@ import React, {
 import classNames from "classnames";
 // own modules
 import Message from "@/HOC/Message";
-import {IUserDto} from "@/models/auth/IAuth.store";
-import { IForwardMessage, IRoom, TPreviewExistingRoom } from "@/models/room/IRoom.store";
-import {TValueOf} from "@/models/TUtils";
-import {TMessageForAction} from "@/models/room/IRoom.general";
+import { IUserDto } from "@/models/auth/IAuth.store";
+import {
+    IForwardMessage,
+    IRoom,
+    TPreviewExistingRoom,
+} from "@/models/room/IRoom.store";
+import { TValueOf } from "@/models/TUtils";
+import { TMessageForAction } from "@/models/room/IRoom.general";
 // styles
 import "./room-content.scss";
 
-
 interface IChatContentProps {
-    className?: string,
+    className?: string;
     user: IUserDto;
-    room: IRoom | TPreviewExistingRoom,
-    isNeedScrollToLastMessage: RefObject<boolean>,
-    onChooseMessageForAction: (messageForAction: TMessageForAction) => void,
-    onOpenUsersListForForwardMessage: (forwardedMessageId: TValueOf<Pick<IForwardMessage, "forwardedMessageId">>) => void
+    room: IRoom | TPreviewExistingRoom;
+    isNeedScrollToLastMessage: RefObject<boolean>;
+    onChooseMessageForAction: (messageForAction: TMessageForAction) => void;
+    onOpenUsersListForForwardMessage: (
+        forwardedMessageId: TValueOf<
+            Pick<IForwardMessage, "forwardedMessageId">
+        >,
+    ) => void;
 }
 
-const RoomContent = forwardRef<HTMLDivElement, IChatContentProps>(({
-                                                                       className,
-                                                                       user,
-                                                                       room,
-                                                                       onChooseMessageForAction,
-                                                                       isNeedScrollToLastMessage,
-                                                                       onOpenUsersListForForwardMessage
-                                                                   }, outerRef) => {
-    const innerRef = useRef<HTMLDivElement | null>(null);
+const RoomContent = forwardRef<HTMLDivElement, IChatContentProps>(
+    (
+        {
+            className,
+            user,
+            room,
+            onChooseMessageForAction,
+            isNeedScrollToLastMessage,
+            onOpenUsersListForForwardMessage,
+        },
+        outerRef,
+    ) => {
+        const innerRef = useRef<HTMLDivElement | null>(null);
 
-    useImperativeHandle(outerRef, () => innerRef.current!, []);
+        useImperativeHandle(outerRef, () => innerRef.current!, []);
 
-    const listMessages = useMemo(() => {
-        if (!room.messages) {
-            return null;
-        }
+        const listMessages = useMemo(() => {
+            if (!room.messages) {
+                return null;
+            }
 
-        return room.messages.map(message => {
-            if (message.isDeleted) return;
-            return (
-                <Message
-                    key={message.id}
-                    userId={user.id}
-                    message={message}
-                    onChooseMessageForAction={onChooseMessageForAction}
-                    onChooseMessageForForward={() => onOpenUsersListForForwardMessage(message.id)}
-                />
-            );
-        });
-    }, [room.messages, user.id, onChooseMessageForAction, onOpenUsersListForForwardMessage]);
+            return room.messages.map((message) => {
+                if (message.isDeleted) return;
+                return (
+                    <Message
+                        key={message.id}
+                        userId={user.id}
+                        message={message}
+                        onChooseMessageForAction={onChooseMessageForAction}
+                        onChooseMessageForForward={() =>
+                            onOpenUsersListForForwardMessage(message.id)
+                        }
+                    />
+                );
+            });
+        }, [
+            room.messages,
+            user.id,
+            onChooseMessageForAction,
+            onOpenUsersListForForwardMessage,
+        ]);
 
-    useEffect(() => {
-        if (!innerRef.current || !isNeedScrollToLastMessage.current) return;
+        useEffect(() => {
+            if (!innerRef.current || !isNeedScrollToLastMessage.current) return;
 
-        innerRef.current.scrollTo(0, innerRef.current.scrollHeight);
-    }, [isNeedScrollToLastMessage, listMessages]);
+            innerRef.current.scrollTo(0, innerRef.current.scrollHeight);
+        }, [isNeedScrollToLastMessage, listMessages]);
 
-    return (
-        <div
-            ref={innerRef}
-            className={classNames("room-content", className)}
-        >
-            <div className="room-content__wrapper">
-                {listMessages}
+        return (
+            <div
+                ref={innerRef}
+                className={classNames("room-content", className)}
+            >
+                <div className="room-content__wrapper">{listMessages}</div>
             </div>
-        </div>
-    );
-});
+        );
+    },
+);
 
 export default RoomContent;

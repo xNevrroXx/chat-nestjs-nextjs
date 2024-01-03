@@ -1,50 +1,66 @@
-import {FC, useEffect, useRef, useState} from "react";
-import {Button, Flex} from "antd";
-import {DeleteOutlined} from "@ant-design/icons";
+import { FC, useEffect, useRef, useState } from "react";
+import { Button, Flex } from "antd";
+import { DeleteOutlined } from "@ant-design/icons";
 import useFileUpload from "react-use-file-upload";
 // own modules
 import InputDuringMessage from "@/components/InputDuringMessage/InputDuringMessage";
 import InputDuringAudio from "@/components/InputDuringAudio/InputDuringAudio";
-import {useAudioRecorder} from "@/hooks/useAudioRecorder.hook";
+import { useAudioRecorder } from "@/hooks/useAudioRecorder.hook";
 import MessageReply from "@/components/MessageReply/MessageReply";
-import {isSpecialKey} from "@/utils/checkIsNotSpecialKey";
+import { isSpecialKey } from "@/utils/checkIsNotSpecialKey";
 import {
     FileType,
     IAttachment,
+    IEditMessage,
     TSendMessage,
-    IEditMessage, IMessage, IForwardedMessage
 } from "@/models/room/IRoom.store";
-import {TValueOf} from "@/models/TUtils";
+import { TValueOf } from "@/models/TUtils";
 // styles
 import "./input-message.scss";
+import { useAppDispatch, useAppSelector } from "@/hooks/store.hook";
+import { activeRoomInputDataSelector } from "@/store/selectors/activeRoomInputDataSelector";
+import { updateRecentRoomData } from "@/store/actions/recentRooms";
+import { IRecentRoom } from "@/models/recent-rooms/IRecentRooms.store";
+import { usePrevious } from "@/hooks/usePrevious";
+import {
+    MessageAction,
+    TMessageForAction,
+    TMessageForActionEditOrReply,
+} from "@/models/room/IRoom.general";
 
 interface IInputMessage {
-    onSendMessage: (text: TValueOf<Pick<TSendMessage, "text">>, attachments: IAttachment[]) => void;
+    onSendMessage: (
+        text: TValueOf<Pick<TSendMessage, "text">>,
+        attachments: IAttachment[],
+    ) => void;
     onSendVoiceMessage: (record: Blob) => void;
     onSendEditedMessage: (text: TValueOf<Pick<IEditMessage, "text">>) => void;
     onTyping: () => void;
-    messageForReply: IMessage | IForwardedMessage | null;
-    messageForEdit: IMessage | null;
+    messageForAction: TMessageForActionEditOrReply | null;
     removeMessageForAction: () => void;
+    changeMessageForAction: (
+        messageForAction: TMessageForAction | null,
+    ) => void;
 }
 
 const InputMessage: FC<IInputMessage> = ({
-                                             onTyping,
-                                             messageForEdit,
-                                             messageForReply,
-                                             onSendMessage,
-                                             onSendVoiceMessage,
-                                             onSendEditedMessage,
-                                             removeMessageForAction
-                                         }) => {
+    onTyping,
+    messageForAction,
+    onSendMessage,
+    onSendVoiceMessage,
+    onSendEditedMessage,
+    changeMessageForAction,
+    removeMessageForAction,
+}) => {
+    const dispatch = useAppDispatch();
+    const currentRoomId = useAppSelector(
+        (state) => state.recentRooms.currentRoomId,
+    );
+    const previousRoomId = usePrevious(currentRoomId);
+    const initialInputInfo = useAppSelector(activeRoomInputDataSelector);
     const inputRef = useRef<HTMLDivElement | null>(null);
     const [message, setMessage] = useState<string>("");
-    const {
-        files,
-        clearAllFiles,
-        setFiles,
-        removeFile
-    } = useFileUpload();
+    const { files, clearAllFiles, setFiles, removeFile } = useFileUpload();
     const {
         mediaRecorder,
         isRecording,
@@ -52,20 +68,102 @@ const InputMessage: FC<IInputMessage> = ({
         audioURL,
         startRecording,
         stopRecording,
-        cleanAudio
+        cleanAudio,
+        manualSetAudioData,
     } = useAudioRecorder();
+
+    useEffect(() => {
+        return () => {
+            // save current input data to the global store
+            if (!previousRoomId || previousRoomId === currentRoomId) {
+                return;
+            }
+            let inputData: TValueOf<Pick<IRecentRoom, "input">>;
+
+            if (audio && audioURL) {
+                inputData = {
+                    isAudioRecord: true,
+                    blob: audio,
+                    url: audioURL,
+                    messageForAction: messageForAction,
+                };
+            } else {
+                inputData = {
+                    isAudioRecord: false,
+                    text: message,
+                    files: files,
+                    messageForAction: messageForAction,
+                };
+            }
+
+            dispatch(
+                updateRecentRoomData({
+                    id: previousRoomId,
+                    input: inputData,
+                }),
+            );
+        };
+    }, [
+        audio,
+        audioURL,
+        cleanAudio,
+        currentRoomId,
+        dispatch,
+        files,
+        message,
+        messageForAction,
+        previousRoomId,
+    ]);
+
+    useEffect(() => {
+        // update input state in the current chat (load from the global store)
+        if (currentRoomId === previousRoomId || !initialInputInfo) {
+            return;
+        }
+        setMessage("");
+        cleanAudio();
+
+        const inputData = initialInputInfo.input;
+        switch (inputData.isAudioRecord) {
+            case true: {
+                manualSetAudioData(inputData.blob);
+                break;
+            }
+            case false: {
+                setMessage(inputData.text);
+                break;
+            }
+        }
+
+        changeMessageForAction(inputData.messageForAction);
+    }, [
+        initialInputInfo,
+        setMessage,
+        manualSetAudioData,
+        previousRoomId,
+        currentRoomId,
+        cleanAudio,
+        messageForAction,
+        changeMessageForAction,
+    ]);
 
     useEffect(() => {
         if (!inputRef.current) return;
 
         inputRef.current?.focus();
-    }, [messageForEdit, messageForReply]);
+    }, [messageForAction]);
 
     useEffect(() => {
-        if (!inputRef.current || !messageForEdit) return;
+        if (
+            !inputRef.current ||
+            !messageForAction ||
+            messageForAction.action !== MessageAction.EDIT
+        ) {
+            return;
+        }
 
-        setMessage(messageForEdit.text || "");
-    }, [messageForEdit]);
+        setMessage(messageForAction.message.text || "");
+    }, [messageForAction]);
 
     const onChangeMessage = (str: string) => {
         setMessage(str);
@@ -73,12 +171,12 @@ const InputMessage: FC<IInputMessage> = ({
 
     const onKeyDown = (event: KeyboardEvent) => {
         if (
-            event.key !== "Enter"
-            || !(event.target instanceof HTMLDivElement)
-            || !message
-            || message.length === 0
+            event.key !== "Enter" ||
+            !(event.target instanceof HTMLDivElement) ||
+            !message ||
+            message.length === 0
         ) {
-            if ( !isSpecialKey(event) ) {
+            if (!isSpecialKey(event)) {
                 onTyping();
             }
             return;
@@ -89,27 +187,35 @@ const InputMessage: FC<IInputMessage> = ({
     };
 
     const sendMessage = async () => {
-        if (messageForEdit) {
+        if (
+            messageForAction &&
+            messageForAction.action === MessageAction.EDIT
+        ) {
             onSendEditedMessage(message);
             setMessage("");
             return;
         }
 
         const trimmedMessage = message ? message.trim() : null;
-        const attachments = await files.reduce<Promise<IAttachment[]>>(async (previousValue, currentValue) => {
-            const prev = await previousValue;
-            const extensionInfo = currentValue.name.match(/(?<=\.)\D+$/) || [];
-            const extension = extensionInfo.length === 1 ? extensionInfo[0] : "";
+        const attachments = await files.reduce<Promise<IAttachment[]>>(
+            async (previousValue, currentValue) => {
+                const prev = await previousValue;
+                const extensionInfo =
+                    currentValue.name.match(/(?<=\.)\D+$/) || [];
+                const extension =
+                    extensionInfo.length === 1 ? extensionInfo[0] : "";
 
-            prev.push({
-                originalName: currentValue.name,
-                fileType: FileType.ATTACHMENT,
-                mimeType: currentValue.type,
-                extension: extension,
-                buffer: await currentValue.arrayBuffer()
-            });
-            return prev;
-        }, Promise.all([]));
+                prev.push({
+                    originalName: currentValue.name,
+                    fileType: FileType.ATTACHMENT,
+                    mimeType: currentValue.type,
+                    extension: extension,
+                    buffer: await currentValue.arrayBuffer(),
+                });
+                return prev;
+            },
+            Promise.all([]),
+        );
 
         onSendMessage(trimmedMessage, attachments);
         setMessage("");
@@ -118,22 +224,28 @@ const InputMessage: FC<IInputMessage> = ({
 
     return (
         <>
-            <Flex className="input-message" justify="space-between" vertical align="self-start" gap="small">
-                { (messageForEdit || messageForReply) &&
+            <Flex
+                className="input-message"
+                justify="space-between"
+                vertical
+                align="self-start"
+                gap="small"
+            >
+                {messageForAction && (
                     <Flex align="center">
                         <MessageReply
                             isInput={true}
-                            message={messageForEdit! || messageForReply!}
+                            message={messageForAction.message}
                         />
                         <Button
                             size="small"
                             type="text"
-                            icon={<DeleteOutlined/>}
+                            icon={<DeleteOutlined />}
                             onClick={removeMessageForAction}
                         />
                     </Flex>
-                }
-                {mediaRecorder.current && (isRecording || audioURL) ?
+                )}
+                {isRecording || audioURL ? (
                     <InputDuringAudio
                         audio={audio}
                         mediaRecorder={mediaRecorder.current}
@@ -143,7 +255,7 @@ const InputMessage: FC<IInputMessage> = ({
                         audioURL={audioURL}
                         sendVoiceMessage={onSendVoiceMessage}
                     />
-                    :
+                ) : (
                     <InputDuringMessage
                         ref={inputRef}
                         message={message}
@@ -157,7 +269,7 @@ const InputMessage: FC<IInputMessage> = ({
                         removeFile={removeFile}
                         onChange={onChangeMessage}
                     />
-                }
+                )}
             </Flex>
         </>
     );

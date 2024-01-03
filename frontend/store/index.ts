@@ -1,9 +1,10 @@
 import {type Action, type Middleware, configureStore} from "@reduxjs/toolkit";
 import reduxThunk from "redux-thunk";
 // reducers
-import authentication from "@/store/slices/authentication";
 import room from "@/store/slices/room";
 import users from "@/store/slices/users";
+import recentRooms from "@/store/slices/recentRooms";
+import authentication from "@/store/slices/authentication";
 
 const loggerMiddleware: Middleware = (api) => (next: AppDispatch) => <A extends Action>(action: A) => {
     console.log("will dispatch: ", action);
@@ -12,7 +13,7 @@ const loggerMiddleware: Middleware = (api) => (next: AppDispatch) => <A extends 
 };
 
 const store = configureStore({
-    reducer: {authentication, room, users},
+    reducer: {authentication, room, users, recentRooms},
     middleware: getDefaultMiddleware =>
         getDefaultMiddleware({
           serializableCheck: {

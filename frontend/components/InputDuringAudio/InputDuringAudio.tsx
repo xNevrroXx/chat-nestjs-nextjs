@@ -1,33 +1,33 @@
-import React, {FC} from "react";
-import {Button, Flex} from "antd";
-import {CloseCircleOutlined, SendOutlined} from "@ant-design/icons";
+import React, { FC } from "react";
+import { Button, Flex } from "antd";
+import { CloseCircleOutlined, SendOutlined } from "@ant-design/icons";
 // @ts-ignore
-import {LiveAudioVisualizer} from "react-audio-visualize";
+import { LiveAudioVisualizer } from "react-audio-visualize";
 // own modules
-import {TValueOf} from "@/models/TUtils";
-import {IUseAudioRecorderReturnType} from "@/hooks/useAudioRecorder.hook";
+import { TValueOf } from "@/models/TUtils";
+import { TUseAudioRecorderReturnType } from "@/hooks/useAudioRecorder.hook";
 import StopCircleOutlined from "@/icons/StopCircleOutlined";
 import AudioElement from "@/components/AudioElement/AudioElement";
 
 interface IInputDuringAudioProps {
-    mediaRecorder: MediaRecorder;
-    audio: TValueOf<Pick<IUseAudioRecorderReturnType, "audio">>;
-    audioURL: TValueOf<Pick<IUseAudioRecorderReturnType, "audioURL">>;
-    isRecording: TValueOf<Pick<IUseAudioRecorderReturnType, "isRecording">>;
-    stopRecording: TValueOf<Pick<IUseAudioRecorderReturnType, "stopRecording">>;
-    cleanAudio: TValueOf<Pick<IUseAudioRecorderReturnType, "cleanAudio">>;
+    mediaRecorder: MediaRecorder | null;
+    audio: TValueOf<Pick<TUseAudioRecorderReturnType, "audio">>;
+    audioURL: TValueOf<Pick<TUseAudioRecorderReturnType, "audioURL">>;
+    isRecording: TValueOf<Pick<TUseAudioRecorderReturnType, "isRecording">>;
+    stopRecording: TValueOf<Pick<TUseAudioRecorderReturnType, "stopRecording">>;
+    cleanAudio: TValueOf<Pick<TUseAudioRecorderReturnType, "cleanAudio">>;
     sendVoiceMessage: (record: Blob) => void;
 }
 
 const InputDuringAudio: FC<IInputDuringAudioProps> = ({
-                                                          mediaRecorder,
-                                                          stopRecording,
-                                                          audio,
-                                                          audioURL,
-                                                          cleanAudio,
-                                                          isRecording,
-                                                          sendVoiceMessage: onSendVoiceMessage
-                                                      }) => {
+    mediaRecorder,
+    stopRecording,
+    audio,
+    audioURL,
+    cleanAudio,
+    isRecording,
+    sendVoiceMessage: onSendVoiceMessage,
+}) => {
     const sendVoiceMessage = () => {
         if (!audio) {
             return;
@@ -38,43 +38,48 @@ const InputDuringAudio: FC<IInputDuringAudioProps> = ({
     };
 
     return (
-        <Flex vertical={false} style={{width: "100%"}} align="self-end" gap="middle">
+        <Flex
+            vertical={false}
+            style={{ width: "100%" }}
+            align="self-end"
+            gap="middle"
+        >
             <div className="input-message__btn-wrapper">
                 <Button
                     type={"text"}
                     onClick={cleanAudio}
-                    icon={<CloseCircleOutlined className="custom"/>}
+                    icon={<CloseCircleOutlined className="custom" />}
                     size="large"
                 />
             </div>
 
-            {isRecording &&
+            {isRecording && (
                 <div className="input-message__btn-wrapper">
                     <Button
                         type={"text"}
                         onClick={stopRecording}
-                        icon={<StopCircleOutlined/>}
+                        icon={<StopCircleOutlined />}
                         size="large"
                     />
                 </div>
-            }
+            )}
 
             <div className="input-message__field">
-                {audio && audioURL ?
-                    <AudioElement blob={audio} url={audioURL}/>
-                    :
+                {audio && audioURL ? (
+                    <AudioElement blob={audio} url={audioURL} />
+                ) : (
                     <LiveAudioVisualizer
-                        width={"610px"}
+                        width={"550px"}
                         height={"35px"}
                         mediaRecorder={mediaRecorder}
                     />
-                }
+                )}
             </div>
 
             <div className="input-message__btn-wrapper">
                 <Button
                     type="text"
-                    icon={<SendOutlined className="custom"/>}
+                    icon={<SendOutlined className="custom" />}
                     onClick={sendVoiceMessage}
                     size="large"
                 />

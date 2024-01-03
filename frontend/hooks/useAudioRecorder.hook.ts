@@ -1,6 +1,6 @@
-import {useRef, useState} from "react";
+import { useRef, useState } from "react";
 
-export type IUseAudioRecorderReturnType = ReturnType<typeof useAudioRecorder>;
+export type TUseAudioRecorderReturnType = ReturnType<typeof useAudioRecorder>;
 
 const mimeType = "audio/webm" as const;
 
@@ -41,7 +41,7 @@ const useAudioRecorder = () => {
 
         setIsRecording(true);
         //create new Media recorder instance using the stream
-        const media = new MediaRecorder(stream, {mimeType});
+        const media = new MediaRecorder(stream, { mimeType });
         //set the MediaRecorder instance to the mediaRecorder ref
         mediaRecorder.current = media;
         //invokes the start method to start the recording process
@@ -65,11 +65,7 @@ const useAudioRecorder = () => {
         mediaRecorder.current.onstop = () => {
             //creates a blob file from the audiochunks data
             const audioBlob = new Blob(audioChunks, { type: mimeType });
-            //creates a playable URL from the blob file.
-            const audioUrl = URL.createObjectURL(audioBlob); // The "AudioVisualizer" doesn't need the
-            setAudio(audioBlob);
-            setAudioURL(audioUrl);
-            setAudioChunks([]);
+            setAudioData(audioBlob);
         };
         mediaRecorder.current.stop();
     };
@@ -82,6 +78,14 @@ const useAudioRecorder = () => {
         setStream(null);
     };
 
+    const setAudioData = (audioBlob: Blob) => {
+        //creates a playable URL from the blob file.
+        const audioUrl = URL.createObjectURL(audioBlob);
+        setAudio(audioBlob);
+        setAudioURL(audioUrl);
+        setAudioChunks([]);
+    };
+
     return {
         stream,
         mediaRecorder,
@@ -90,8 +94,9 @@ const useAudioRecorder = () => {
         audioURL,
         startRecording,
         stopRecording,
-        cleanAudio
+        cleanAudio,
+        manualSetAudioData: setAudioData,
     };
 };
 
-export {useAudioRecorder};
+export { useAudioRecorder };

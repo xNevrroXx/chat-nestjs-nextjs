@@ -1,9 +1,9 @@
-import {IFile, IForwardedMessage, IMessage} from "@/models/room/IRoom.store";
+import { IFile, IForwardedMessage, IMessage } from "@/models/room/IRoom.store";
 
 export interface ILastMessageInfo {
-    sender: string,
-    text: string,
-    hasRead: boolean
+    sender: string;
+    text: string;
+    hasRead: boolean;
 }
 
 // export interface IFileForRender extends IFile {
@@ -13,8 +13,10 @@ export interface ILastMessageInfo {
 export type TAttachmentType = "video" | "audio" | "image" | "unknown";
 
 export interface IKnownAndUnknownFiles {
-    known: ( IFile & {attachmentType: Exclude<TAttachmentType, "unknown">} )[],
-    unknown: ( IFile & {attachmentType: Extract<TAttachmentType, "unknown">} )[]
+    known: (IFile & { attachmentType: Exclude<TAttachmentType, "unknown"> })[];
+    unknown: (IFile & {
+        attachmentType: Extract<TAttachmentType, "unknown">;
+    })[];
 }
 
 export enum MessageAction {
@@ -22,22 +24,33 @@ export enum MessageAction {
     EDIT = "EDIT",
     REPLY = "REPLY",
     DELETE = "DELETE",
-    FORWARD = "FORWARD"
+    FORWARD = "FORWARD",
 }
 
 export type TMessageForAction =
-    {
-        message: IMessage | IForwardedMessage,
-        action: MessageAction.PIN | MessageAction.REPLY | MessageAction.FORWARD
-    }
-    |
-    {
-        message: IMessage | IForwardedMessage,
-        action: MessageAction.DELETE,
-        isForEveryone: boolean
-    }
-    |
-    {
-        message: IMessage,
-        action: MessageAction.EDIT
-    };
+    | {
+          message: IMessage | IForwardedMessage;
+          action:
+              | MessageAction.PIN
+              | MessageAction.REPLY
+              | MessageAction.FORWARD;
+      }
+    | {
+          message: IMessage | IForwardedMessage;
+          action: MessageAction.DELETE;
+          isForEveryone: boolean;
+      }
+    | {
+          message: IMessage;
+          action: MessageAction.EDIT;
+      };
+
+export type TMessageForActionEditOrReply =
+    | {
+          message: IMessage | IForwardedMessage;
+          action: MessageAction.REPLY;
+      }
+    | {
+          message: IMessage;
+          action: MessageAction.EDIT;
+      };

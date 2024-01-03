@@ -1,44 +1,46 @@
-import React, {FC, JSX, useEffect, useRef, useState} from "react";
+import React, { FC, JSX, useEffect, useRef, useState } from "react";
 import classNames from "classnames";
 // @ts-ignore
-import {AudioVisualizer} from "react-audio-visualize";
-import {Button, theme, Typography} from "antd";
-import {PauseCircleOutlined} from "@ant-design/icons";
+import { AudioVisualizer } from "react-audio-visualize";
+import { Button, theme, Typography } from "antd";
+import { PauseCircleOutlined } from "@ant-design/icons";
 // own modules
 import PlayCircleOutlined from "@/icons/PlayCircleOutlined";
 // styles
 import "./audio-element.scss";
-import {IFile} from "@/models/room/IRoom.store";
-import {TValueOf} from "@/models/TUtils";
+import { IFile } from "@/models/room/IRoom.store";
+import { TValueOf } from "@/models/TUtils";
 
-const {useToken} = theme;
-const {Text} = Typography;
+const { useToken } = theme;
+const { Text } = Typography;
 
 interface IVoiceRecording {
-    blob?: Blob,
-    url: string,
-    size?: TValueOf<Pick<IFile, "size">>,
+    blob?: Blob;
+    url: string;
+    size?: TValueOf<Pick<IFile, "size">>;
     // default: 600px
-    width?: number,
+    width?: number;
     // default: 50px
-    height?: number,
-    alignCenter?: boolean,
-    createdAt?: string,
-    children?: JSX.Element
+    height?: number;
+    alignCenter?: boolean;
+    createdAt?: string;
+    children?: JSX.Element;
 }
 
 const AudioElement: FC<IVoiceRecording> = ({
-                                               blob: inputBlob,
-                                               url,
-                                               size,
-                                               height = 50,
-                                               width = 600,
-                                               alignCenter,
-                                               children,
-                                           }) => {
-    const {token} = useToken();
+    blob: inputBlob,
+    url,
+    size,
+    height = 50,
+    width = 600,
+    alignCenter,
+    children,
+}) => {
+    const { token } = useToken();
     const [blob, setBlob] = useState<Blob | undefined>(inputBlob);
-    const [blobUrl, setBlobUrl] = useState<string | null>(inputBlob ? URL.createObjectURL(inputBlob) : "");
+    const [blobUrl, setBlobUrl] = useState<string | null>(
+        inputBlob ? URL.createObjectURL(inputBlob) : "",
+    );
     const audioRef = useRef<HTMLAudioElement | null>(null);
     const [audioTimestamp, setAudioTimestamp] = useState<number | null>(null);
     const [isPlaying, setIsPlaying] = useState<boolean>(false);
@@ -49,7 +51,9 @@ const AudioElement: FC<IVoiceRecording> = ({
         }
 
         async function getBlobInfo() {
-            const blob = await fetch(process.env.NEXT_PUBLIC_BASE_URL + "/file?name=" + url).then(r => r.blob());
+            const blob = await fetch(
+                process.env.NEXT_PUBLIC_BASE_URL + "/file?name=" + url,
+            ).then((r) => r.blob());
             setBlob(blob);
             setBlobUrl(URL.createObjectURL(blob));
         }
@@ -84,23 +88,28 @@ const AudioElement: FC<IVoiceRecording> = ({
     };
 
     return (
-        <div className={classNames("audio-element", alignCenter && "audio-element_align-center")}>
+        <div
+            className={classNames(
+                "audio-element",
+                alignCenter && "audio-element_align-center",
+            )}
+        >
             <div className="audio-element__control-btn">
-                {isPlaying ?
+                {isPlaying ? (
                     <Button
                         type={"text"}
                         onClick={pauseAudio}
-                        icon={<PauseCircleOutlined className="custom"/>}
+                        icon={<PauseCircleOutlined className="custom" />}
                         size="large"
                     />
-                    :
+                ) : (
                     <Button
                         type={"text"}
                         onClick={playAudio}
                         icon={<PlayCircleOutlined />}
                         size="large"
                     />
-                }
+                )}
             </div>
 
             {blob && blobUrl && (
@@ -122,7 +131,11 @@ const AudioElement: FC<IVoiceRecording> = ({
                         onEnded={() => setIsPlaying(false)}
                     />
                     <div>
-                        {size && <Text style={{color: token.colorTextSecondary}}>{size.value} {size.unit}</Text>}
+                        {size && (
+                            <Text style={{ color: token.colorTextSecondary }}>
+                                {size.value} {size.unit}
+                            </Text>
+                        )}
                         {children}
                     </div>
                 </div>

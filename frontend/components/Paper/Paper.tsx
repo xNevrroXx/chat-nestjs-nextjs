@@ -1,12 +1,12 @@
-import {CSSProperties, FC, ReactNode} from "react";
+import { CSSProperties, FC, ReactNode } from "react";
 import "./paper.scss";
 import classNames from "classnames";
 
 interface IPaper {
-    children: ReactNode,
-    style?: CSSProperties | undefined
+    children: ReactNode;
+    style?: CSSProperties | undefined;
 }
-const Paper: FC<IPaper> = ({children, style}) => {
+const Paper: FC<IPaper> = ({ children, style }) => {
     return (
         <section className={classNames("paper")} style={style}>
             {children}

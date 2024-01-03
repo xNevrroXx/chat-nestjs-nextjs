@@ -1,10 +1,10 @@
 "use client";
 
 import { useFormStatus } from "react-dom";
-import {Button} from "antd";
+import { Button } from "antd";
 
 const SubmitButton = () => {
-    const {pending} = useFormStatus();
+    const { pending } = useFormStatus();
 
     return (
         <Button
