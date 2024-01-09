@@ -1,9 +1,12 @@
-import {io, Socket} from "socket.io-client";
-import {ClientToServerEvents, ServerToClientEvents} from "@/models/ISocket-io";
-import {TValueOf} from "@/models/TUtils";
+import { io, Socket } from "socket.io-client";
+import {
+    IClientToServerEvents,
+    IServerToClientEvents,
+} from "@/models/ISocket-io";
+import { TValueOf } from "@/models/TUtils";
 
 class SocketIOService {
-    public socket: Socket<ServerToClientEvents, ClientToServerEvents>;
+    public socket: Socket<IServerToClientEvents, IClientToServerEvents>;
 
     constructor(sessionId: string) {
         this.socket = io(process.env.NEXT_PUBLIC_BASE_SOCKET_URL || "", {
@@ -13,8 +16,8 @@ class SocketIOService {
                     extraHeaders: {
                         sessionId: sessionId,
                     },
-                }
-            }
+                },
+            },
         });
     }
 
@@ -42,11 +45,17 @@ class SocketIOService {
         });
     }
 
-    emit<Event extends keyof ClientToServerEvents>(event: Event, data: Parameters<ClientToServerEvents[Event]>) {
+    emit<Event extends keyof IClientToServerEvents>(
+        event: Event,
+        data: Parameters<IClientToServerEvents[Event]>,
+    ) {
         this.socket.emit(event, ...data);
     }
 
-    on<Event extends keyof ServerToClientEvents>(event: Event, fn: TValueOf<Pick<ServerToClientEvents, Event>>) {
+    on<Event extends keyof IServerToClientEvents>(
+        event: Event,
+        fn: TValueOf<Pick<IServerToClientEvents, Event>>,
+    ) {
         if (!this.socket) {
             return;
         }
@@ -56,4 +65,4 @@ class SocketIOService {
     }
 }
 
-export {SocketIOService};
+export { SocketIOService };

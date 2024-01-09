@@ -5,6 +5,7 @@ import { TMessageForActionEditOrReply } from "@/models/room/IRoom.general";
 
 export interface IRecentRoom {
     id: TValueOf<Pick<IRoom, "id">>;
+    isPreview: boolean;
     input: {
         messageForAction: TMessageForActionEditOrReply | null;
     } & (

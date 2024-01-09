@@ -22,7 +22,7 @@ import { FileService } from "../file/file.service";
 import { SocketRoomsInfo } from "./SocketRoomsInfo.class";
 import { generateFileName } from "../utils/generateFileName";
 import { brToNewLineChars } from "../utils/brToNewLineChars ";
-import { isFulfilledPromise } from "../utils/isFulfilledPromise";
+import { checkIsFulfilledPromise } from "../utils/checkIsFulfilledPromise";
 import { codeBlocksToHTML } from "../utils/codeBlocksToHTML";
 // types
 import { IUserSessionPayload } from "../user/IUser";
@@ -34,7 +34,8 @@ import {
     TDeleteMessage,
     TPinMessage,
 } from "./IChat";
-import { Prisma, File } from "@prisma/client";
+import { Prisma, File, RoomType } from "@prisma/client";
+import { PrismaIncludeFullRoomInfo, TRoomPreview } from "../room/IRooms";
 
 @WebSocketGateway({
     namespace: "api/chat",
@@ -107,6 +108,50 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
     @UseGuards(WsAuthGuard)
+    @SubscribeMessage("room:join-or-create")
+    async joinNewRoom(@ConnectedSocket() client, @MessageBody() roomData: {id: string}) {
+        const userPayload: IUserSessionPayload = client.user;
+
+        const unnormalizedRoom = await this.roomService.findOne({
+            where: {
+                id: roomData.id
+            },
+            include: PrismaIncludeFullRoomInfo
+        }) as Prisma.RoomGetPayload<{
+            include: typeof PrismaIncludeFullRoomInfo;
+        }>;
+
+        unnormalizedRoom.participants.forEach(participant => {
+            // the participant maybe didn't connect to the new room.
+            const participantClientId = this.socketRoomsInfo.joinIfConnected(unnormalizedRoom.id, participant.userId);
+            // @ts-ignore
+            const participantSocket = this.server.sockets.get(participantClientId);
+
+            if (participantSocket) {
+                // participant is online - we have to manually join this one to the room.
+                participantSocket.join(unnormalizedRoom.id);
+            }
+        })
+
+        unnormalizedRoom.participants.forEach((participant) => {
+            const userIdToSocketId = Object.entries(
+                this.socketRoomsInfo.getRoomInfo(unnormalizedRoom.id)
+            ).find(
+                ([userId, socketId]) =>
+                    participant.userId === userId && socketId !== client.id
+            );
+
+            if (!userIdToSocketId) return;
+            const [userId, clientId] = userIdToSocketId;
+
+            this.roomService.normalize(userId, unnormalizedRoom)
+                .then(room => {
+                    client.broadcast.to(room.id).emit("room:add-or-update", room);
+                });
+        });
+    }
+
+    @UseGuards(WsAuthGuard)
     @SubscribeMessage("user:toggle-typing")
     async handleTyping(
         @ConnectedSocket() client,
@@ -123,46 +168,51 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         client,
         { userId, roomId, isTyping }: TToggleUserTyping
     ) {
-        await this.userService.updateTypingStatus({
-            userId,
-            isTyping,
-            roomId,
-        });
+        try {
+            await this.userService.updateTypingStatus({
+                userId,
+                isTyping,
+                roomId,
+            });
 
-        const participants = await this.participantService.findMany({
-            where: {
-                roomId: roomId,
-            },
-            include: {
-                user: {
-                    include: {
-                        userOnline: true,
-                        userTyping: true,
+            const participants = await this.participantService.findMany({
+                where: {
+                    roomId: roomId,
+                },
+                include: {
+                    user: {
+                        include: {
+                            userOnline: true,
+                            userTyping: true,
+                        },
                     },
                 },
-            },
-        });
-        const normalizedParticipants = participants.map(
-            this.participantService.normalize
-        );
-        normalizedParticipants.forEach((participant) => {
-            const userIdToSocketId = Object.entries(
-                this.socketRoomsInfo.getRoomInfo(roomId)
-            ).find(
-                ([userId, socketId]) =>
-                    participant.userId === userId && socketId !== client.id
+            });
+            const normalizedParticipants = participants.map(
+                this.participantService.normalize
             );
+            normalizedParticipants.forEach((participant) => {
+                const userIdToSocketId = Object.entries(
+                    this.socketRoomsInfo.getRoomInfo(roomId)
+                ).find(
+                    ([userId, socketId]) =>
+                        participant.userId === userId && socketId !== client.id
+                );
 
-            if (!userIdToSocketId) return;
-            const [userId, clientId] = userIdToSocketId;
-            const excludingThisUserTypingInfo = normalizedParticipants.filter(
-                (participant) => participant.userId !== userId
-            );
+                if (!userIdToSocketId) return;
+                const [userId, clientId] = userIdToSocketId;
+                const excludingThisUserTypingInfo = normalizedParticipants.filter(
+                    (participant) => participant.userId !== userId
+                );
 
-            client.broadcast
-                .to(clientId)
-                .emit("room:toggle-typing", excludingThisUserTypingInfo);
-        });
+                client.broadcast
+                    .to(clientId)
+                    .emit("room:toggle-typing", excludingThisUserTypingInfo);
+            });
+        }
+        catch (error) {
+            console.warn("error: ", error);
+        }
     }
 
     @UseGuards(WsAuthGuard)
@@ -507,9 +557,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
             attachmentPromises
         );
         const successfullyRecordedAttachments = attachmentPromisesResults
-            .filter((promiseResult) => isFulfilledPromise(promiseResult)) // ???
+            .filter((promiseResult) => checkIsFulfilledPromise(promiseResult)) // ???
             .map((succeededPromise) => {
-                if (isFulfilledPromise(succeededPromise)) {
+                if (checkIsFulfilledPromise(succeededPromise)) {
                     // add one more check
                     return succeededPromise.value; // todo: repair the narrowing type in the filter.
                 }

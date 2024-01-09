@@ -12,7 +12,11 @@ import ActiveRoom from "@/modules/ActiveRoom/ActiveRoom";
 import Dialogs from "@/modules/Dialogs/Dialogs";
 import CreateGroupModal from "@/modules/CreateGroupModal/CreateGroupModal";
 // selectors & actions
-import { createRoom, forwardMessageSocket } from "@/store/thunks/room";
+import {
+    createRoom,
+    forwardMessageSocket,
+    joinRoom,
+} from "@/store/thunks/room";
 // own types
 import type {
     IForwardMessage,
@@ -24,7 +28,11 @@ import type { TCreateGroupRoom } from "@/models/room/IRoom.store";
 // styles
 import "./main.scss";
 import { activeRoomSelector } from "@/store/selectors/activeRoomSelector";
-import { addRecentRoomData } from "@/store/actions/recentRooms";
+import {
+    addRecentRoomData,
+    removeRecentRoomData,
+} from "@/store/actions/recentRooms";
+import { checkIsPreviewExistingRoomWithFlag } from "@/models/room/IRoom.store";
 
 const { Content } = Layout;
 
@@ -32,7 +40,7 @@ const Main = () => {
     const router = useRouter();
     const dispatch = useAppDispatch();
     const user = useAppSelector((state) => state.authentication.user!);
-    const rooms = useAppSelector((state) => state.room.rooms);
+    const rooms = useAppSelector((state) => state.room.local);
     const activeRoom = useAppSelector(activeRoomSelector);
     const [isOpenModalToForwardMessage, setIsOpenModalToForwardMessage] =
         useState<boolean>(false);
@@ -48,58 +56,52 @@ const Main = () => {
         }
     }, [router, user]);
 
-    const onChangeDialog = useCallback(
+    const onChangeActiveDialog = useCallback(
         (roomId: TValueOf<Pick<IRoom, "id">>) => {
-            const targetRoom = rooms.find((room) => room.id === roomId)!;
+            const targetRoom = rooms.rooms.byId[roomId];
 
-            console.log("activeRoom: ", activeRoom);
-            console.log("targetRoom: ", targetRoom);
             if (activeRoom && targetRoom.id === activeRoom.id) {
-                console.log(true);
                 return;
             }
 
             dispatch(
                 addRecentRoomData({
                     id: targetRoom.id,
-                    input: {
-                        isAudioRecord: false,
-                        files: [],
-                        text: "",
-                    },
                 }),
             );
         },
-        [activeRoom, dispatch, rooms],
+        [rooms, activeRoom, dispatch],
     );
 
-    const onJoinRoom = useCallback((remoteRoom: TPreviewExistingRoom) => {
-        try {
-            // const actionResult = await dispatch(joinRoom(remoteRoom));
-            // if (actionResult.meta.requestStatus === "rejected") {
-            //     throw new Error();
-            // }
-            // const newRoom = actionResult.payload as IRoom;
-
-            // setActiveRoom(remoteRoom);
-            console.log("join");
-        } catch (error) {
-            return;
-        }
-    }, []);
+    const onClickRemoteRoom = useCallback(
+        (remoteRoom: TPreviewExistingRoom) => {
+            dispatch(
+                addRecentRoomData({
+                    id: remoteRoom.id,
+                    isPreview: true,
+                }),
+            );
+        },
+        [dispatch],
+    );
 
     const onCreateRoom = useCallback(
         async (remoteRoom: TCreateGroupRoom) => {
             try {
-                const actionResult = await dispatch(createRoom(remoteRoom));
-                if (actionResult.meta.requestStatus === "rejected") {
-                    throw new Error();
-                }
-                // const newRoom = actionResult.payload as IRoom;
-                // setActiveRoom(newRoom);
-                console.log("create");
-            } catch (error) {
-                return;
+                const newRoom = await dispatch(createRoom(remoteRoom)).unwrap();
+
+                dispatch(
+                    addRecentRoomData({
+                        id: newRoom.id,
+                    }),
+                );
+                return newRoom;
+            }
+            catch (rejectedValueOrSerializedError) {
+                console.warn(
+                    "Error when creating a room!: ",
+                    rejectedValueOrSerializedError,
+                );
             }
         },
         [dispatch],
@@ -142,20 +144,45 @@ const Main = () => {
         setIsOpenModalToCreateGroup(false);
     }, []);
 
+    const onJoinRoom = useCallback(async () => {
+        // activeRoom, probably, is a remote room viewing at this moment.
+        if (!activeRoom || !checkIsPreviewExistingRoomWithFlag(activeRoom)) {
+            return;
+        }
+
+        try {
+            dispatch(removeRecentRoomData(activeRoom.id));
+            const newRoom = await dispatch(joinRoom(activeRoom)).unwrap();
+
+            dispatch(
+                addRecentRoomData({
+                    id: newRoom.id,
+                }),
+            );
+            return newRoom;
+        }
+        catch (rejectedValueOrSerializedError) {
+            console.warn(
+                "Error when joining a room!: ",
+                rejectedValueOrSerializedError,
+            );
+        }
+    }, [activeRoom, dispatch]);
+
     return (
         <Fragment>
             <Content className="messenger">
                 <Dialogs
                     user={user}
-                    rooms={rooms}
-                    onChangeRoom={onChangeDialog}
-                    onJoinRoom={onJoinRoom}
+                    onClickRoom={onChangeActiveDialog}
+                    onClickRemoteRoom={onClickRemoteRoom}
                     activeRoomId={activeRoom ? activeRoom.id : null}
                     openModalToCreateGroup={openModalToCreateGroup}
                 />
                 <ActiveRoom
                     room={activeRoom}
                     user={user}
+                    onJoinRoom={onJoinRoom}
                     openModalToForwardMessage={openModalToForwardMessage}
                 />
             </Content>
@@ -167,7 +194,7 @@ const Main = () => {
                 cancelButtonProps={{ style: { display: "none" } }}
             >
                 <ListRooms
-                    rooms={rooms}
+                    rooms={Object.values(rooms.rooms.byId)}
                     onClickRoom={onClickRoomToForwardMessage}
                 />
             </Modal>

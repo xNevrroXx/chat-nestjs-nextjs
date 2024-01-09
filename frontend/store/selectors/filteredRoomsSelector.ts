@@ -1,25 +1,28 @@
-import {createSelector} from "@reduxjs/toolkit";
-import {stringSimilarity} from "string-similarity-js";
-import {RootState} from "@/store";
+import { createSelector } from "@reduxjs/toolkit";
+import { stringSimilarity } from "string-similarity-js";
+import { RootState } from "@/store";
 import { IRoom } from "@/models/room/IRoom.store";
-
 
 const filteredRoomsSelector = createSelector(
     [
-        (state: RootState) => state.room.rooms,
-        (_: RootState, query: string) => query
+        (state: RootState) => state.room.local,
+        (_: RootState, query: string) => query,
     ],
-    (rooms, query) => {
-        if (!query || query.length === 0) return rooms;
+    (local, query): IRoom[] => {
+        if (!query || query.length === 0) {
+            return Object.values(local.rooms.byId);
+        }
 
-        return structuredClone(rooms)
-            .filter(room => room.name.toLowerCase().includes(query.toLowerCase()))
+        return structuredClone(Object.values(local.rooms.byId))
+            .filter((room) =>
+                room.name.toLowerCase().includes(query.toLowerCase()),
+            )
             .sort((room1, room2) => {
                 const score1 = stringSimilarity(room1.name, query, 1, false);
                 const score2 = stringSimilarity(room2.name, query, 1, false);
                 return score2 - score1;
             });
-    }
+    },
 );
 
-export {filteredRoomsSelector};
+export { filteredRoomsSelector };

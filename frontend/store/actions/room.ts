@@ -1,29 +1,47 @@
-import {createAction} from "@reduxjs/toolkit";
+import { createAction } from "@reduxjs/toolkit";
 import {
-    IParticipant,
+    IRoom,
     IMessage,
+    IParticipant,
+    IForwardedMessage,
     IEditedMessageSocket,
     IDeletedMessageSocket,
     TPinnedMessagesSocket,
-    IForwardedMessage
 } from "@/models/room/IRoom.store";
-import {TValueOf} from "@/models/TUtils";
-import {IUserDto} from "@/models/auth/IAuth.store";
+import { TValueOf } from "@/models/TUtils";
+import { IUserDto } from "@/models/auth/IAuth.store";
 
-const setUserId = createAction<TValueOf<Pick<IUserDto, "id">>>("room/set-user-id");
-const handleMessageSocket = createAction<IMessage>("room/socket:handle-message");
-const handlePinnedMessageSocket = createAction<TPinnedMessagesSocket>("room/socket:handle-pinned-message");
-const handleEditedMessageSocket = createAction<IEditedMessageSocket>("room/socket:handle-edited-message");
-const handleDeletedMessageSocket = createAction<IDeletedMessageSocket>("room/socket:handle-deleted-message");
-const handleForwardedMessageSocket = createAction<IForwardedMessage>("room/socket:handle-forwarded-message");
-const handleChangeUserTypingSocket = createAction<IParticipant[]>("room/socket:room:handle-toggle-typing");
+const setUserId =
+    createAction<TValueOf<Pick<IUserDto, "id">>>("room/set-user-id");
+const clearPreviewRooms = createAction("room/clear-previews");
+const addOrUpdateRoomSocket = createAction<IRoom>("room/add-or-update");
+const handleMessageSocket = createAction<IMessage>(
+    "room/socket:handle-message",
+);
+const handlePinnedMessageSocket = createAction<TPinnedMessagesSocket>(
+    "room/socket:handle-pinned-message",
+);
+const handleEditedMessageSocket = createAction<IEditedMessageSocket>(
+    "room/socket:handle-edited-message",
+);
+const handleDeletedMessageSocket = createAction<IDeletedMessageSocket>(
+    "room/socket:handle-deleted-message",
+);
+const handleForwardedMessageSocket = createAction<IForwardedMessage>(
+    "room/socket:handle-forwarded-message",
+);
+const handleChangeUserTypingSocket = createAction<IParticipant[]>(
+    "room/socket:room:handle-toggle-typing",
+);
 
 export {
     setUserId,
+    clearPreviewRooms,
     handleMessageSocket,
+    addOrUpdateRoomSocket,
     handlePinnedMessageSocket,
     handleEditedMessageSocket,
     handleDeletedMessageSocket,
     handleForwardedMessageSocket,
-    handleChangeUserTypingSocket
+    handleChangeUserTypingSocket,
 };

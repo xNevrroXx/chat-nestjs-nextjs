@@ -53,7 +53,8 @@ const ListLocalDialogs: FC<IDialogsProps> = ({
                             "вложения - " + lastMessage.files.length.toString();
                     }
                     text = "пересланное сообщение";
-                } else {
+                }
+                else {
                     text = lastMessage.text;
                 }
                 break;

@@ -2,20 +2,24 @@
 
 import React, { FC, useCallback, useMemo, useState } from "react";
 import Modal from "antd/es/modal/Modal";
-import { RoomType, TCreateGroupRoom, TPreviewExistingRoom } from "@/models/room/IRoom.store";
+import {
+    RoomType,
+    TCreateGroupRoom,
+    TPreviewExistingRoom,
+} from "@/models/room/IRoom.store";
 import { Form, Input, Mentions } from "antd";
 import { useAppSelector } from "@/hooks/store.hook";
 import { filteredUsersSelector } from "@/store/selectors/filteredUsersSelector";
 import { getMentionIds } from "@/utils/getMentionIds";
 
 interface IStages {
-    0: "ENTER_GROUP_NAME",
-    1: "ADD_MEMBERS"
+    0: "ENTER_GROUP_NAME";
+    1: "ADD_MEMBERS";
 }
 
 const STAGES: IStages = {
     0: "ENTER_GROUP_NAME",
-    1: "ADD_MEMBERS"
+    1: "ADD_MEMBERS",
 };
 
 const COUNT_STAGES = Object.keys(STAGES).length;
@@ -26,8 +30,12 @@ interface IProps {
     isOpen: boolean;
 }
 
-const CreateGroupModal: FC<IProps> = ({ onCloseModal, isOpen, onOk: onSuccessAction }) => {
-    const users = useAppSelector<TPreviewExistingRoom[]>(state => filteredUsersSelector(state));
+const CreateGroupModal: FC<IProps> = ({
+    onCloseModal,
+    isOpen,
+    onOk: onSuccessAction,
+}) => {
+    const users = useAppSelector((state) => filteredUsersSelector(state));
 
     const [stage, setStage] = useState<keyof IStages>(0);
     const [roomName, setRoomName] = useState<string>("");
@@ -44,7 +52,7 @@ const CreateGroupModal: FC<IProps> = ({ onCloseModal, isOpen, onOk: onSuccessAct
             onSuccessAction({
                 name: roomName,
                 memberIds: memberIds,
-                type: RoomType.GROUP
+                type: RoomType.GROUP,
             });
             setStage(0);
             setRoomName("");
@@ -52,19 +60,16 @@ const CreateGroupModal: FC<IProps> = ({ onCloseModal, isOpen, onOk: onSuccessAct
             return;
         }
 
-        setStage(prevState => (prevState + 1) as keyof IStages);
+        setStage((prevState) => (prevState + 1) as keyof IStages);
     }, [onSuccessAction, roomName, memberIds, stage]);
 
     const contentByStage = useMemo(() => {
         switch (stage) {
             case 0: {
                 return (
-                    <Form.Item<TCreateGroupRoom>
-                        label="Название"
-                        name="name"
-                    >
+                    <Form.Item<TCreateGroupRoom> label="Название" name="name">
                         <Input
-                            onChange={e => {
+                            onChange={(e) => {
                                 setRoomName(e.target.value);
                             }}
                             value={roomName}
@@ -79,37 +84,41 @@ const CreateGroupModal: FC<IProps> = ({ onCloseModal, isOpen, onOk: onSuccessAct
                         name="memberIds"
                     >
                         <Mentions
-                            placeholder="@username-1 @username-2"
+                            placeholder="@username-1 @username-2 ..."
                             autoSize={true}
-                            value={
-                                memberIds
-                                    .map<string>(id => {
-                                        const user = users.find(user => user.id === id)!;
-                                        return "@" + user.name + " ";
-                                    })
-                                    .join("")
-                            }
+                            value={memberIds
+                                .map<string>((id) => {
+                                    const user = users.find(
+                                        (user) => user.id === id,
+                                    )!;
+                                    return "@" + user.name + " ";
+                                })
+                                .join("")}
                             onChange={onChangeMembers}
-                            options={users/*.concat(data || [])*/.map(({ name, id }) => {
-                                const slicedId = id;
-                                const formattedName = name.match(/ /) ? "\"" + name + "\"" : name;
-                                return {
-                                    key: id,
-                                    value: formattedName + "-" + slicedId,
-                                    label: (
-                                        <>
-                                            <span>{formattedName}-{slicedId}</span>
-                                        </>
-                                    )
-                                };
-                            })}
+                            options={users /*.concat(data || [])*/
+                                .map(({ name, id }) => {
+                                    const slicedId = id;
+                                    const formattedName = name.match(/ /)
+                                        ? '"' + name + '"'
+                                        : name;
+                                    return {
+                                        key: id,
+                                        value: formattedName + "-" + slicedId,
+                                        label: (
+                                            <>
+                                                <span>
+                                                    {formattedName}-{slicedId}
+                                                </span>
+                                            </>
+                                        ),
+                                    };
+                                })}
                         />
                     </Form.Item>
                 );
             }
         }
     }, [memberIds, onChangeMembers, roomName, stage, users]);
-
 
     return (
         <Modal
@@ -119,10 +128,7 @@ const CreateGroupModal: FC<IProps> = ({ onCloseModal, isOpen, onOk: onSuccessAct
             okText={stage === COUNT_STAGES - 1 ? "Создать" : "Далее"}
             onOk={onOk}
         >
-
-            <Form>
-                {contentByStage}
-            </Form>
+            <Form>{contentByStage}</Form>
         </Modal>
     );
 };

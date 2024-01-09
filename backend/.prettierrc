@@ -1,6 +1,8 @@
 {
-  "endOfLine": "auto",
-  "tabWidth": 4,
-  "singleQuote": false,
-  "bracketSpacing": true
+    "plugins": ["prettier-plugin-brace-style"],
+    "endOfLine": "auto",
+    "tabWidth": 4,
+    "singleQuote": false,
+    "bracketSpacing": true,
+    "braceStyle": "stroustrup"
 }

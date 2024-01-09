@@ -64,18 +64,7 @@ export class RoomService {
 
     async joinRoom(userId: string, { id, type }: TRoomPreview): Promise<IRoom> {
         let newRoom: Prisma.RoomGetPayload<{
-            include: {
-                participants: {
-                    include: {
-                        user: {
-                            include: {
-                                userOnline: true;
-                                userTyping: true;
-                            };
-                        };
-                    };
-                };
-            };
+            include: typeof PrismaIncludeFullRoomInfo;
         }>;
 
         if (type === RoomType.PRIVATE) {
@@ -95,31 +84,9 @@ export class RoomService {
                         },
                     },
                 },
-                include: {
-                    participants: {
-                        include: {
-                            user: {
-                                include: {
-                                    userOnline: true,
-                                    userTyping: true,
-                                },
-                            },
-                        },
-                    },
-                },
+                include: PrismaIncludeFullRoomInfo,
             })) as Prisma.RoomGetPayload<{
-                include: {
-                    participants: {
-                        include: {
-                            user: {
-                                include: {
-                                    userOnline: true;
-                                    userTyping: true;
-                                };
-                            };
-                        };
-                    };
-                };
+                include: typeof PrismaIncludeFullRoomInfo;
             }>;
         } else {
             const userAsParticipantInfo = (await this.participantService.create(
@@ -138,18 +105,7 @@ export class RoomService {
                     },
                     include: {
                         room: {
-                            include: {
-                                participants: {
-                                    include: {
-                                        user: {
-                                            include: {
-                                                userOnline: true,
-                                                userTyping: true,
-                                            },
-                                        },
-                                    },
-                                },
-                            },
+                            include: PrismaIncludeFullRoomInfo,
                         },
                     },
                 }
@@ -164,14 +120,14 @@ export class RoomService {
             newRoom = userAsParticipantInfo.room;
         }
 
-        const roomFullInfo = await this.findOne({
-            where: {
-                id: newRoom.id,
-            },
-            include: PrismaIncludeFullRoomInfo,
-        });
+        // const roomFullInfo = await this.findOne({
+        //     where: {
+        //         id: newRoom.id,
+        //     },
+        //     include: PrismaIncludeFullRoomInfo,
+        // });
 
-        return await this.normalize(userId, roomFullInfo as any);
+        return this.normalize(userId, newRoom);
     }
 
     async findOne<T extends Prisma.RoomInclude>(params: {

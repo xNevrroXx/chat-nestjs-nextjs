@@ -73,40 +73,38 @@ const InputMessage: FC<IInputMessage> = ({
     } = useAudioRecorder();
 
     useEffect(() => {
-        return () => {
-            // save current input data to the global store
-            if (!previousRoomId || previousRoomId === currentRoomId) {
-                return;
-            }
-            let inputData: TValueOf<Pick<IRecentRoom, "input">>;
+        // save current input data to the global store
+        if (!previousRoomId || previousRoomId === currentRoomId) {
+            return;
+        }
+        let inputData: TValueOf<Pick<IRecentRoom, "input">>;
 
-            if (audio && audioURL) {
-                inputData = {
-                    isAudioRecord: true,
-                    blob: audio,
-                    url: audioURL,
-                    messageForAction: messageForAction,
-                };
-            } else {
-                inputData = {
-                    isAudioRecord: false,
-                    text: message,
-                    files: files,
-                    messageForAction: messageForAction,
-                };
-            }
+        if (audio && audioURL) {
+            inputData = {
+                isAudioRecord: true,
+                blob: audio,
+                url: audioURL,
+                messageForAction: messageForAction,
+            };
+        }
+        else {
+            inputData = {
+                isAudioRecord: false,
+                text: message,
+                files: files,
+                messageForAction: messageForAction,
+            };
+        }
 
-            dispatch(
-                updateRecentRoomData({
-                    id: previousRoomId,
-                    input: inputData,
-                }),
-            );
-        };
+        dispatch(
+            updateRecentRoomData({
+                id: previousRoomId,
+                input: inputData,
+            }),
+        );
     }, [
         audio,
         audioURL,
-        cleanAudio,
         currentRoomId,
         dispatch,
         files,

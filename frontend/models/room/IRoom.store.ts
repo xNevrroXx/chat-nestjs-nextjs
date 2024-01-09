@@ -2,6 +2,7 @@ import { IUserDto } from "@/models/auth/IAuth.store";
 import { TValueOf } from "@/models/TUtils";
 import { SocketIOService } from "@/services/SocketIO.service";
 import { ILinkPreviewInfo } from "@/models/other/ILinkPreviewInfo";
+import { FetchingStatus } from "@/hooks/useFetch.hook";
 
 export enum FileType {
     VOICE_RECORD = "VOICE_RECORD",
@@ -17,7 +18,18 @@ export enum RoomType {
 // Store types
 export interface IRoomSlice {
     userId: TValueOf<Pick<IUserDto, "id">>;
-    rooms: IRoom[];
+    local: {
+        rooms: {
+            byId: {
+                [id: TValueOf<Pick<IRoom, "id">>]: IRoom;
+            };
+        };
+        allIds: TValueOf<Pick<IRoom, "id">>[];
+    };
+    previews: {
+        rooms: TPreviewExistingRoom[];
+        status: FetchingStatus;
+    };
     socket: SocketIOService | null;
 }
 export interface IRoom {
@@ -101,6 +113,9 @@ export interface IFile {
 
 // HTTP response types
 export type TPreviewExistingRoom = Omit<IRoom, "createdAt" | "updatedAt">;
+export type TPreviewExistingRoomWithFlag = TPreviewExistingRoom & {
+    isPreview: true;
+};
 
 export interface IEditedMessageSocket extends IEditMessage {
     roomId: TValueOf<Pick<IRoom, "id">>;
@@ -178,4 +193,11 @@ export function checkIsInnerMessage(
 ): obj is IInnerMessage {
     const message = obj as IInnerMessage;
     return message.files !== undefined;
+}
+
+export function checkIsPreviewExistingRoomWithFlag(
+    obj: IRoom | TPreviewExistingRoomWithFlag,
+) {
+    const room = obj as TPreviewExistingRoomWithFlag;
+    return room.isPreview;
 }

@@ -1,10 +1,9 @@
 import { MenuFoldOutlined, PhoneTwoTone } from "@ant-design/icons";
-import { Avatar, Checkbox, Flex, Modal, theme, Typography } from "antd";
+import { Avatar, Button, Checkbox, Flex, Modal, theme, Typography } from "antd";
 import React, {
     type FC,
     Fragment,
     useCallback,
-    useEffect,
     useMemo,
     useRef,
     useState,
@@ -12,18 +11,18 @@ import React, {
 // own modules
 import { useScrollTrigger } from "@/hooks/useScrollTrigger.hook";
 import RoomContent from "@/components/RoomContent/RoomContent";
-import InputMessage from "@/modules/InputMessage/InputMessage";
 import ScrollDownButton from "@/components/ScrollDownButton/ScrollDownButton";
 import type { IUserDto } from "@/models/auth/IAuth.store";
 import type { TValueOf } from "@/models/TUtils";
 import {
+    checkIsPreviewExistingRoomWithFlag,
     FileType,
     IAttachment,
     IEditMessage,
     IForwardMessage,
     IRoom,
     RoomType,
-    TPreviewExistingRoom,
+    TPreviewExistingRoomWithFlag,
     TSendMessage,
 } from "@/models/room/IRoom.store";
 import {
@@ -44,24 +43,28 @@ import {
 import { truncateTheText } from "@/utils/truncateTheText";
 // styles
 import "./active-room.scss";
+import InputMessage from "@/modules/InputMessage/InputMessage";
 
 const { useToken } = theme;
 const { Text, Title } = Typography;
 
+type TJoinRoomFn = () => Promise<IRoom | undefined>;
 interface IActiveChatProps {
     user: IUserDto;
-    room: IRoom | TPreviewExistingRoom | null | undefined;
+    room: IRoom | TPreviewExistingRoomWithFlag | null | undefined;
     openModalToForwardMessage: (
         forwardedMessageId: TValueOf<
             Pick<IForwardMessage, "forwardedMessageId">
         >,
     ) => void;
+    onJoinRoom: TJoinRoomFn;
 }
 
 const ActiveRoom: FC<IActiveChatProps> = ({
     user,
     room,
     openModalToForwardMessage,
+    onJoinRoom,
 }) => {
     const { token } = useToken();
     const dispatch = useAppDispatch();
@@ -112,7 +115,7 @@ const ActiveRoom: FC<IActiveChatProps> = ({
     }, []);
 
     const onTyping = useCallback(() => {
-        if (!room) return;
+        if (!room || checkIsPreviewExistingRoomWithFlag(room)) return;
 
         if (typingTimoutRef.current) {
             // if the user has recently typed
@@ -198,14 +201,18 @@ const ActiveRoom: FC<IActiveChatProps> = ({
     };
 
     const onSendMessage = useCallback(
-        (
+        async (
             text: TValueOf<Pick<TSendMessage, "text">>,
             attachments: IAttachment[],
         ) => {
             if (!room) return;
 
-            const message: TSendMessage = {
-                roomId: room.id,
+            if (typingTimoutRef.current) {
+                clearTimeout(typingTimoutRef.current);
+                typingTimoutRef.current = null;
+            }
+
+            const messageWithoutRoomId: Omit<TSendMessage, "roomId"> = {
                 text,
                 attachments,
                 replyToMessageId:
@@ -215,14 +222,31 @@ const ActiveRoom: FC<IActiveChatProps> = ({
                         : null,
             };
 
-            if (typingTimoutRef.current) {
-                clearTimeout(typingTimoutRef.current);
-                typingTimoutRef.current = null;
+            let message: TSendMessage;
+            if (
+                checkIsPreviewExistingRoomWithFlag(room) &&
+                room.type === RoomType.PRIVATE
+            ) {
+                const newRoom = await onJoinRoom();
+                if (!newRoom) {
+                    return;
+                }
+                message = {
+                    roomId: newRoom.id,
+                    ...messageWithoutRoomId,
+                };
             }
+            else {
+                message = {
+                    roomId: room.id,
+                    ...messageWithoutRoomId,
+                };
+            }
+
             void dispatch(sendMessageSocket(message));
             removeMessageForAction();
         },
-        [dispatch, room, messageForAction, removeMessageForAction],
+        [room, messageForAction, removeMessageForAction, onJoinRoom, dispatch],
     );
 
     const sendVoiceMessage = async (record: Blob) => {
@@ -235,7 +259,7 @@ const ActiveRoom: FC<IActiveChatProps> = ({
             buffer: buffer,
         };
 
-        onSendMessage(null, [attachment]);
+        void onSendMessage(null, [attachment]);
     };
 
     const userStatuses: string = useMemo(() => {
@@ -247,7 +271,8 @@ const ActiveRoom: FC<IActiveChatProps> = ({
             case RoomType.PRIVATE: {
                 if (!interlocutor || !interlocutor.userOnline.isOnline) {
                     return "Не в сети";
-                } else if (room.participants[0].isTyping) {
+                }
+                else if (room.participants[0].isTyping) {
                     return "Печатает...";
                 }
                 return "В сети";
@@ -328,24 +353,40 @@ const ActiveRoom: FC<IActiveChatProps> = ({
                     {isVisibleScrollButtonState && (
                         <ScrollDownButton
                             onClick={onClickScrollButton}
+                            /*todo dynamically change amount of the unread messages*/
                             amountUnreadMessages={0}
                         />
                     )}
-                    <InputMessage
-                        changeMessageForAction={onChooseMessageForAction}
-                        messageForAction={
-                            messageForAction &&
-                            (messageForAction.action === MessageAction.EDIT ||
-                                messageForAction.action === MessageAction.REPLY)
-                                ? (messageForAction as TMessageForActionEditOrReply)
-                                : null
-                        }
-                        removeMessageForAction={removeMessageForAction}
-                        onTyping={onTyping}
-                        onSendMessage={onSendMessage}
-                        onSendVoiceMessage={sendVoiceMessage}
-                        onSendEditedMessage={onSendEditedMessage}
-                    />
+
+                    {room &&
+                    checkIsPreviewExistingRoomWithFlag(room) &&
+                    room.type === RoomType.GROUP ? (
+                        <Button
+                            onClick={onJoinRoom}
+                            block
+                            style={{ marginBottom: "10px" }}
+                        >
+                            Вступить в группу
+                        </Button>
+                    ) : (
+                        <InputMessage
+                            changeMessageForAction={onChooseMessageForAction}
+                            messageForAction={
+                                messageForAction &&
+                                (messageForAction.action ===
+                                    MessageAction.EDIT ||
+                                    messageForAction.action ===
+                                        MessageAction.REPLY)
+                                    ? (messageForAction as TMessageForActionEditOrReply)
+                                    : null
+                            }
+                            removeMessageForAction={removeMessageForAction}
+                            onTyping={onTyping}
+                            onSendMessage={onSendMessage}
+                            onSendVoiceMessage={sendVoiceMessage}
+                            onSendEditedMessage={onSendEditedMessage}
+                        />
+                    )}
                 </div>
 
                 <Modal

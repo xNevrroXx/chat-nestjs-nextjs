@@ -11,12 +11,12 @@ interface IDialogsProps {
     user: IUserDto;
     rooms: TPreviewExistingRoom[];
     activeRoomId: TValueOf<Pick<IRoom, "id">> | null;
-    onJoinRoom: (room: TPreviewExistingRoom) => void;
+    onClickRemoteRoom: (room: TPreviewExistingRoom) => void;
 }
 
 const ListRemoteDialogs: FC<IDialogsProps> = ({
     rooms,
-    onJoinRoom,
+    onClickRemoteRoom,
     activeRoomId,
 }) => {
     const list = useMemo(() => {
@@ -25,7 +25,7 @@ const ListRemoteDialogs: FC<IDialogsProps> = ({
                 <DialogCard
                     key={room.id.toString() + "dialog card"}
                     id={room.id}
-                    onClick={() => onJoinRoom(room)}
+                    onClick={() => onClickRemoteRoom(room)}
                     dialogName={room.name}
                     isActive={activeRoomId === room.id}
                     roomType={room.type}
@@ -33,7 +33,7 @@ const ListRemoteDialogs: FC<IDialogsProps> = ({
                 />
             );
         });
-    }, [rooms, activeRoomId, onJoinRoom]);
+    }, [rooms, activeRoomId, onClickRemoteRoom]);
 
     return <ul className="dialogs__list">{list}</ul>;
 };

@@ -25,7 +25,18 @@ const recentRooms = createSlice({
 
                 if (!isExist) {
                     state.allIds.push(action.payload.id);
-                    state.rooms.byId[action.payload.id] = action.payload;
+                    state.rooms.byId[action.payload.id] = {
+                        id: action.payload.id,
+                        isPreview: action.payload.isPreview
+                            ? action.payload.isPreview
+                            : false,
+                        input: {
+                            isAudioRecord: false,
+                            text: "",
+                            files: [],
+                            messageForAction: null,
+                        },
+                    };
                 }
 
                 state.currentRoomId = action.payload.id;
@@ -42,7 +53,8 @@ const recentRooms = createSlice({
                 const index = state.allIds.indexOf(action.payload);
                 if (index === -1) {
                     return;
-                } else if (state.currentRoomId === action.payload) {
+                }
+                else if (state.currentRoomId === action.payload) {
                     state.currentRoomId = null;
                 }
 

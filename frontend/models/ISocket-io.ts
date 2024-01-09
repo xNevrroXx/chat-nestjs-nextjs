@@ -10,11 +10,13 @@ import {
     IDeleteMessage,
     IEditedMessageSocket,
     IDeletedMessageSocket,
-    TPinnedMessagesSocket
+    TPinnedMessagesSocket,
+    TPreviewExistingRoom,
+    IRoom,
 } from "@/models/room/IRoom.store";
-import {TUserOnline} from "@/models/auth/IAuth.store";
+import { TUserOnline } from "@/models/auth/IAuth.store";
 
-export interface ServerToClientEvents {
+export interface IServerToClientEvents {
     // user
     "user:toggle-online": (data: TUserOnline) => void;
     // room
@@ -25,10 +27,10 @@ export interface ServerToClientEvents {
     "message:deleted": (data: IDeletedMessageSocket) => void;
     "message:standard": (data: IMessage) => void;
     "message:forwarded": (data: IForwardedMessage) => void;
-
+    "room:add-or-update": (data: IRoom) => void;
 }
 
-export interface ClientToServerEvents {
+export interface IClientToServerEvents {
     // user
     "user:toggle-typing": (data: TSendUserTyping) => void;
     // message
@@ -37,4 +39,5 @@ export interface ClientToServerEvents {
     "message:delete": (data: IDeleteMessage) => void;
     "message:forward": (data: IForwardMessage) => void;
     "message:standard": (data: TSendMessage) => void;
+    "room:join-or-create": (data: { id: string }) => void;
 }
