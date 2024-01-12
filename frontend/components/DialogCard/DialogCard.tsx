@@ -10,9 +10,9 @@ import { TValueOf } from "@/models/TUtils";
 import { IRoom, RoomType } from "@/models/room/IRoom.store";
 import { ILastMessageInfo } from "@/models/room/IRoom.general";
 import clip from "text-clipper";
+import { getNameInitials } from "@/utils/getNameInitials";
 // styles
 import "./dialog.scss";
-import { getNameInitials } from "@/utils/getNameInitials";
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -52,7 +52,10 @@ const DialogCard: FC<IDialogCardProps> = ({
                     {dialogName}
                 </Title>
                 {lastMessageInfo && (
-                    <Paragraph className="dialog__message">
+                    <Paragraph
+                        className="dialog__message"
+                        style={{ margin: 0 }}
+                    >
                         {roomType === RoomType.GROUP && (
                             <Text strong className="dialog__sender-message">
                                 {lastMessageInfo.sender + ": "}

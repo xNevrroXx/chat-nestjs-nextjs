@@ -1,17 +1,17 @@
 import { TPartialBy, TValueOf } from "@/models/TUtils";
 
 export interface IUser {
-    displayName: string,
-    givenName: string,
-    familyName: string,
-    email: string,
-    age: number,
-    sex: Sex
+    displayName: string;
+    givenName: string;
+    familyName: string;
+    email: string;
+    age: number;
+    sex: Sex;
 }
 
 export enum Sex {
     MALE = "MALE",
-    FEMALE = "FEMALE"
+    FEMALE = "FEMALE",
 }
 
 export interface IUserAuth extends TPartialBy<IUser, "displayName"> {
@@ -19,26 +19,26 @@ export interface IUserAuth extends TPartialBy<IUser, "displayName"> {
 }
 
 export interface IUserDto extends IUser {
-    id: string,
-    createdAt: string,
-    updatedAt: string | undefined,
-    userOnline: TUserOnline
+    id: string;
+    createdAt: string;
+    updatedAt: string | undefined;
+    userOnline: TUserOnline;
 }
 
 export type TUserOnline = {
-    id: string
-    userId: TValueOf<Pick<IUserDto, "id">>
-    isOnline: boolean
-    updatedAt: string | undefined
-}
+    id: string;
+    userId: TValueOf<Pick<IUserDto, "id">>;
+    isOnline: boolean;
+    updatedAt: string | undefined;
+};
 
 export interface IAuth {
-    user: IUserDto | null,
-    isAuthenticated: boolean
+    user: IUserDto | null;
+    isAuthenticated: boolean;
 }
 
 export type TLoginFormData = Pick<IUserAuth, "email" | "password">;
 export type TRegisterFormData = Omit<IUserAuth, "displayName"> & {
-    displayName?: TValueOf<Pick<IUserAuth, "displayName">>,
-    passwordConfirmation: TValueOf<Pick<IUserAuth, "password">>
+    displayName?: TValueOf<Pick<IUserAuth, "displayName">>;
+    passwordConfirmation: TValueOf<Pick<IUserAuth, "password">>;
 };

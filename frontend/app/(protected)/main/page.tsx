@@ -1,7 +1,7 @@
 "use client";
 
-import { Fragment, useCallback, useEffect, useState } from "react";
-import { Layout, Modal } from "antd";
+import React, { useCallback, useEffect, useState } from "react";
+import { ConfigProvider, Layout, Modal } from "antd";
 import { useRouter } from "next/navigation";
 // own modules
 import { ROUTES } from "@/router/routes";
@@ -10,35 +10,40 @@ import { useAppDispatch, useAppSelector } from "@/hooks/store.hook";
 import ListRooms from "@/modules/ListRooms/ListRooms";
 import ActiveRoom from "@/modules/ActiveRoom/ActiveRoom";
 import Dialogs from "@/modules/Dialogs/Dialogs";
+import MainMenu from "@/modules/MainMenu/MainMenu";
+import SubMenu from "@/modules/SubMenu/SubMenu";
 import CreateGroupModal from "@/modules/CreateGroupModal/CreateGroupModal";
+import darkTheme from "@/theme/dark.theme";
 // selectors & actions
 import {
     createRoom,
     forwardMessageSocket,
     joinRoom,
 } from "@/store/thunks/room";
-// own types
-import type {
-    IForwardMessage,
-    IRoom,
-    TPreviewExistingRoom,
-} from "@/models/room/IRoom.store";
-import type { TValueOf } from "@/models/TUtils";
-import type { TCreateGroupRoom } from "@/models/room/IRoom.store";
-// styles
-import "./main.scss";
 import { activeRoomSelector } from "@/store/selectors/activeRoomSelector";
 import {
     addRecentRoomData,
     removeRecentRoomData,
 } from "@/store/actions/recentRooms";
+// own types
+import type {
+    IForwardMessage,
+    IRoom,
+    TCreateGroupRoom,
+    TPreviewExistingRoom,
+} from "@/models/room/IRoom.store";
+import type { TValueOf } from "@/models/TUtils";
 import { checkIsPreviewExistingRoomWithFlag } from "@/models/room/IRoom.store";
+// styles
+import "./main.scss";
+import { ConfigConsumer } from "antd/lib/config-provider";
 
 const { Content } = Layout;
 
 const Main = () => {
     const router = useRouter();
     const dispatch = useAppDispatch();
+    const [isSubmenuCollapsed, setIsSubmenuCollapsed] = useState<boolean>(true);
     const user = useAppSelector((state) => state.authentication.user!);
     const rooms = useAppSelector((state) => state.room.local);
     const activeRoom = useAppSelector(activeRoomSelector);
@@ -55,6 +60,22 @@ const Main = () => {
             void router.push(createRoute({ path: ROUTES.AUTH }));
         }
     }, [router, user]);
+
+    const onOpenSubmenu = useCallback(() => {
+        setIsSubmenuCollapsed(false);
+    }, []);
+
+    const onCloseSubmenu = useCallback(() => {
+        setIsSubmenuCollapsed(true);
+    }, []);
+
+    const openModalToCreateGroup = useCallback(() => {
+        setIsOpenModalToCreateGroup(true);
+    }, []);
+
+    const closeModalToCreateGroup = useCallback(() => {
+        setIsOpenModalToCreateGroup(false);
+    }, []);
 
     const onChangeActiveDialog = useCallback(
         (roomId: TValueOf<Pick<IRoom, "id">>) => {
@@ -81,28 +102,6 @@ const Main = () => {
                     isPreview: true,
                 }),
             );
-        },
-        [dispatch],
-    );
-
-    const onCreateRoom = useCallback(
-        async (remoteRoom: TCreateGroupRoom) => {
-            try {
-                const newRoom = await dispatch(createRoom(remoteRoom)).unwrap();
-
-                dispatch(
-                    addRecentRoomData({
-                        id: newRoom.id,
-                    }),
-                );
-                return newRoom;
-            }
-            catch (rejectedValueOrSerializedError) {
-                console.warn(
-                    "Error when creating a room!: ",
-                    rejectedValueOrSerializedError,
-                );
-            }
         },
         [dispatch],
     );
@@ -136,14 +135,6 @@ const Main = () => {
         setIsOpenModalToForwardMessage(false);
     }, []);
 
-    const openModalToCreateGroup = useCallback(() => {
-        setIsOpenModalToCreateGroup(true);
-    }, []);
-
-    const closeModalToCreateGroup = useCallback(() => {
-        setIsOpenModalToCreateGroup(false);
-    }, []);
-
     const onJoinRoom = useCallback(async () => {
         // activeRoom, probably, is a remote room viewing at this moment.
         if (!activeRoom || !checkIsPreviewExistingRoomWithFlag(activeRoom)) {
@@ -169,15 +160,51 @@ const Main = () => {
         }
     }, [activeRoom, dispatch]);
 
+    const onCreateRoom = useCallback(
+        async (remoteRoom: TCreateGroupRoom) => {
+            try {
+                const newRoom = await dispatch(createRoom(remoteRoom)).unwrap();
+
+                dispatch(
+                    addRecentRoomData({
+                        id: newRoom.id,
+                    }),
+                );
+                return newRoom;
+            }
+            catch (rejectedValueOrSerializedError) {
+                console.warn(
+                    "Error when creating a room!: ",
+                    rejectedValueOrSerializedError,
+                );
+            }
+        },
+        [dispatch],
+    );
+
     return (
-        <Fragment>
-            <Content className="messenger">
+        <Content className="messenger">
+            <MainMenu onOpenSubmenu={onOpenSubmenu} />
+            <SubMenu
+                isCollapsed={isSubmenuCollapsed}
+                closeSubMenu={onCloseSubmenu}
+                openModalToCreateGroup={openModalToCreateGroup}
+            />
+            <ConfigProvider
+                theme={{
+                    ...darkTheme,
+                    components: {
+                        Layout: {
+                            headerBg: "#17212b",
+                        },
+                    },
+                }}
+            >
                 <Dialogs
                     user={user}
                     onClickRoom={onChangeActiveDialog}
                     onClickRemoteRoom={onClickRemoteRoom}
                     activeRoomId={activeRoom ? activeRoom.id : null}
-                    openModalToCreateGroup={openModalToCreateGroup}
                 />
                 <ActiveRoom
                     room={activeRoom}
@@ -185,26 +212,27 @@ const Main = () => {
                     onJoinRoom={onJoinRoom}
                     openModalToForwardMessage={openModalToForwardMessage}
                 />
-            </Content>
-            <Modal
-                title="Переслать сообщение"
-                open={isOpenModalToForwardMessage}
-                onCancel={onCloseForwardModal}
-                okButtonProps={{ style: { display: "none" } }}
-                cancelButtonProps={{ style: { display: "none" } }}
-            >
-                <ListRooms
-                    rooms={Object.values(rooms.rooms.byId)}
-                    onClickRoom={onClickRoomToForwardMessage}
+                <Modal
+                    title="Переслать сообщение"
+                    open={isOpenModalToForwardMessage}
+                    onCancel={onCloseForwardModal}
+                    okButtonProps={{ style: { display: "none" } }}
+                    cancelButtonProps={{ style: { display: "none" } }}
+                >
+                    <ListRooms
+                        rooms={Object.values(rooms.rooms.byId)}
+                        onClickRoom={onClickRoomToForwardMessage}
+                    />
+                </Modal>
+                <CreateGroupModal
+                    onOk={(roomInfo: TCreateGroupRoom) =>
+                        onCreateRoom(roomInfo)
+                    }
+                    onCloseModal={closeModalToCreateGroup}
+                    isOpen={isOpenModalToCreateGroup}
                 />
-            </Modal>
-
-            <CreateGroupModal
-                onOk={(roomInfo: TCreateGroupRoom) => onCreateRoom(roomInfo)}
-                onCloseModal={closeModalToCreateGroup}
-                isOpen={isOpenModalToCreateGroup}
-            />
-        </Fragment>
+            </ConfigProvider>
+        </Content>
     );
 };
 

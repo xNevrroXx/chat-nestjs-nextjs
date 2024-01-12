@@ -1,9 +1,9 @@
 import { FC } from "react";
-import * as classNames from "classnames";
+import classNames from "classnames";
 import { Typography, theme } from "antd";
 // own modules
-import DoubleCheck from "../../icons/DoubleCheck.tsx";
-import Check from "../../icons/Check.tsx";
+import DoubleCheck from "@/icons/DoubleCheck";
+import Check from "@/icons/Check";
 // styles
 import "./time.scss";
 

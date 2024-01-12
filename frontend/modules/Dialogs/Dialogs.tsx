@@ -8,17 +8,7 @@ import React, {
     useState,
     useTransition,
 } from "react";
-import {
-    Button,
-    Divider,
-    Flex,
-    Input,
-    Layout,
-    Space,
-    theme,
-    Typography,
-} from "antd";
-import { PlusCircleOutlined } from "@ant-design/icons";
+import { Divider, Input, Layout, Typography } from "antd";
 // own modules
 import { IUserDto } from "@/models/auth/IAuth.store";
 import { TValueOf } from "@/models/TUtils";
@@ -29,21 +19,19 @@ import { FetchingStatus } from "@/hooks/useFetch.hook";
 import { Spinner } from "@/components/Spinner/Spinner";
 import ListLocalDialogs from "@/components/ListDialogs/ListLocalDialogs";
 import ListRemoteDialogs from "@/components/ListDialogs/ListRemoteDialogs";
-// styles
-import "./dialogs.scss";
 import { clearPreviewRooms } from "@/store/actions/room";
 import { getPreviews } from "@/store/thunks/room";
+// styles
+import "./dialogs.scss";
 
-const { useToken } = theme;
+const { Header, Content } = Layout;
 const { Title, Text } = Typography;
-const { Sider } = Layout;
 
 interface IDialogsProps {
     user: IUserDto;
     activeRoomId: TValueOf<Pick<IRoom, "id">> | null;
     onClickRoom: (roomId: TValueOf<Pick<IRoom, "id">>) => void;
     onClickRemoteRoom: (room: TPreviewExistingRoom) => void;
-    openModalToCreateGroup: () => void;
 }
 
 const Dialogs: FC<IDialogsProps> = ({
@@ -51,10 +39,8 @@ const Dialogs: FC<IDialogsProps> = ({
     activeRoomId,
     onClickRoom,
     onClickRemoteRoom,
-    openModalToCreateGroup,
 }) => {
     const dispatch = useAppDispatch();
-    const { token } = useToken();
     const [dialogQueryString, setDialogQueryString] = useState<string>("");
     const filteredLocalDialogs = useAppSelector((state) =>
         filteredRoomsSelector(state, dialogQueryString),
@@ -182,42 +168,28 @@ const Dialogs: FC<IDialogsProps> = ({
     ]);
 
     return (
-        <Sider theme="light" className="dialogs">
-            <Space
-                direction="vertical"
+        <Layout className="dialogs" style={{ flex: "0 0 30%" }}>
+            <Header
                 className="dialogs__header"
-                size="small"
-                style={{ marginBottom: 0 }}
+                style={{ margin: 0, padding: "0 12px" }}
             >
-                <Title style={{ color: token.colorTextSecondary }} level={4}>
-                    Диалоги
-                </Title>
                 <Input
+                    style={{
+                        borderRadius: "15px",
+                    }}
                     value={dialogQueryString}
                     onChange={onChangeQuery}
                     placeholder={"Поиск диалогов и пользователей..."}
                 />
-                <Flex wrap="wrap">
-                    <Button
-                        block={true}
-                        style={{ marginTop: "20px" }}
-                        size="small"
-                        shape="round"
-                        icon={<PlusCircleOutlined />}
-                        onClick={openModalToCreateGroup}
-                    >
-                        Создать групповой чат
-                    </Button>
-                </Flex>
-            </Space>
+            </Header>
             <Divider />
-            <Space direction="vertical" className="dialogs__lists">
+            <Content>
                 {localContent}
                 {(filteredRemoteDialogs.status !== FetchingStatus.IDLE ||
-                    filteredRemoteDialogs.rooms) && <Divider />}
+                    filteredRemoteDialogs.rooms.length > 0) && <Divider />}
                 {remoteContent}
-            </Space>
-        </Sider>
+            </Content>
+        </Layout>
     );
 };
 

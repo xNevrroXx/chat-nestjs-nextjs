@@ -22,6 +22,7 @@ import {
 import { IKnownAndUnknownFiles } from "@/models/room/IRoom.general";
 // styles
 import "./message.scss";
+import { truncateTheText } from "@/utils/truncateTheText";
 
 const { useToken } = theme;
 const { Text } = Typography;
@@ -75,12 +76,20 @@ const Message: FC<IMessageProps> = ({
 
     const otherElem = useCallback(
         (fileInfo: IFile): JSX.Element => {
+            // console.log("fileInfo: ", fileInfo);
             return (
                 <Fragment>
                     <FileTwoTone />
                     <p>
                         <Text className="message__attachment-file-name">
-                            {fileInfo.originalName}
+                            {/*{fileInfo.originalName}*/}
+                            {truncateTheText({
+                                text: fileInfo.originalName,
+                                maxLength: 11,
+                                cutCloseToLastSpace: false,
+                                trim: true,
+                                isFile: true,
+                            })}
                         </Text>
                         <br />
                         <Text style={{ color: token.colorTextSecondary }}>
@@ -102,9 +111,11 @@ const Message: FC<IMessageProps> = ({
             let fileElem: JSX.Element;
             if (fileInfo.attachmentType === "video") {
                 fileElem = <VideoPlayer {...fileInfo} />;
-            } else if (fileInfo.attachmentType === "image") {
+            }
+            else if (fileInfo.attachmentType === "image") {
                 fileElem = imageElem(fileInfo);
-            } else if (fileInfo.attachmentType === "audio") {
+            }
+            else if (fileInfo.attachmentType === "audio") {
                 // fileElem = audioElem(fileInfo); // todo add an audio element
             }
 

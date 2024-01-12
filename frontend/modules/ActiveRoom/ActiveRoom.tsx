@@ -1,17 +1,21 @@
 import { MenuFoldOutlined, PhoneTwoTone } from "@ant-design/icons";
-import { Avatar, Button, Checkbox, Flex, Modal, theme, Typography } from "antd";
-import React, {
-    type FC,
-    Fragment,
-    useCallback,
-    useMemo,
-    useRef,
-    useState,
-} from "react";
+import {
+    Avatar,
+    Button,
+    Checkbox,
+    ConfigProvider,
+    Flex,
+    Layout,
+    Modal,
+    theme,
+    Typography,
+} from "antd";
+import React, { type FC, useCallback, useMemo, useRef, useState } from "react";
 // own modules
 import { useScrollTrigger } from "@/hooks/useScrollTrigger.hook";
 import RoomContent from "@/components/RoomContent/RoomContent";
 import ScrollDownButton from "@/components/ScrollDownButton/ScrollDownButton";
+import InputMessage from "@/modules/InputMessage/InputMessage";
 import type { IUserDto } from "@/models/auth/IAuth.store";
 import type { TValueOf } from "@/models/TUtils";
 import {
@@ -31,8 +35,10 @@ import {
     TMessageForActionEditOrReply,
 } from "@/models/room/IRoom.general";
 import PinnedMessages from "../PinnedMessages/PinnedMessages";
-// actions
 import { useAppDispatch, useAppSelector } from "@/hooks/store.hook";
+import { truncateTheText } from "@/utils/truncateTheText";
+import darkTheme from "@/theme/dark.theme";
+// actions
 import {
     deleteMessageSocket,
     editMessageSocket,
@@ -40,13 +46,13 @@ import {
     sendMessageSocket,
     toggleUserTypingSocket,
 } from "@/store/thunks/room";
-import { truncateTheText } from "@/utils/truncateTheText";
 // styles
 import "./active-room.scss";
-import InputMessage from "@/modules/InputMessage/InputMessage";
+
+const { Header, Footer, Content } = Layout;
+const { Text, Title } = Typography;
 
 const { useToken } = theme;
-const { Text, Title } = Typography;
 
 type TJoinRoomFn = () => Promise<IRoom | undefined>;
 interface IActiveChatProps {
@@ -291,32 +297,50 @@ const ActiveRoom: FC<IActiveChatProps> = ({
         }
     }, [room, interlocutor]);
 
-    const content = (): JSX.Element => {
-        if (!room) {
-            return (
-                <Flex
-                    className="active-room__not-exist"
-                    justify="center"
-                    align="center"
-                >
-                    <Title
-                        level={5}
-                        style={{ color: token.colorTextSecondary }}
-                    >
-                        Выберите чат
-                    </Title>
-                </Flex>
-            );
-        }
-
+    if (!room) {
         return (
-            <Fragment>
-                <div className="active-room__header">
+            <ConfigProvider
+                theme={{
+                    ...darkTheme,
+                    token: {
+                        colorBgLayout: "#131d23",
+                    },
+                }}
+            >
+                <Layout>
+                    <Flex
+                        className="active-room__not-exist"
+                        justify="center"
+                        align="center"
+                    >
+                        <Title
+                            level={5}
+                            style={{ color: token.colorTextSecondary }}
+                        >
+                            Выберите чат
+                        </Title>
+                    </Flex>
+                </Layout>
+            </ConfigProvider>
+        );
+    }
+
+    return (
+        <ConfigProvider
+            theme={{
+                ...darkTheme,
+                token: {
+                    colorBgLayout: "#131d23",
+                },
+            }}
+        >
+            <Layout>
+                <Header className="active-room__header">
                     <div className="active-room__info">
-                        <Avatar size={36} className="active-room__photo">
+                        <Avatar size={42} className="active-room__photo">
                             {/*photo*/}
                         </Avatar>
-                        <div className="active-room__wrapper">
+                        <Flex className="active-room__wrapper">
                             <Title level={5} className="active-room__name">
                                 {room.name}
                             </Title>
@@ -326,14 +350,14 @@ const ActiveRoom: FC<IActiveChatProps> = ({
                             >
                                 {userStatuses}
                             </Text>
-                        </div>
+                        </Flex>
                     </div>
                     <div className="active-room__space"></div>
                     <div className="active-room__options">
                         <PhoneTwoTone className="custom" />
                         <MenuFoldOutlined className="custom" />
                     </div>
-                </div>
+                </Header>
 
                 {room.pinnedMessages.length > 0 && (
                     <PinnedMessages pinnedMessages={room.pinnedMessages} />
@@ -349,7 +373,7 @@ const ActiveRoom: FC<IActiveChatProps> = ({
                     onOpenUsersListForForwardMessage={openModalToForwardMessage}
                 />
 
-                <div className="active-room__footer">
+                <Footer className="active-room__footer">
                     {isVisibleScrollButtonState && (
                         <ScrollDownButton
                             onClick={onClickScrollButton}
@@ -387,7 +411,7 @@ const ActiveRoom: FC<IActiveChatProps> = ({
                             onSendEditedMessage={onSendEditedMessage}
                         />
                     )}
-                </div>
+                </Footer>
 
                 <Modal
                     title="Вы хотите удалить сообщение?"
@@ -434,11 +458,9 @@ const ActiveRoom: FC<IActiveChatProps> = ({
                         )
                     }
                 />
-            </Fragment>
-        );
-    };
-
-    return <div className="active-room">{content()}</div>;
+            </Layout>
+        </ConfigProvider>
+    );
 };
 
 export default ActiveRoom;

@@ -4,11 +4,11 @@ import StyledComponentsRegistry from "../lib/AntdRegistry";
 import { ConfigProvider, Layout } from "antd";
 import ruRU from "antd/locale/ru_RU";
 // own modules
-import theme from "@/theme/light.theme";
-// styles
-import "./globals.scss";
 import { CheckAuth } from "@/components/CheckAuth/CheckAuth";
 import StoreProvider from "@/HOC/StoreProvider";
+import darkTheme from "@/theme/dark.theme";
+// styles
+import "./globals.scss";
 
 export const metadata: Metadata = {
     title: "Молва",
@@ -34,7 +34,7 @@ const RootLayout: FC<IProps> = ({ children }) => {
                         }}
                     >
                         <StyledComponentsRegistry>
-                            <ConfigProvider locale={ruRU} theme={theme}>
+                            <ConfigProvider locale={ruRU} theme={darkTheme}>
                                 {children}
                             </ConfigProvider>
                         </StyledComponentsRegistry>

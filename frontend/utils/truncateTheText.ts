@@ -1,28 +1,66 @@
 interface ICutTheTextParams {
-    text: string,
-    maxLength: number,
+    text: string;
+    maxLength: number;
     /**
      * If it's false - it cut off the text, regardless spaces.<br>
-     * **Example 1**: truncateTheText("hello, my name is John", 12, true);<br>
-     * Output 1: "hello, my...".<br>
-     * **Example 2**: truncateTheText("hello, my name is John", 12, false);<br>
-     * Output 2: "hello, my na...".
-     */
-    cutCloseToLastSpace?: boolean,
+     * @example
+     * // returns "hello, my..."
+     * truncateTheText("hello, my name is John", 12, true);
+     * @example
+     * // returns "hello, my na..."
+     * truncateTheText("hello, my name is John", 12, false);
+     * @default: true
+     * @returns {String} Returns the truncated string.
+     **/
+    cutCloseToLastSpace?: boolean;
     /**
-     * Default: true
-    * */
-    trim?: boolean
+     * Trim spaces around the text.
+     * @default: true
+     * */
+    trim?: boolean;
+    /**
+     * If it's file, it can cut off the text. except for the part with the *extension*.
+     * @example
+     * // returns "a-really.txt"
+     * truncateTheText("a-really-long-name-of-the-file.txt", 11, false);
+     * @default true
+     * */
+    isFile?: boolean;
 }
 
-export const truncateTheText = ({text: inputText, maxLength, cutCloseToLastSpace = true, trim = true}: ICutTheTextParams): string => {
+export const truncateTheText = ({
+    text: inputText,
+    maxLength,
+    cutCloseToLastSpace = true,
+    trim = true,
+    isFile = false,
+}: ICutTheTextParams): string => {
     const text = trim ? inputText.trim() : inputText;
     if (!text || text.length < maxLength - 1) {
         return text;
     }
 
-    let result = text.slice(0, maxLength);
+    let result: string;
+    let extension: string;
+    if (!isFile) {
+        result = text.slice(0, maxLength);
+    }
+    else {
+        const regex = /(.+)(\.[a-z]+)$/;
+        const resultRegex = regex.exec(text);
+        if (!resultRegex) {
+            return text;
+        }
+
+        extension = resultRegex[2];
+        result = result = resultRegex[1].slice(0, maxLength);
+    }
+
     if (!cutCloseToLastSpace) {
+        if (isFile) {
+            result += extension!;
+            return result;
+        }
         return result.concat("...");
     }
 
@@ -37,14 +75,22 @@ export const truncateTheText = ({text: inputText, maxLength, cutCloseToLastSpace
             lastMatch = pastMatch;
             break;
         }
-    } while(m);
-
+    } while (m);
 
     if (!lastMatch) {
-        return result.concat("...");
+        if (isFile) {
+            result += extension!;
+            return result;
+        }
+        else {
+            return result.concat("...");
+        }
     }
 
     result = result.slice(0, lastMatch.index + 1).concat("...");
+    if (isFile) {
+        result += extension!;
+    }
 
     return result;
 };

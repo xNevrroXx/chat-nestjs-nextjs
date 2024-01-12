@@ -139,11 +139,13 @@ const InputDuringMessage = forwardRef<HTMLDivElement, IInputDuringMessageProps>(
                         )}
                     </div>
                 </Flex>
-                <UploadFiles
-                    buttonRef={buttonAddFilesRef}
-                    attachments={files}
-                    removeAttachment={removeFile}
-                />
+                {files.length > 0 && (
+                    <UploadFiles
+                        buttonRef={buttonAddFilesRef}
+                        attachments={files}
+                        removeAttachment={removeFile}
+                    />
+                )}
             </Fragment>
         );
     },

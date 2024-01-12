@@ -95,7 +95,8 @@ const OriginalMessage: FC<IMessage | IForwardedMessage> = (message) => {
                     />
                 </div>
             );
-        } else if (text && !firstLinkInfo) {
+        }
+        else if (text && !firstLinkInfo) {
             return (
                 <div
                     ref={messageElRef}
@@ -114,7 +115,8 @@ const OriginalMessage: FC<IMessage | IForwardedMessage> = (message) => {
                     />
                 </div>
             );
-        } else if (
+        }
+        else if (
             !files.find(
                 (f) =>
                     f.fileType === FileType.ATTACHMENT &&

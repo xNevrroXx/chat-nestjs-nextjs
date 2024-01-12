@@ -19,6 +19,7 @@ import { TValueOf } from "@/models/TUtils";
 import { TMessageForAction } from "@/models/room/IRoom.general";
 // styles
 import "./room-content.scss";
+import { Content } from "antd/es/layout/layout";
 
 interface IChatContentProps {
     className?: string;
@@ -82,12 +83,12 @@ const RoomContent = forwardRef<HTMLDivElement, IChatContentProps>(
         }, [isNeedScrollToLastMessage, listMessages]);
 
         return (
-            <div
+            <Content
                 ref={innerRef}
                 className={classNames("room-content", className)}
             >
                 <div className="room-content__wrapper">{listMessages}</div>
-            </div>
+            </Content>
         );
     },
 );

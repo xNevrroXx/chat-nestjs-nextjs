@@ -26,7 +26,7 @@
 
   &__content {
     position: relative;
-    background-color: rgba(238, 238, 238, 100);
+    background-color: rgb(24, 37, 51);
   }
 
   &__wrapper-inner-content {
@@ -47,9 +47,9 @@
     }
     &_empty {
       position: absolute;
-      background-color: rgba(black, .2);
+      //background-color: rgba(black, .2);
       border-radius: 4px;
-      color: white;
+      //color: white;
       bottom: 2px;
       right: 10px;
       padding: 5px 15px;
@@ -112,7 +112,7 @@
       display: block;
       width: 70%;
       height: 1px;
-      box-shadow: 0 0 1px 0 black inset;
+      box-shadow: 0 0 1px 0 white inset;
       transition: 125ms;
     }
   }
@@ -167,20 +167,20 @@
     align-self: flex-end;
     user-select: none;
     &_on-attachments {
-      color: rgba(white, .8);
+      //color: rgba(white, .8);
       visibility: hidden;
       position: absolute;
       bottom: 2px;
       right: 10px;
       padding: 2px 20px;
-      background-color: rgba(black, .2);
+      //background-color: rgba(black, .2);
       border-radius: 20px;
     }
   }
 
   &_mine {
     .message__content {
-      background-color: rgb(190 225 248);
+      background-color: rgb(43, 82, 119);
     }
   }
 }

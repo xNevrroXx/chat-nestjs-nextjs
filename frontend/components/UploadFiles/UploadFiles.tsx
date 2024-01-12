@@ -33,13 +33,14 @@ const UploadFiles: FC<IUploadFilesProps> = ({
 
         async function addUrlToFiles() {
             const filePromises = attachments.map<Promise<UploadFile>>(
-                (file) => {
+                (file, index) => {
                     return new Promise((resolve, reject) => {
                         getBase64(file)
                             .then((url) => {
                                 resolve({
-                                    ...file,
+                                    name: file.name,
                                     url: url || "fake",
+                                    uid: index,
                                 } as never as UploadFile); // get an uid automatically
                             })
                             .catch((error) => {
