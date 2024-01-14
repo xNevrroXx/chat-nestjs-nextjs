@@ -1,6 +1,6 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 // services
-import { RoomService } from "@/services/RoomService";
+import { RoomService } from "@/services/Room.service";
 import { SocketIOService } from "@/services/SocketIO.service";
 // actions
 import {
@@ -26,13 +26,12 @@ import {
     TSendUserTyping,
     TPreviewExistingRoom,
 } from "@/models/room/IRoom.store";
-import { RootState } from "@/store";
-import { TNormalizedList } from "@/models/other/TNormalizedList";
+import { TRootState } from "@/store";
 
 const createSocketInstance = createAsyncThunk<
     SocketIOService,
     string,
-    { state: RootState }
+    { state: TRootState }
 >("room/socket:create-instance", (sessionId: string, thunkAPI) => {
     try {
         const socket = new SocketIOService(sessionId);
@@ -44,7 +43,7 @@ const createSocketInstance = createAsyncThunk<
     }
 });
 
-const connectSocket = createAsyncThunk<void, void, { state: RootState }>(
+const connectSocket = createAsyncThunk<void, void, { state: TRootState }>(
     "room/socket:connect",
     async (_, thunkApi) => {
         try {
@@ -82,7 +81,7 @@ const connectSocket = createAsyncThunk<void, void, { state: RootState }>(
     },
 );
 
-const disconnectSocket = createAsyncThunk<void, void, { state: RootState }>(
+const disconnectSocket = createAsyncThunk<void, void, { state: TRootState }>(
     "room/socket:disconnect",
     async (_, thunkApi) => {
         try {
@@ -99,7 +98,7 @@ const disconnectSocket = createAsyncThunk<void, void, { state: RootState }>(
 const sendMessageSocket = createAsyncThunk<
     void,
     TSendMessage,
-    { state: RootState }
+    { state: TRootState }
 >("room/socket:send-message", (data, thunkAPI) => {
     try {
         const socket = thunkAPI.getState().room.socket;
@@ -118,7 +117,7 @@ const sendMessageSocket = createAsyncThunk<
 const pinMessageSocket = createAsyncThunk<
     void,
     IPinMessage,
-    { state: RootState }
+    { state: TRootState }
 >("room/socket:pin-message", (data, thunkAPI) => {
     try {
         const socket = thunkAPI.getState().room.socket;
@@ -137,7 +136,7 @@ const pinMessageSocket = createAsyncThunk<
 const editMessageSocket = createAsyncThunk<
     void,
     IEditMessage,
-    { state: RootState }
+    { state: TRootState }
 >("room/socket:edit-message", (data, thunkAPI) => {
     try {
         const socket = thunkAPI.getState().room.socket;
@@ -156,7 +155,7 @@ const editMessageSocket = createAsyncThunk<
 const deleteMessageSocket = createAsyncThunk<
     void,
     IDeleteMessage,
-    { state: RootState }
+    { state: TRootState }
 >("room/socket:delete-message", (data, thunkAPI) => {
     try {
         const socket = thunkAPI.getState().room.socket;
@@ -175,7 +174,7 @@ const deleteMessageSocket = createAsyncThunk<
 const forwardMessageSocket = createAsyncThunk<
     void,
     IForwardMessage,
-    { state: RootState }
+    { state: TRootState }
 >("room/socket:forward-message", (data, thunkAPI) => {
     try {
         const socket = thunkAPI.getState().room.socket;
@@ -194,7 +193,7 @@ const forwardMessageSocket = createAsyncThunk<
 const toggleUserTypingSocket = createAsyncThunk<
     void,
     TSendUserTyping,
-    { state: RootState }
+    { state: TRootState }
 >("room/socket:send-toggle-typing", (data, thunkAPI) => {
     try {
         const socket = thunkAPI.getState().room.socket;
@@ -236,7 +235,7 @@ const getPreviews = createAsyncThunk<TPreviewExistingRoom[], string>(
 const createRoom = createAsyncThunk<
     IRoom,
     TCreateGroupRoom,
-    { state: RootState }
+    { state: TRootState }
 >("room/create", async (newRoomData, thunkAPI) => {
     try {
         const response = await RoomService.create(newRoomData);
@@ -257,7 +256,7 @@ const createRoom = createAsyncThunk<
 const joinRoom = createAsyncThunk<
     IRoom,
     TPreviewExistingRoom,
-    { state: RootState }
+    { state: TRootState }
 >("room/join", async (roomData, thunkAPI) => {
     try {
         const response = await RoomService.join(roomData);

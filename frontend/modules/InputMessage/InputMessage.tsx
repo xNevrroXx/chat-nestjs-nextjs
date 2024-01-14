@@ -18,7 +18,7 @@ import { TValueOf } from "@/models/TUtils";
 // styles
 import "./input-message.scss";
 import { useAppDispatch, useAppSelector } from "@/hooks/store.hook";
-import { activeRoomInputDataSelector } from "@/store/selectors/activeRoomInputDataSelector";
+import { activeRoomInputDataSelector } from "@/store/selectors/activeRoomInputData.selector";
 import { updateRecentRoomData } from "@/store/actions/recentRooms";
 import { IRecentRoom } from "@/models/recent-rooms/IRecentRooms.store";
 import { usePrevious } from "@/hooks/usePrevious";

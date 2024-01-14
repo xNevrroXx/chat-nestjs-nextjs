@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Post, Query, Req, UseGuards } from "@nestjs/common";
+import {
+    Body,
+    Controller,
+    Get,
+    Post,
+    Query,
+    Req,
+    UseGuards,
+} from "@nestjs/common";
 import { stringSimilarity } from "string-similarity-js";
 import { Request } from "express";
 import { AuthGuard } from "../auth/auth.guard";
@@ -7,7 +15,12 @@ import { MessageService } from "../message/message.service";
 import { ParticipantService } from "../participant/participant.service";
 import { Prisma, RoomType, User } from "@prisma/client";
 import { UserService } from "../user/user.service";
-import { IRoom, PrismaIncludeFullRoomInfo, TNewRoom, TRoomPreview } from "./IRooms";
+import {
+    IRoom,
+    PrismaIncludeFullRoomInfo,
+    TNewRoom,
+    TRoomPreview,
+} from "./IRooms";
 import { DatabaseService } from "../database/database.service";
 import { IUserSessionPayload } from "../user/IUser";
 import { TNormalizedList } from "../models/TNormalizedList";
@@ -92,23 +105,26 @@ export class RoomController {
 
         const normalizedRooms = await Promise.all(normalizedRoomPromises);
 
-        return normalizedRooms.reduce<TNormalizedList<IRoom>>((prev, curr) => {
-            prev = {
-                values: {
-                    byId: {
-                        ...prev.values.byId,
-                        [curr.id]: curr
+        return normalizedRooms.reduce<TNormalizedList<IRoom>>(
+            (prev, curr) => {
+                prev = {
+                    values: {
+                        byId: {
+                            ...prev.values.byId,
+                            [curr.id]: curr,
+                        },
                     },
-                },
-                allIds: prev.allIds.concat(curr.id)
-            }
-            return prev;
-        }, {
-            values: {
-                byId: {}
+                    allIds: prev.allIds.concat(curr.id),
+                };
+                return prev;
             },
-            allIds: []
-        });
+            {
+                values: {
+                    byId: {},
+                },
+                allIds: [],
+            }
+        );
     }
 
     @Get("find-by-query")
@@ -166,10 +182,10 @@ export class RoomController {
                           },
                       ],
                   },
-                include: PrismaIncludeFullRoomInfo,
-            })) as Prisma.RoomGetPayload<{
-                include: typeof PrismaIncludeFullRoomInfo;
-            }>[]);
+                  include: PrismaIncludeFullRoomInfo,
+              })) as Prisma.RoomGetPayload<{
+                  include: typeof PrismaIncludeFullRoomInfo;
+              }>[]);
 
         const roomsAndUsers = users
             .map<TRoomPreview>((user) => {

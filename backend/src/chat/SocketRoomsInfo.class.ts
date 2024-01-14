@@ -38,8 +38,8 @@ class SocketRoomsInfo {
     }
 
     /**
-    * @return {string} - client id of the connected user or false.
-    * */
+     * @return {string} - client id of the connected user or false.
+     * */
     joinIfConnected(roomId: string, userId: string): string | undefined {
         const clientId = this.getSocketIdByUserId(userId);
 
@@ -102,7 +102,9 @@ class SocketRoomsInfo {
     getUserInfoBySocketId(clientId: string): Readonly<IUserIdWithRoomIDs> {
         return this._socketIDsToUserIDs[clientId];
     }
-    getSocketIdByUserId(userId: string): Readonly<TSocketIOClientID | undefined> {
+    getSocketIdByUserId(
+        userId: string
+    ): Readonly<TSocketIOClientID | undefined> {
         return this._userIDsToSocketIDs[userId];
     }
 

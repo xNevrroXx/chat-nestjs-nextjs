@@ -1,8 +1,7 @@
 "use client";
 
 import { Form, FormItemProps, Input } from "antd";
-import FormItem from "antd/es/form/FormItem";
-import InputPassword from "antd/es/input/Password";
+import FormItem from "antd/lib/form/FormItem";
 import { useFormik } from "formik";
 import { toFormikValidationSchema } from "zod-formik-adapter";
 // own modules
@@ -23,29 +22,30 @@ const LoginForm = () => {
     const formik = useFormik<TLoginFormData>({
         initialValues: {
             email: "",
-            password: ""
+            password: "",
         },
         validationSchema: toFormikValidationSchema(loginUserValidation),
-        onSubmit: (values, {setSubmitting, resetForm}) => {
+        onSubmit: (values, { setSubmitting, resetForm }) => {
             setSubmitting(false);
 
-            void dispatch(login(values))
-                .then(() => {
-                    router.push(
-                        createRoute({
-                            path: ROUTES.MAIN
-                        })
-                    );
-                });
+            void dispatch(login(values)).then(() => {
+                router.push(
+                    createRoute({
+                        path: ROUTES.MAIN,
+                    }),
+                );
+            });
 
             resetForm({
-                values: {...values, password: ""},
-                errors: {}
+                values: { ...values, password: "" },
+                errors: {},
             });
-        }
+        },
     });
 
-    const checkValidationStatus = (field: keyof TLoginFormData): TValueOf<Pick<FormItemProps<TLoginFormData>, "validateStatus">> => {
+    const checkValidationStatus = (
+        field: keyof TLoginFormData,
+    ): TValueOf<Pick<FormItemProps<TLoginFormData>, "validateStatus">> => {
         if (!formik.errors[field]) {
             return formik.values[field] ? "success" : undefined;
         }
@@ -57,42 +57,42 @@ const LoginForm = () => {
         <Form
             className="auth__form"
             name="basic"
-            initialValues={{remember: true}}
+            initialValues={{ remember: true }}
             onFinish={formik.handleSubmit}
             autoComplete="on"
             onChange={formik.handleChange}
         >
-                <FormItem
-                    hasFeedback
-                    help={formik.errors.email}
-                    validateStatus={checkValidationStatus("email")}
-                >
-                    <Input
-                        name="email"
-                        value={formik.values.email}
-                        placeholder="E-mail"
-                        size="large"
-                    />
-                </FormItem>
+            <FormItem
+                hasFeedback
+                help={formik.errors.email}
+                validateStatus={checkValidationStatus("email")}
+            >
+                <Input
+                    name="email"
+                    value={formik.values.email}
+                    placeholder="E-mail"
+                    size="large"
+                />
+            </FormItem>
 
-                <FormItem
-                    hasFeedback
-                    help={formik.errors.password}
-                    validateStatus={checkValidationStatus("password")}
-                >
-                    <InputPassword
-                        name="password"
-                        type="password"
-                        value={formik.values.password}
-                        placeholder="Пароль"
-                        size="large"
-                    />
-                </FormItem>
+            <FormItem
+                hasFeedback
+                help={formik.errors.password}
+                validateStatus={checkValidationStatus("password")}
+            >
+                <Input.Password
+                    name="password"
+                    type="password"
+                    value={formik.values.password}
+                    placeholder="Пароль"
+                    size="large"
+                />
+            </FormItem>
 
-                <FormItem>
-                    <SubmitButton/>
-                </FormItem>
-            </Form>
+            <FormItem>
+                <SubmitButton />
+            </FormItem>
+        </Form>
     );
 };
 

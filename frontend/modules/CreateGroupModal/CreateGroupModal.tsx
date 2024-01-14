@@ -1,15 +1,10 @@
 "use client";
 
 import React, { FC, useCallback, useMemo, useState } from "react";
-import Modal from "antd/es/modal/Modal";
-import {
-    RoomType,
-    TCreateGroupRoom,
-    TPreviewExistingRoom,
-} from "@/models/room/IRoom.store";
-import { Form, Input, Mentions } from "antd";
+import { RoomType, TCreateGroupRoom } from "@/models/room/IRoom.store";
+import { Form, Input, Mentions, Modal } from "antd";
 import { useAppSelector } from "@/hooks/store.hook";
-import { filteredUsersSelector } from "@/store/selectors/filteredUsersSelector";
+import { filteredUsersSelector } from "@/store/selectors/filteredUsers.selector";
 import { getMentionIds } from "@/utils/getMentionIds";
 
 interface IStages {

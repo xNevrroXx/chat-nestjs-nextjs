@@ -6,7 +6,7 @@ import classNames from "classnames";
 import { Interweave } from "interweave";
 // own modules
 import { useAppSelector } from "@/hooks/store.hook";
-import { messageOwnerSelector } from "@/store/selectors/messageOwnerSelector";
+import { messageOwnerSelector } from "@/store/selectors/messageOwner.selector";
 import {
     IInnerMessage,
     IInnerForwardedMessage,

@@ -2,7 +2,7 @@
 
 import React from "react";
 import { createCache, extractStyle, StyleProvider } from "@ant-design/cssinjs";
-import type Entity from "@ant-design/cssinjs/es/Cache";
+import type Entity from "@ant-design/cssinjs/lib/Cache";
 import { useServerInsertedHTML } from "next/navigation";
 
 const StyledComponentsRegistry = ({ children }: React.PropsWithChildren) => {

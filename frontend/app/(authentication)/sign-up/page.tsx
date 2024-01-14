@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import Title from "antd/es/typography/Title";
-import Paragraph from "antd/es/typography/Paragraph";
+import Title from "antd/lib/typography/Title";
+import Paragraph from "antd/lib/typography/Paragraph";
 // own modules
 import { RegisterForm } from "@/modules/RegisterForm";
 import { createTitle } from "@/utils/createTitle";

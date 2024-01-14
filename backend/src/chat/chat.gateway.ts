@@ -109,29 +109,36 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     @UseGuards(WsAuthGuard)
     @SubscribeMessage("room:join-or-create")
-    async joinNewRoom(@ConnectedSocket() client, @MessageBody() roomData: {id: string}) {
+    async joinNewRoom(
+        @ConnectedSocket() client,
+        @MessageBody() roomData: { id: string }
+    ) {
         const userPayload: IUserSessionPayload = client.user;
 
-        const unnormalizedRoom = await this.roomService.findOne({
+        const unnormalizedRoom = (await this.roomService.findOne({
             where: {
-                id: roomData.id
+                id: roomData.id,
             },
-            include: PrismaIncludeFullRoomInfo
-        }) as Prisma.RoomGetPayload<{
+            include: PrismaIncludeFullRoomInfo,
+        })) as Prisma.RoomGetPayload<{
             include: typeof PrismaIncludeFullRoomInfo;
         }>;
 
-        unnormalizedRoom.participants.forEach(participant => {
+        unnormalizedRoom.participants.forEach((participant) => {
             // the participant maybe didn't connect to the new room.
-            const participantClientId = this.socketRoomsInfo.joinIfConnected(unnormalizedRoom.id, participant.userId);
-            // @ts-ignore
-            const participantSocket = this.server.sockets.get(participantClientId);
+            const participantClientId = this.socketRoomsInfo.joinIfConnected(
+                unnormalizedRoom.id,
+                participant.userId
+            );
+            const participantSocket =
+                // @ts-ignore
+                this.server.sockets.get(participantClientId);
 
             if (participantSocket) {
                 // participant is online - we have to manually join this one to the room.
                 participantSocket.join(unnormalizedRoom.id);
             }
-        })
+        });
 
         unnormalizedRoom.participants.forEach((participant) => {
             const userIdToSocketId = Object.entries(
@@ -144,9 +151,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
             if (!userIdToSocketId) return;
             const [userId, clientId] = userIdToSocketId;
 
-            this.roomService.normalize(userId, unnormalizedRoom)
-                .then(room => {
-                    client.broadcast.to(room.id).emit("room:add-or-update", room);
+            this.roomService
+                .normalize(userId, unnormalizedRoom)
+                .then((room) => {
+                    client.broadcast
+                        .to(room.id)
+                        .emit("room:add-or-update", room);
                 });
         });
     }
@@ -201,16 +211,16 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
                 if (!userIdToSocketId) return;
                 const [userId, clientId] = userIdToSocketId;
-                const excludingThisUserTypingInfo = normalizedParticipants.filter(
-                    (participant) => participant.userId !== userId
-                );
+                const excludingThisUserTypingInfo =
+                    normalizedParticipants.filter(
+                        (participant) => participant.userId !== userId
+                    );
 
                 client.broadcast
                     .to(clientId)
                     .emit("room:toggle-typing", excludingThisUserTypingInfo);
             });
-        }
-        catch (error) {
+        } catch (error) {
             console.warn("error: ", error);
         }
     }

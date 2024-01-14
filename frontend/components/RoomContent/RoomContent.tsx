@@ -7,6 +7,7 @@ import React, {
     useRef,
 } from "react";
 import classNames from "classnames";
+import { Content } from "antd/lib/layout/layout";
 // own modules
 import Message from "@/HOC/Message";
 import { IUserDto } from "@/models/auth/IAuth.store";
@@ -19,7 +20,6 @@ import { TValueOf } from "@/models/TUtils";
 import { TMessageForAction } from "@/models/room/IRoom.general";
 // styles
 import "./room-content.scss";
-import { Content } from "antd/es/layout/layout";
 
 interface IChatContentProps {
     className?: string;

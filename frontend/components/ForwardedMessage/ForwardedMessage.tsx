@@ -5,7 +5,7 @@ import { Flex, Typography } from "antd";
 import { useAppSelector } from "@/hooks/store.hook";
 import classNames from "classnames";
 // own modules
-import { messageOwnerSelector } from "@/store/selectors/messageOwnerSelector";
+import { messageOwnerSelector } from "@/store/selectors/messageOwner.selector";
 import { IForwardedMessage } from "@/models/room/IRoom.store";
 // styles
 import "./forwarded-message.scss";

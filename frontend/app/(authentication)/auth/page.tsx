@@ -1,12 +1,12 @@
 import LoginForm from "@/modules/LoginForm";
-import Title from "antd/es/typography/Title";
+import Title from "antd/lib/typography/Title";
 import Link from "next/link";
 import { createRoute } from "@/router/createRoute";
 import { ROUTES } from "@/router/routes";
 import Paper from "@/components/Paper/Paper";
 import { createTitle } from "@/utils/createTitle";
-import Paragraph from "antd/es/typography/Paragraph";
-import { Space } from "antd";
+import Paragraph from "antd/lib/typography/Paragraph";
+import { Layout, Space } from "antd";
 import OAuthButtonsBlock from "@/components/OAuthButtonsBlock/OAuthButtonsBlock";
 
 export const metadata = {
@@ -15,7 +15,7 @@ export const metadata = {
 
 const Authentication = () => {
     return (
-        <div>
+        <Layout>
             <div className="auth__top">
                 <Title level={2}>Войти в аккаунт</Title>
                 <Title level={5}>Пожалуйста, войдите в свой аккаунт</Title>
@@ -31,7 +31,7 @@ const Authentication = () => {
                     </Link>
                 </Paragraph>
             </Paper>
-        </div>
+        </Layout>
     );
 };
 

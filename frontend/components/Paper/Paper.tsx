@@ -1,6 +1,7 @@
 import { CSSProperties, FC, ReactNode } from "react";
-import "./paper.scss";
 import classNames from "classnames";
+// styles
+import "./paper.scss";
 
 interface IPaper {
     children: ReactNode;

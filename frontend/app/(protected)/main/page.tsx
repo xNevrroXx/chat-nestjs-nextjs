@@ -20,7 +20,7 @@ import {
     forwardMessageSocket,
     joinRoom,
 } from "@/store/thunks/room";
-import { activeRoomSelector } from "@/store/selectors/activeRoomSelector";
+import { activeRoomSelector } from "@/store/selectors/activeRoom.selector";
 import {
     addRecentRoomData,
     removeRecentRoomData,

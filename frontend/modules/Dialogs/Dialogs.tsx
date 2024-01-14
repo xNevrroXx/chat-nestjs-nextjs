@@ -14,7 +14,7 @@ import { IUserDto } from "@/models/auth/IAuth.store";
 import { TValueOf } from "@/models/TUtils";
 import { IRoom, TPreviewExistingRoom } from "@/models/room/IRoom.store";
 import { useAppDispatch, useAppSelector } from "@/hooks/store.hook";
-import { filteredRoomsSelector } from "@/store/selectors/filteredRoomsSelector";
+import { filteredRoomsSelector } from "@/store/selectors/filteredRooms.selector";
 import { FetchingStatus } from "@/hooks/useFetch.hook";
 import { Spinner } from "@/components/Spinner/Spinner";
 import ListLocalDialogs from "@/components/ListDialogs/ListLocalDialogs";

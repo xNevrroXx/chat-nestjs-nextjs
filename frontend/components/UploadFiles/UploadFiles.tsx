@@ -1,6 +1,6 @@
 import React, { useState, useEffect, FC, RefObject } from "react";
 import { Upload, Modal, UploadFile } from "antd";
-import { RcFile } from "antd/es/upload";
+import { RcFile } from "antd/lib/upload";
 // styles
 import "./upload-files.scss";
 

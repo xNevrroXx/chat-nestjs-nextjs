@@ -12,6 +12,7 @@ import { ParticipantModule } from "./participant/participant.module";
 import { LinkPreviewModule } from "./link-preview/link-preview.module";
 import { PassportModule } from "@nestjs/passport";
 import { SessionModule } from "./session/session.module";
+import { RoomsOnFoldersModule } from "./rooms-on-folders/rooms-on-folders.module";
 
 @Global()
 @Module({
@@ -31,6 +32,7 @@ import { SessionModule } from "./session/session.module";
         ParticipantModule,
         LinkPreviewModule,
         SessionModule,
+        RoomsOnFoldersModule,
     ],
     providers: [AppConstantsService],
     exports: [AppConstantsService],

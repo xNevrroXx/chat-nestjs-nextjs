@@ -25,20 +25,20 @@ const RootLayout: FC<IProps> = ({ children }) => {
             <body>
                 <StoreProvider>
                     <CheckAuth />
-                    <Layout
-                        style={{
-                            minHeight: "100vh",
-                            display: "flex",
-                            justifyContent: "center",
-                            alignItems: "center",
-                        }}
-                    >
-                        <StyledComponentsRegistry>
-                            <ConfigProvider locale={ruRU} theme={darkTheme}>
+                    <StyledComponentsRegistry>
+                        <ConfigProvider locale={ruRU} theme={darkTheme}>
+                            <Layout
+                                style={{
+                                    minHeight: "100vh",
+                                    display: "flex",
+                                    justifyContent: "center",
+                                    alignItems: "center",
+                                }}
+                            >
                                 {children}
-                            </ConfigProvider>
-                        </StyledComponentsRegistry>
-                    </Layout>
+                            </Layout>
+                        </ConfigProvider>
+                    </StyledComponentsRegistry>
                 </StoreProvider>
             </body>
         </html>

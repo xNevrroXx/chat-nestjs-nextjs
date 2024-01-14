@@ -1,8 +1,8 @@
-import Title from "antd/es/typography/Title";
+import Title from "antd/lib/typography/Title";
 import Link from "next/link";
 import { createRoute } from "@/router/createRoute";
 import { ROUTES } from "@/router/routes";
-import { Content } from "antd/es/layout/layout";
+import { Content } from "antd/lib/layout/layout";
 import { Flex } from "antd";
 
 const NotFound = () => {

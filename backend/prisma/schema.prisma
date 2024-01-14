@@ -33,6 +33,7 @@ model User {
     friendshipUser1 Friendship[]  @relation("user1")
     friendshipUser2 Friendship[]  @relation("user2")
     participant     Participant[] @relation("participant")
+    folders         Folder[]      @relation("user_to_folder")
 
     @@unique([email])
     @@map("user")
@@ -92,6 +93,20 @@ model RefreshToken {
     @@map("refresh_token")
 }
 
+model Folder {
+    id     String @id @default(uuid())
+    name   String
+    userId String
+
+    createdAt DateTime  @default(now()) @map("created_at")
+    updatedAt DateTime? @map("updated_at")
+
+    roomOnFolder RoomOnFolder[] @relation("folder_to_room")
+    user         User           @relation("user_to_folder", fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+    @@unique([userId, name])
+}
+
 model Room {
     id            String   @id @default(uuid())
     creatorUserId String?  @map("user_id")
@@ -106,19 +121,33 @@ model Room {
     usersTyping    UserTyping[]    @relation("users_typing")
     participants   Participant[]   @relation("participant")
     pinnedMessages PinnedMessage[] @relation("room:pinned_messages")
+    roomOnFolder   RoomOnFolder[]  @relation("room_to_folder")
 
     @@map("room")
 }
 
+model RoomOnFolder {
+    folderId String
+    roomId   String
+
+    createdAt DateTime  @default(now()) @map("created_at")
+    updatedAt DateTime? @map("updated_at")
+
+    folder Folder @relation("folder_to_room", fields: [folderId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    room   Room   @relation("room_to_folder", fields: [roomId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+    @@id([folderId, roomId])
+    @@map("rooms_on_folders")
+}
+
 model Participant {
-    id     String @id @default(uuid())
     userId String @map("user_id")
     roomId String @map("room_id")
 
     user User @relation("participant", fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
     room Room @relation("participant", fields: [roomId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
-    @@unique([userId, roomId])
+    @@id([userId, roomId])
     @@map("participant")
 }
 
