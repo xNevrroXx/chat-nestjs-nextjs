@@ -1,7 +1,7 @@
 import { IRoomOnFoldersSlice } from "@/models/rooms-on-folders/IRoomOnFolders.store";
 import { createSlice } from "@reduxjs/toolkit";
 import {
-    addRoomToFolder,
+    addRoomOnFolder,
     createFolder,
     excludeRoomFromFolder,
     getAllFolders,
@@ -26,7 +26,6 @@ const roomsOnFolders = createSlice({
             .addCase(changeCurrentFolder, (store, action) => {
                 store.current = action.payload;
             })
-            // thunks
             .addCase(getAllFolders.fulfilled, (store, action) => {
                 store.folders = action.payload.values;
                 store.allIds = action.payload.allIds;
@@ -36,12 +35,15 @@ const roomsOnFolders = createSlice({
                 store.allIds.push(action.payload.id);
             })
             .addCase(removeFolder.fulfilled, (store, action) => {
-                delete store.folders.byId[action.payload.id];
+                delete store.folders.byId[action.payload.folderId];
                 store.allIds = store.allIds.filter(
-                    (id) => id !== action.payload.id,
+                    (id) => id !== action.payload.folderId,
                 );
+                if (store.current === action.payload.folderId) {
+                    store.current = null;
+                }
             })
-            .addCase(addRoomToFolder.fulfilled, (store, action) => {
+            .addCase(addRoomOnFolder.fulfilled, (store, action) => {
                 store.folders.byId[action.payload.folderId].roomIds.push(
                     action.payload.roomId,
                 );

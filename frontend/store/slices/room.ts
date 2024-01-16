@@ -11,7 +11,9 @@ import {
 } from "@/store/thunks/room";
 import {
     addOrUpdateRoomSocket,
+    addRoomOnFolder,
     clearPreviewRooms,
+    excludeRoomFromFolder,
     handleChangeUserTypingSocket,
     handleDeletedMessageSocket,
     handleEditedMessageSocket,
@@ -43,6 +45,19 @@ const room = createSlice({
     reducers: {},
     extraReducers: (builder) => {
         builder
+            .addCase(excludeRoomFromFolder, (state, action) => {
+                state.local.rooms.byId[action.payload.roomId].folderIds =
+                    state.local.rooms.byId[
+                        action.payload.roomId
+                    ].folderIds.filter(
+                        (folderId) => folderId !== action.payload.folderId,
+                    );
+            })
+            .addCase(addRoomOnFolder, (state, action) => {
+                state.local.rooms.byId[action.payload.roomId].folderIds.push(
+                    action.payload.folderId,
+                );
+            })
             .addCase(getAll.fulfilled, (state, action) => {
                 state.local = {
                     rooms: action.payload.values,
@@ -56,7 +71,6 @@ const room = createSlice({
                 };
             })
             .addCase(getPreviews.fulfilled, (state, action) => {
-                console.log("action.payload: ", action.payload);
                 state.previews = {
                     status: FetchingStatus.FULFILLED,
                     rooms: action.payload,

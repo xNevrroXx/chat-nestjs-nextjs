@@ -8,6 +8,10 @@ import {
 } from "@/models/rooms-on-folders/IRoomOnFolders.store";
 import { RoomsOnFoldersService } from "@/services/RoomsOnFolders.service";
 import { TNormalizedList } from "@/models/other/TNormalizedList";
+import {
+    addRoomOnFolder as roomActionAddRoomOnFolder,
+    excludeRoomFromFolder as roomActionExcludeRoomFromFolder,
+} from "@/store/actions/room";
 
 const getAll = createAsyncThunk<TNormalizedList<IFolder>, void>(
     "folders/get-all",
@@ -55,6 +59,7 @@ const addRoom = createAsyncThunk<TAddRoom, TAddRoom>(
     async (data, thunkAPI) => {
         try {
             await RoomsOnFoldersService.addRoom(data);
+            thunkAPI.dispatch(roomActionAddRoomOnFolder(data));
             return data;
         }
         catch (error) {
@@ -68,6 +73,7 @@ const excludeRoom = createAsyncThunk<TExcludeRoom, TExcludeRoom>(
     async (data, thunkAPI) => {
         try {
             await RoomsOnFoldersService.excludeRoom(data);
+            thunkAPI.dispatch(roomActionExcludeRoomFromFolder(data));
             return data;
         }
         catch (error) {
@@ -80,6 +86,6 @@ export {
     getAll as getAllFolders,
     createFolder,
     removeFolder,
-    addRoom as addRoomToFolder,
+    addRoom as addRoomOnFolder,
     excludeRoom as excludeRoomFromFolder,
 };

@@ -21,7 +21,9 @@ export interface IFolder {
 
 // actions
 export type TCreateFolder = Pick<IFolder, "name">;
-export type TRemoveFolder = Pick<IFolder, "id">;
+export type TRemoveFolder = {
+    folderId: TValueOf<Pick<IFolder, "id">>;
+};
 export type TAddRoom = {
     folderId: TValueOf<Pick<IFolder, "id">>;
     roomId: TValueOf<Pick<IRoom, "id">>;

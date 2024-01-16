@@ -97,7 +97,7 @@ const InputDuringMessage = forwardRef<HTMLDivElement, IInputDuringMessageProps>(
                             ref={ref}
                             value={message}
                             set="twitter"
-                            theme="light"
+                            theme="dark"
                             placeholder={"Ваше сообщение"}
                             buttonRef={emojiButtonRef}
                             disableRecent={true}
@@ -109,7 +109,6 @@ const InputDuringMessage = forwardRef<HTMLDivElement, IInputDuringMessageProps>(
                             tabIndex={0}
                             inputClass={classNames("input-message__textbox")}
                             borderRadius={5}
-                            borderColor={"rgb(207 222 243)"}
                             fontFamily={"Roboto, sans-serif"}
                         />
                     </div>

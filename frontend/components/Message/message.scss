@@ -5,6 +5,7 @@
   white-space: pre-wrap;
   display: flex;
   gap: 4px;
+    overflow: hidden;
   &_with-code {
     min-width: -moz-available;
     min-width: -webkit-fill-available;

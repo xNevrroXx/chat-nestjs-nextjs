@@ -39,6 +39,7 @@ pre {
     overflow: hidden;
     border-radius: 4px;
     margin: 4px 0;
+    font-weight: 600;
 
     div.code-block-header {
         display: flex;
@@ -46,20 +47,16 @@ pre {
         justify-content: space-between;
         font-weight: 600;
         padding: 3px 5px;
-        color: rgb(82 120 156 / 86%);
-        background-color: rgb(168 168 168 / 33%);
+        color: rgb(173, 208, 241);
+        background-color: rgb(81, 120, 155);
         cursor: pointer;
 
         svg {
-            visibility: hidden;
             width: max-content;
             height: 14px;
             vertical-align: middle;
-        }
-
-        &:hover {
-            svg {
-                visibility: visible;
+            * {
+                fill: rgb(173, 208, 241);
             }
         }
     }
@@ -78,7 +75,7 @@ pre {
         bottom: 0;
         left: 0;
         width: 3px;
-        background: rgb(138 168 197);
+        background: rgb(159, 195, 228);
         border-radius: 1px;
         content: "";
     }

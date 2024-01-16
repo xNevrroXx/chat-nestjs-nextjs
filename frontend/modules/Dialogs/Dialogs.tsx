@@ -156,6 +156,7 @@ const Dialogs: FC<IDialogsProps> = ({
                 rooms={filteredLocalDialogs}
                 activeRoomId={activeRoomId}
                 onClickDialog={onClickRoom}
+                hasDropdown={true}
             />
         );
     }, [

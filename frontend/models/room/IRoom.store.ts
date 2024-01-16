@@ -3,6 +3,7 @@ import { TValueOf } from "@/models/TUtils";
 import { SocketIOService } from "@/services/SocketIO.service";
 import { ILinkPreviewInfo } from "@/models/other/ILinkPreviewInfo";
 import { FetchingStatus } from "@/hooks/useFetch.hook";
+import { IFolder } from "@/models/rooms-on-folders/IRoomOnFolders.store";
 
 export enum FileType {
     VOICE_RECORD = "VOICE_RECORD",
@@ -37,6 +38,7 @@ export interface IRoom {
     name: string;
     userId: TValueOf<Pick<IUserDto, "id">>;
     type: RoomType;
+    folderIds: TValueOf<Pick<IFolder, "id">>[];
     creatorUser?: TValueOf<Pick<IUserDto, "id">>;
     messages: (IMessage | IForwardedMessage)[];
     participants: IParticipant[];

@@ -12,6 +12,7 @@ import PinOutlined from "@/icons/PinOutlined";
 import ForwardOutlined from "@/icons/ForwardOutlined";
 import VideoPlayer from "@/components/VideoPlayer/VideoPlayer";
 import Time from "@/components/Time/Time";
+import { truncateTheText } from "@/utils/truncateTheText";
 // types
 import {
     checkIsMessage,
@@ -22,7 +23,6 @@ import {
 import { IKnownAndUnknownFiles } from "@/models/room/IRoom.general";
 // styles
 import "./message.scss";
-import { truncateTheText } from "@/utils/truncateTheText";
 
 const { useToken } = theme;
 const { Text } = Typography;
@@ -76,7 +76,6 @@ const Message: FC<IMessageProps> = ({
 
     const otherElem = useCallback(
         (fileInfo: IFile): JSX.Element => {
-            // console.log("fileInfo: ", fileInfo);
             return (
                 <Fragment>
                     <FileTwoTone />

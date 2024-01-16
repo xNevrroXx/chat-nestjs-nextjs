@@ -25,7 +25,9 @@ class RoomsOnFoldersService {
     static async removeFolder(
         data: TRemoveFolder,
     ): Promise<AxiosResponse<void>> {
-        return $api.delete(this.base + "/remove", { data });
+        return $api.delete(this.base + "/remove", {
+            params: data,
+        });
     }
 
     static async addRoom(data: TAddRoom): Promise<AxiosResponse<void>> {
@@ -33,7 +35,9 @@ class RoomsOnFoldersService {
     }
 
     static async excludeRoom(data: TExcludeRoom): Promise<AxiosResponse<void>> {
-        return $api.delete(this.base + "/exclude-room", { data });
+        return $api.delete(this.base + "/exclude-room", {
+            params: data,
+        });
     }
 }
 

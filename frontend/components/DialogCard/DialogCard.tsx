@@ -13,6 +13,7 @@ import clip from "text-clipper";
 import { getNameInitials } from "@/utils/getNameInitials";
 // styles
 import "./dialog.scss";
+import DialogCardDropdown from "@/components/DialogCardDropdown/DialogCardDropdown";
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -23,6 +24,7 @@ interface IDialogCardProps {
     isActive: boolean;
     lastMessageInfo: ILastMessageInfo | null;
     roomType: TValueOf<Pick<IRoom, "type">>;
+    hasDropdown: boolean;
 }
 
 const DialogCard: FC<IDialogCardProps> = ({
@@ -32,8 +34,9 @@ const DialogCard: FC<IDialogCardProps> = ({
     onClick,
     isActive,
     roomType,
+    hasDropdown = false,
 }) => {
-    return (
+    const content = (
         <li
             tabIndex={0}
             data-list-id={id}
@@ -62,10 +65,13 @@ const DialogCard: FC<IDialogCardProps> = ({
                             </Text>
                         )}
                         <Markup
-                            noWrap={true}
-                            disableLineBreaks={true}
+                            noHtml
+                            noWrap
+                            disableLineBreaks
                             content={emojiParser.parse(
-                                clip(lastMessageInfo.text, 50, { html: true }),
+                                clip(lastMessageInfo.text, 50, {
+                                    html: true,
+                                }),
                             )}
                         />
                     </Paragraph>
@@ -84,6 +90,12 @@ const DialogCard: FC<IDialogCardProps> = ({
             )}
         </li>
     );
+
+    if (hasDropdown) {
+        return <DialogCardDropdown roomId={id}>{content}</DialogCardDropdown>;
+    }
+
+    return content;
 };
 
 export default DialogCard;

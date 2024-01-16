@@ -81,8 +81,6 @@ export class RoomController {
         const userPayload = request.user;
 
         const unnormalizedRooms = (await this.roomService.findMany({
-            skip: 0,
-            take: 10,
             where: {
                 participants: {
                     some: {

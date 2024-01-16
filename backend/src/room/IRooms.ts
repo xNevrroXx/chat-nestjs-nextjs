@@ -11,6 +11,7 @@ export interface IRoom extends Room {
         messageId: string;
         text: string;
     }[];
+    folderIds: string[];
 }
 
 export type TRoomPreview = {
@@ -26,6 +27,11 @@ export type TNewRoom = {
 };
 
 export const PrismaIncludeFullRoomInfo = {
+    roomOnFolder: {
+        select: {
+            folderId: true,
+        },
+    },
     participants: {
         include: {
             user: {

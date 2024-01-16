@@ -6,14 +6,17 @@ import {
     Get,
     HttpCode,
     HttpStatus,
+    Param,
     Post,
+    Query,
     Req,
+    UseGuards,
 } from "@nestjs/common";
 import { RoomsOnFoldersService } from "./rooms-on-folders.service";
 import { Prisma } from "@prisma/client";
 import { IFolder, PrismaIncludeFullFolderInfo } from "./rooms-on-folders.model";
 import { TNormalizedList } from "../models/TNormalizedList";
-import { IRoom } from "../room/IRooms";
+import { AuthGuard } from "../auth/auth.guard";
 
 @Controller("folders")
 export class RoomsOnFoldersController {
@@ -21,6 +24,7 @@ export class RoomsOnFoldersController {
         private readonly roomsOnFoldersService: RoomsOnFoldersService
     ) {}
 
+    @UseGuards(AuthGuard)
     @HttpCode(HttpStatus.OK)
     @Get("all")
     async getAll(@Req() request): Promise<TNormalizedList<IFolder>> {
@@ -58,6 +62,7 @@ export class RoomsOnFoldersController {
         );
     }
 
+    @UseGuards(AuthGuard)
     @HttpCode(HttpStatus.CREATED)
     @Post("create")
     async createFolder(
@@ -83,11 +88,12 @@ export class RoomsOnFoldersController {
         return this.roomsOnFoldersService.normalize(newFolder);
     }
 
+    @UseGuards(AuthGuard)
     @HttpCode(HttpStatus.OK)
     @Delete("remove")
     async removeFolder(
         @Req() request,
-        @Body() { folderId }: { folderId: string }
+        @Query("folderId") folderId: string
     ): Promise<void> {
         const user = request.user;
 
@@ -99,6 +105,7 @@ export class RoomsOnFoldersController {
         });
     }
 
+    @UseGuards(AuthGuard)
     @HttpCode(HttpStatus.CREATED)
     @Post("add-room")
     async addRoom(
@@ -133,11 +140,12 @@ export class RoomsOnFoldersController {
         });
     }
 
+    @UseGuards(AuthGuard)
     @HttpCode(HttpStatus.OK)
     @Delete("exclude-room")
     async excludeRoom(
         @Req() request,
-        @Body() { folderId, roomId }: { folderId: string; roomId: string }
+        @Query() { folderId, roomId }: { folderId: string; roomId: string }
     ): Promise<void> {
         const user = request.user;
 

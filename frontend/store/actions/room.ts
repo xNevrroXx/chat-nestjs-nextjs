@@ -10,7 +10,15 @@ import {
 } from "@/models/room/IRoom.store";
 import { TValueOf } from "@/models/TUtils";
 import { IUserDto } from "@/models/auth/IAuth.store";
+import {
+    TAddRoom,
+    TExcludeRoom,
+} from "@/models/rooms-on-folders/IRoomOnFolders.store";
 
+const excludeFromFolder = createAction<TExcludeRoom>(
+    "room/exclude-from-folder",
+);
+const addOnFolder = createAction<TAddRoom>("room/add-on-folder");
 const setUserId =
     createAction<TValueOf<Pick<IUserDto, "id">>>("room/set-user-id");
 const clearPreviewRooms = createAction("room/clear-previews");
@@ -44,4 +52,6 @@ export {
     handleDeletedMessageSocket,
     handleForwardedMessageSocket,
     handleChangeUserTypingSocket,
+    addOnFolder as addRoomOnFolder,
+    excludeFromFolder as excludeRoomFromFolder,
 };

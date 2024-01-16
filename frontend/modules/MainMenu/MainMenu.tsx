@@ -11,6 +11,12 @@ import { changeCurrentFolder } from "@/store/actions/roomsOnFolders";
 import FoldersModal from "@/components/FoldersModal/FoldersModal";
 import { VerticalFlexButton } from "@/components/Button/VerticalFlexButton";
 import { foldersSelector } from "@/store/selectors/folders.selector";
+import CreateFolderModal from "@/components/CreateFolderModal/CreateFolderModal";
+import { createFolder, removeFolder } from "@/store/thunks/roomsOnFolders";
+import {
+    TCreateFolder,
+    TRemoveFolder,
+} from "@/models/rooms-on-folders/IRoomOnFolders.store";
 
 const { Sider } = Layout;
 
@@ -24,10 +30,26 @@ const MainMenu: FC<IMenuProps> = ({ onOpenSubmenu }) => {
     const folders = useAppSelector(foldersSelector);
     const [isOpenFoldersModal, setIsOpenFoldersModal] =
         useState<boolean>(false);
+    const [isOpenCreateFolderModal, setIsOpenCreateFolderModal] =
+        useState<boolean>(false);
 
     const onChangeFolder = useCallback(
         (folderId?: string) => {
             dispatch(changeCurrentFolder(folderId ?? null));
+        },
+        [dispatch],
+    );
+
+    const onCreateFolder = useCallback(
+        (data: TCreateFolder) => {
+            void dispatch(createFolder(data));
+        },
+        [dispatch],
+    );
+
+    const onRemoveFolder = useCallback(
+        (data: TRemoveFolder) => {
+            void dispatch(removeFolder(data));
         },
         [dispatch],
     );
@@ -52,6 +74,14 @@ const MainMenu: FC<IMenuProps> = ({ onOpenSubmenu }) => {
 
     const onCloseFoldersModal = useCallback(() => {
         setIsOpenFoldersModal(false);
+    }, []);
+
+    const onOpenCreateFolderModal = useCallback(() => {
+        setIsOpenCreateFolderModal(true);
+    }, []);
+
+    const onCloseCreateFolderModal = useCallback(() => {
+        setIsOpenCreateFolderModal(false);
     }, []);
 
     return (
@@ -79,6 +109,13 @@ const MainMenu: FC<IMenuProps> = ({ onOpenSubmenu }) => {
                 folders={folders}
                 isOpen={isOpenFoldersModal}
                 onClose={onCloseFoldersModal}
+                onRemoveFolder={onRemoveFolder}
+                onOpenCreateFolderModal={onOpenCreateFolderModal}
+            />
+            <CreateFolderModal
+                isOpen={isOpenCreateFolderModal}
+                onCreateFolder={onCreateFolder}
+                onCancel={onCloseCreateFolderModal}
             />
         </Sider>
     );

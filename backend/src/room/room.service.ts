@@ -45,11 +45,14 @@ export class RoomService {
             roomName = normalizedParticipants[0].nickname;
         }
 
-        return {
+        const result: IRoom & { roomOnFolder: unknown } = {
             ...unnormalizedRoom,
             name: roomName,
             participants: normalizedParticipants,
             messages: normalizedMessages,
+            folderIds: unnormalizedRoom.roomOnFolder.map(
+                (roomOnFolder) => roomOnFolder.folderId
+            ),
             pinnedMessages: unnormalizedRoom.pinnedMessages.map(
                 (pinnedMessage) => {
                     return {
@@ -60,6 +63,8 @@ export class RoomService {
                 }
             ),
         };
+        delete result.roomOnFolder;
+        return result;
     }
 
     async joinRoom(userId: string, { id, type }: TRoomPreview): Promise<IRoom> {

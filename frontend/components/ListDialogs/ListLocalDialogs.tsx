@@ -18,6 +18,7 @@ interface IDialogsProps {
     rooms: IRoom[];
     activeRoomId: TValueOf<Pick<IRoom, "id">> | null;
     onClickDialog: (roomId: TValueOf<Pick<IRoom, "id">>) => void;
+    hasDropdown?: boolean;
 }
 
 const ListLocalDialogs: FC<IDialogsProps> = ({
@@ -25,6 +26,7 @@ const ListLocalDialogs: FC<IDialogsProps> = ({
     rooms,
     onClickDialog,
     activeRoomId,
+    hasDropdown = false,
 }) => {
     const findLastMessageInfo = useCallback(
         (room: IRoom): ILastMessageInfo | null => {
@@ -85,6 +87,7 @@ const ListLocalDialogs: FC<IDialogsProps> = ({
                     isActive={activeRoomId === room.id}
                     lastMessageInfo={lastMessageInfo}
                     roomType={room.type}
+                    hasDropdown={hasDropdown}
                 />
             );
         });

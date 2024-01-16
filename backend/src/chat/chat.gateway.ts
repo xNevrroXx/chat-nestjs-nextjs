@@ -34,8 +34,8 @@ import {
     TDeleteMessage,
     TPinMessage,
 } from "./IChat";
-import { Prisma, File, RoomType } from "@prisma/client";
-import { PrismaIncludeFullRoomInfo, TRoomPreview } from "../room/IRooms";
+import { Prisma, File } from "@prisma/client";
+import { PrismaIncludeFullRoomInfo } from "../room/IRooms";
 
 @WebSocketGateway({
     namespace: "api/chat",
