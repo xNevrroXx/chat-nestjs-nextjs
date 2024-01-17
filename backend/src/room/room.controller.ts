@@ -17,8 +17,8 @@ import { Prisma, RoomType, User } from "@prisma/client";
 import { UserService } from "../user/user.service";
 import {
     IRoom,
+    NewRoom,
     PrismaIncludeFullRoomInfo,
-    TNewRoom,
     TRoomPreview,
 } from "./IRooms";
 import { DatabaseService } from "../database/database.service";
@@ -39,7 +39,7 @@ export class RoomController {
     @UseGuards(AuthGuard)
     async create(
         @Req() request,
-        @Body() { memberIds, name, type }: TNewRoom
+        @Body() { memberIds, name, type }: NewRoom
     ): Promise<IRoom> {
         const userInfo = request.user;
 

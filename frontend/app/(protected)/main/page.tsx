@@ -36,14 +36,13 @@ import type { TValueOf } from "@/models/TUtils";
 import { checkIsPreviewExistingRoomWithFlag } from "@/models/room/IRoom.store";
 // styles
 import "./main.scss";
-import { ConfigConsumer } from "antd/lib/config-provider";
 
 const { Content } = Layout;
 
 const Main = () => {
     const router = useRouter();
     const dispatch = useAppDispatch();
-    const [isSubmenuCollapsed, setIsSubmenuCollapsed] = useState<boolean>(true);
+    const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
     const user = useAppSelector((state) => state.authentication.user!);
     const rooms = useAppSelector((state) => state.room.local);
     const activeRoom = useAppSelector(activeRoomSelector);
@@ -62,11 +61,11 @@ const Main = () => {
     }, [router, user]);
 
     const onOpenSubmenu = useCallback(() => {
-        setIsSubmenuCollapsed(false);
+        setIsDrawerOpen(true);
     }, []);
 
     const onCloseSubmenu = useCallback(() => {
-        setIsSubmenuCollapsed(true);
+        setIsDrawerOpen(false);
     }, []);
 
     const openModalToCreateGroup = useCallback(() => {
@@ -186,8 +185,8 @@ const Main = () => {
         <Content className="messenger">
             <MainMenu onOpenSubmenu={onOpenSubmenu} />
             <SubMenu
-                isCollapsed={isSubmenuCollapsed}
-                closeSubMenu={onCloseSubmenu}
+                isOpen={isDrawerOpen}
+                onClose={onCloseSubmenu}
                 openModalToCreateGroup={openModalToCreateGroup}
             />
             <ConfigProvider

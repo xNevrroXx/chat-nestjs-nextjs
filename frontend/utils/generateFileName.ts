@@ -1,23 +1,30 @@
-import {FileType} from "@prisma/client";
-import {exhaustiveCheck} from "../chat/IChat";
+import { FileType } from "@/models/room/IRoom.store";
+import { exhaustiveCheck } from "@/models/TUtils";
 
-function generateFileName(senderId: string, typeMessage: FileType, extension: string, index: number) {
+function generateFileName(
+    senderId: string,
+    typeMessage: FileType,
+    extension: string,
+    index: number,
+) {
     let type: null | string = null;
     switch (typeMessage) {
-        case "ATTACHMENT":
+        case FileType.ATTACHMENT:
             type = "ATTACHMENT";
             break;
-        case "VIDEO_RECORD":
+        case FileType.VIDEO_RECORD:
             type = "VIDEO-RECORD";
             break;
-        case "VOICE_RECORD":
+        case FileType.VOICE_RECORD:
             type = "VOICE-RECORD";
             break;
         default:
             exhaustiveCheck(typeMessage);
     }
 
-    return senderId + "-" + type + "-" + Date.now() + "-" + index + "." + extension;
+    return (
+        senderId + "-" + type + "-" + Date.now() + "-" + index + "." + extension
+    );
 }
 
-export {generateFileName};
+export { generateFileName };

@@ -12,8 +12,8 @@ const FlexButton: FC<ButtonProps> = ({ children, ...props }) => {
                 display: "flex",
                 alignItems: "center",
                 minWidth: "min-content",
-                wordBreak: "normal",
                 justifyContent: "flex-start",
+                wordBreak: "normal",
                 ...props.style,
             }}
         >

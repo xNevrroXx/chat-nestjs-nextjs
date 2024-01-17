@@ -2,6 +2,7 @@ import { Room, RoomType, User } from "@prisma/client";
 import { TMessage } from "../message/IMessage";
 import { TValueOf } from "../models/TUtils";
 import { TNormalizedParticipant } from "../participant/IParticipant";
+import { IsString, Length } from "class-validator";
 
 export interface IRoom extends Room {
     messages: TMessage[];
@@ -20,11 +21,16 @@ export type TRoomPreview = {
     id: string;
 };
 
-export type TNewRoom = {
+export class NewRoom {
+    @IsString()
+    @Length(1, 30, {
+        message: "Имя группы должно содержать от 1-го до 30-го символов",
+    })
     name: string;
+
     type: typeof RoomType.GROUP;
     memberIds: TValueOf<Pick<User, "id">>[];
-};
+}
 
 export const PrismaIncludeFullRoomInfo = {
     roomOnFolder: {

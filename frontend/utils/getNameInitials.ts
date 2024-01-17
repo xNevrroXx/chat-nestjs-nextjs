@@ -1,10 +1,10 @@
 interface IParams {
     // string value which will be sliced
-    name: string,
+    name: string;
     // count of the max letters in the sliced name
-    maxLetters?: number,
+    maxLetters?: number;
     // delimiter for name trimming
-    delimiter?: string | RegExp
+    delimiter?: string | RegExp;
 }
 
 /**
@@ -40,9 +40,14 @@ interface IParams {
  *     delimiter: "@"
  * });
  * */
-function getNameInitials({ name, maxLetters = 2, delimiter = " " }: IParams): string {
+function getNameInitials({
+    name: inputName,
+    maxLetters = 2,
+    delimiter = " ",
+}: IParams): string {
+    const name = inputName.trim();
     if (!name || name.length <= 1) {
-        return name;
+        return name.trim();
     }
 
     let result = "";

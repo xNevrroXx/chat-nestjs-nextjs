@@ -4,4 +4,4 @@ function createTitle(subTitle: string): string {
     return MAIN_TITLE.concat(" | ").concat(subTitle);
 }
 
-export {createTitle};
+export { createTitle };

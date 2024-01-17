@@ -91,7 +91,7 @@ const ListLocalDialogs: FC<IDialogsProps> = ({
                 />
             );
         });
-    }, [rooms, activeRoomId, onClickDialog, findLastMessageInfo]);
+    }, [rooms, findLastMessageInfo, activeRoomId, hasDropdown, onClickDialog]);
 
     return <ul className="dialogs__list">{list}</ul>;
 };

@@ -114,14 +114,27 @@ export class RoomsOnFoldersController {
     ): Promise<void> {
         const user = request.user;
 
-        const targetFolder = await this.roomsOnFoldersService.find({
+        const targetFolder = (await this.roomsOnFoldersService.find({
             where: {
                 id: folderId,
                 userId: user.id,
             },
-        });
+            include: {
+                roomOnFolder: true,
+            },
+        })) as Prisma.FolderGetPayload<{
+            include: { roomOnFolder: true };
+        }>;
         if (!targetFolder) {
             throw new BadRequestException();
+        }
+        const isRoomAlreadyOnFolder = targetFolder.roomOnFolder.find(
+            (roomOnFolder) => roomOnFolder.roomId
+        );
+        if (isRoomAlreadyOnFolder) {
+            throw new BadRequestException(
+                `Данный чат уже находится в папке ${targetFolder.name}`
+            );
         }
 
         await this.roomsOnFoldersService.addRoomOnFolder({

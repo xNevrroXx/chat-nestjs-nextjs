@@ -1,6 +1,6 @@
 "use client";
 
-import React, { FC, useCallback, useMemo, useState } from "react";
+import React, { FC, useCallback, useState } from "react";
 import { RoomType, TCreateGroupRoom } from "@/models/room/IRoom.store";
 import { Form, Input, Mentions, Modal } from "antd";
 import { useAppSelector } from "@/hooks/store.hook";
@@ -31,7 +31,9 @@ const CreateGroupModal: FC<IProps> = ({
     onOk: onSuccessAction,
 }) => {
     const users = useAppSelector((state) => filteredUsersSelector(state));
-
+    const [roomNameInputMessage, setRoomNameInputMessage] = useState<
+        string | null
+    >(null);
     const [stage, setStage] = useState<keyof IStages>(0);
     const [roomName, setRoomName] = useState<string>("");
     const [memberIds, setMemberIds] = useState<string[]>([]);
@@ -42,78 +44,27 @@ const CreateGroupModal: FC<IProps> = ({
     }, []);
 
     const onOk = useCallback(() => {
-        if (stage === COUNT_STAGES - 1) {
-            // if the last stage is completed
-            onSuccessAction({
-                name: roomName,
-                memberIds: memberIds,
-                type: RoomType.GROUP,
-            });
-            setStage(0);
-            setRoomName("");
-            setMemberIds([]);
+        if (stage === 0 && (roomName.length < 1 || roomName.length > 30)) {
+            setRoomNameInputMessage("Введите от 1-го до 30-го символов");
             return;
         }
 
-        setStage((prevState) => (prevState + 1) as keyof IStages);
-    }, [onSuccessAction, roomName, memberIds, stage]);
-
-    const contentByStage = useMemo(() => {
-        switch (stage) {
-            case 0: {
-                return (
-                    <Form.Item<TCreateGroupRoom> label="Название" name="name">
-                        <Input
-                            onChange={(e) => {
-                                setRoomName(e.target.value);
-                            }}
-                            value={roomName}
-                        />
-                    </Form.Item>
-                );
-            }
-            case 1: {
-                return (
-                    <Form.Item<TCreateGroupRoom>
-                        label="Участники"
-                        name="memberIds"
-                    >
-                        <Mentions
-                            placeholder="@username-1 @username-2 ..."
-                            autoSize={true}
-                            value={memberIds
-                                .map<string>((id) => {
-                                    const user = users.find(
-                                        (user) => user.id === id,
-                                    )!;
-                                    return "@" + user.name + " ";
-                                })
-                                .join("")}
-                            onChange={onChangeMembers}
-                            options={users /*.concat(data || [])*/
-                                .map(({ name, id }) => {
-                                    const slicedId = id;
-                                    const formattedName = name.match(/ /)
-                                        ? '"' + name + '"'
-                                        : name;
-                                    return {
-                                        key: id,
-                                        value: formattedName + "-" + slicedId,
-                                        label: (
-                                            <>
-                                                <span>
-                                                    {formattedName}-{slicedId}
-                                                </span>
-                                            </>
-                                        ),
-                                    };
-                                })}
-                        />
-                    </Form.Item>
-                );
-            }
+        if (stage !== COUNT_STAGES - 1) {
+            setStage((prevState) => (prevState + 1) as keyof IStages);
+            return;
         }
-    }, [memberIds, onChangeMembers, roomName, stage, users]);
+
+        // if the last stage is completed
+        onSuccessAction({
+            name: roomName,
+            memberIds: memberIds,
+            type: RoomType.GROUP,
+        });
+        setStage(0);
+        setRoomName("");
+        setRoomNameInputMessage(null);
+        setMemberIds([]);
+    }, [onSuccessAction, roomName, memberIds, stage]);
 
     return (
         <Modal
@@ -123,7 +74,60 @@ const CreateGroupModal: FC<IProps> = ({
             okText={stage === COUNT_STAGES - 1 ? "Создать" : "Далее"}
             onOk={onOk}
         >
-            <Form>{contentByStage}</Form>
+            <Form>
+                <Form.Item<TCreateGroupRoom>
+                    style={{ display: stage === 0 ? "block" : "none" }}
+                    label="Название"
+                    name="name"
+                    help={roomNameInputMessage}
+                    validateStatus={roomNameInputMessage ? "error" : undefined}
+                >
+                    <Input
+                        onChange={(e) => {
+                            setRoomName(e.target.value);
+                        }}
+                        value={roomName}
+                    />
+                </Form.Item>
+
+                <Form.Item<TCreateGroupRoom>
+                    label="Участники"
+                    name="memberIds"
+                    style={{ display: stage === 1 ? "block" : "none" }}
+                >
+                    <Mentions
+                        placeholder="@username-1 @username-2 ..."
+                        autoSize={true}
+                        value={memberIds
+                            .map<string>((id) => {
+                                const user = users.find(
+                                    (user) => user.id === id,
+                                )!;
+                                return "@" + user.name + " ";
+                            })
+                            .join("")}
+                        onChange={onChangeMembers}
+                        options={users /*.concat(data || [])*/
+                            .map(({ name, id }) => {
+                                const slicedId = id;
+                                const formattedName = name.match(/ /)
+                                    ? '"' + name + '"'
+                                    : name;
+                                return {
+                                    key: id,
+                                    value: formattedName + "-" + slicedId,
+                                    label: (
+                                        <>
+                                            <span>
+                                                {formattedName}-{slicedId}
+                                            </span>
+                                        </>
+                                    ),
+                                };
+                            })}
+                    />
+                </Form.Item>
+            </Form>
         </Modal>
     );
 };

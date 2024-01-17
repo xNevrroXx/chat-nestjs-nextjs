@@ -49,7 +49,7 @@ import {
 // styles
 import "./active-room.scss";
 
-const { Header, Footer, Content } = Layout;
+const { Header, Footer } = Layout;
 const { Text, Title } = Typography;
 
 const { useToken } = theme;
@@ -440,10 +440,12 @@ const ActiveRoom: FC<IActiveChatProps> = ({
                         >
                             <Text>Удалить у всех</Text>
                         </Checkbox>
-                    ) : room.type === RoomType.PRIVATE ? (
-                        <Text>Сообщение будет удалено только у вас.</Text>
-                    ) : (
+                    ) : messageForAction &&
+                      messageForAction.action === MessageAction.DELETE &&
+                      messageForAction.isForEveryone ? (
                         <Text>Сообщение будет удалено у всех в этом чате.</Text>
+                    ) : (
+                        <Text>Сообщение будет удалено только у вас.</Text>
                     )}
                 </Modal>
 

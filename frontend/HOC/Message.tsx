@@ -1,18 +1,25 @@
-import React, {FC, useCallback, useEffect, useMemo, useState} from "react";
+import React, { FC, useCallback, useEffect, useMemo, useState } from "react";
 // own modules
 import DumbMessage from "@/components/Message/Message";
 // types
-import {checkIsMessage, FileType, IForwardedMessage, IMessage} from "@/models/room/IRoom.store";
-import {IUserDto} from "@/models/auth/IAuth.store";
-import {TValueOf} from "@/models/TUtils";
+import {
+    checkIsMessage,
+    FileType,
+    IForwardedMessage,
+    IMessage,
+    RoomType,
+} from "@/models/room/IRoom.store";
+import { IUserDto } from "@/models/auth/IAuth.store";
+import { TValueOf } from "@/models/TUtils";
 import {
     IKnownAndUnknownFiles,
     MessageAction,
     TAttachmentType,
-    TMessageForAction
+    TMessageForAction,
 } from "@/models/room/IRoom.general";
 
 type TMessageProps = {
+    roomType: RoomType;
     userId: TValueOf<Pick<IUserDto, "id">>;
     message: IMessage | IForwardedMessage;
     onChooseMessageForForward: () => void;
@@ -20,59 +27,78 @@ type TMessageProps = {
 };
 
 const Message: FC<TMessageProps> = ({
-                                        userId,
-                                        message,
-                                        onChooseMessageForAction,
-                                        onChooseMessageForForward
-                                    }) => {
+    userId,
+    roomType,
+    message,
+    onChooseMessageForAction,
+    onChooseMessageForForward,
+}) => {
     const [isVoice, setIsVoice] = useState<boolean>(false);
-    const [filesWithBlobUrls, setFilesWithBlobUrls] = useState<IKnownAndUnknownFiles>({
-        known: [],
-        unknown: []
-    });
+    const [filesWithBlobUrls, setFilesWithBlobUrls] =
+        useState<IKnownAndUnknownFiles>({
+            known: [],
+            unknown: [],
+        });
 
     useEffect(() => {
-        if (!checkIsMessage(message) || !message.files || message.files.length === 0) {
+        if (
+            !checkIsMessage(message) ||
+            !message.files ||
+            message.files.length === 0
+        ) {
             return;
         }
 
         if (message.files[0].fileType === FileType[FileType.VOICE_RECORD]) {
             setFilesWithBlobUrls({
-                known: [{
-                    ...message.files[0],
-                    attachmentType: "audio"
-                }],
-                unknown: []
+                known: [
+                    {
+                        ...message.files[0],
+                        attachmentType: "audio",
+                    },
+                ],
+                unknown: [],
             });
             setIsVoice(true);
-        } else {
-            const filesWithBlobUrl = message.files.reduce<IKnownAndUnknownFiles>((previousValue, file) => {
-                let attachmentType: TAttachmentType;
-                if (file.mimeType.includes("video")) {
-                    attachmentType = "video";
-                } else if (file.mimeType.includes("image")) {
-                    attachmentType = "image";
-                } else if (file.mimeType.includes("audio") && file.fileType === FileType.VOICE_RECORD) {
-                    attachmentType = "audio";
-                } else {
-                    attachmentType = "unknown";
-                }
-                // const blobUrl = URL.createObjectURL(file.blob);
+        }
+        else {
+            const filesWithBlobUrl =
+                message.files.reduce<IKnownAndUnknownFiles>(
+                    (previousValue, file) => {
+                        let attachmentType: TAttachmentType;
+                        if (file.mimeType.includes("video")) {
+                            attachmentType = "video";
+                        }
+                        else if (file.mimeType.includes("image")) {
+                            attachmentType = "image";
+                        }
+                        else if (
+                            file.mimeType.includes("audio") &&
+                            file.fileType === FileType.VOICE_RECORD
+                        ) {
+                            attachmentType = "audio";
+                        }
+                        else {
+                            attachmentType = "unknown";
+                        }
+                        // const blobUrl = URL.createObjectURL(file.blob);
 
-                attachmentType !== "unknown"
-                    ? previousValue.known.push({
-                        ...file,
-                        attachmentType
-                    })
-                    : previousValue.unknown.push({
-                        ...file,
-                        attachmentType
-                    });
-                return previousValue;
-            }, {
-                known: [],
-                unknown: []
-            });
+                        attachmentType !== "unknown"
+                            ? previousValue.known.push({
+                                  ...file,
+                                  attachmentType,
+                              })
+                            : previousValue.unknown.push({
+                                  ...file,
+                                  attachmentType,
+                              });
+                        return previousValue;
+                    },
+                    {
+                        known: [],
+                        unknown: [],
+                    },
+                );
 
             setFilesWithBlobUrls(filesWithBlobUrl);
         }
@@ -81,14 +107,14 @@ const Message: FC<TMessageProps> = ({
     const onClickMessageForPin = useCallback(() => {
         onChooseMessageForAction({
             message,
-            action: MessageAction.PIN
+            action: MessageAction.PIN,
         });
     }, [onChooseMessageForAction, message]);
 
     const onClickMessageForReply = useCallback(() => {
         onChooseMessageForAction({
             message,
-            action: MessageAction.REPLY
+            action: MessageAction.REPLY,
         });
     }, [onChooseMessageForAction, message]);
 
@@ -97,15 +123,24 @@ const Message: FC<TMessageProps> = ({
 
         onChooseMessageForAction({
             message,
-            action: MessageAction.EDIT
+            action: MessageAction.EDIT,
         });
     }, [onChooseMessageForAction, message]);
 
     const onClickMessageForDelete = useCallback(() => {
+        if (roomType === RoomType.GROUP && message.senderId === userId) {
+            onChooseMessageForAction({
+                message,
+                action: MessageAction.DELETE,
+                isForEveryone: true,
+            });
+            return;
+        }
+
         onChooseMessageForAction({
             message,
             action: MessageAction.DELETE,
-            isForEveryone: false
+            isForEveryone: false,
         });
     }, [onChooseMessageForAction, message]);
 

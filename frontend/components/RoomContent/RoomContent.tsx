@@ -60,6 +60,7 @@ const RoomContent = forwardRef<HTMLDivElement, IChatContentProps>(
                 return (
                     <Message
                         key={message.id}
+                        roomType={room.type}
                         userId={user.id}
                         message={message}
                         onChooseMessageForAction={onChooseMessageForAction}
