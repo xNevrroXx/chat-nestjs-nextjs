@@ -34,10 +34,11 @@ import {
     TDeleteMessage,
     TReadMessage,
     TPinMessage,
-} from "./IChat";
+} from "./chat.models";
 import { Prisma, File } from "@prisma/client";
 import { PrismaIncludeFullRoomInfo } from "../room/IRooms";
 import { ForwardedMessagePrisma } from "../message/IMessage";
+import { IInitCall, ILeaveCall, IRelayIce, IRelaySdp } from "./webrtc.models";
 
 @WebSocketGateway({
     namespace: "api/chat",
@@ -685,5 +686,69 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         this.server
             .to(message.roomId)
             .emit("message:standard", normalizedMessage);
+    }
+
+    // WebRTC
+    @UseGuards(WsAuthGuard)
+    @SubscribeMessage("webrtc:init-call")
+    async webrtcJoin(
+        @ConnectedSocket() client,
+        @MessageBody() { roomId }: IInitCall
+    ) {
+        const clients = this.socketRoomsInfo.getRoomInfo(roomId);
+
+        for (const [userId, socketId] of Object.entries(clients)) {
+            this.server.to(socketId).emit("webrtc:add-peer", {
+                peerId: socketId,
+                createOffer: false,
+            });
+
+            client.emit("webrtc:add-peer", {
+                peerId: socketId,
+                createOffer: true,
+            });
+        }
+    }
+
+    @UseGuards(WsAuthGuard)
+    @SubscribeMessage("webrtc:relay-sdp")
+    async webrtcRelaySdp(
+        @ConnectedSocket() client,
+        @MessageBody() { peerId, sessionDescription }: IRelaySdp
+    ) {
+        this.server.to(peerId).emit("webrtc:session-description", {
+            peerId: client.id,
+            sessionDescription,
+        });
+    }
+
+    @UseGuards(WsAuthGuard)
+    @SubscribeMessage("webrtc:relay-ice")
+    async webrtcRelayIce(
+        @ConnectedSocket() client,
+        @MessageBody() { peerId, iceCandidate }: IRelayIce
+    ) {
+        this.server.to(peerId).emit("webrtc:relay-ice", {
+            peerId: client.id,
+            iceCandidate,
+        });
+    }
+
+    @UseGuards(WsAuthGuard)
+    @SubscribeMessage("webrtc:leave")
+    async webrtcLeave(
+        @ConnectedSocket() client,
+        @MessageBody() { roomId }: ILeaveCall
+    ) {
+        const clients = this.socketRoomsInfo.getRoomInfo(roomId);
+        for (const [userId, socketId] of Object.entries(clients)) {
+            this.server.to(socketId).emit("webrtc:remove-peer", {
+                peerId: client.id,
+            });
+
+            client.emit("webrtc:remove-peer", {
+                peerId: socketId,
+            });
+        }
     }
 }

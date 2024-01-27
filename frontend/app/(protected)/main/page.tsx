@@ -36,6 +36,8 @@ import type { TValueOf } from "@/models/TUtils";
 import { checkIsPreviewExistingRoomWithFlag } from "@/models/room/IRoom.store";
 // styles
 import "./main.scss";
+import { createPortal } from "react-dom";
+import Call from "@/modules/Call/Call";
 
 const { Content } = Layout;
 
@@ -211,6 +213,7 @@ const Main = () => {
                     onJoinRoom={onJoinRoom}
                     openModalToForwardMessage={openModalToForwardMessage}
                 />
+                {activeRoom && <Call roomId={activeRoom.id} />}
                 <Modal
                     title="Переслать сообщение"
                     open={isOpenModalToForwardMessage}
