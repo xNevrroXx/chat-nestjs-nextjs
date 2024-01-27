@@ -39,6 +39,7 @@ import { checkIsPreviewExistingRoomWithFlag } from "@/models/room/IRoom.store";
 // styles
 import "./main.scss";
 import { updateScreenInfo } from "@/store/slices/device";
+import Call from "@/modules/Call/Call";
 
 const { Content } = Layout;
 
@@ -264,6 +265,7 @@ const Main = () => {
         >
             <Content className="messenger">
                 {content()}
+                {activeRoom && <Call roomId={activeRoom.id} />}
                 <Modal
                     title="Переслать сообщение"
                     open={isOpenModalToForwardMessage}

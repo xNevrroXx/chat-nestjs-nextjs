@@ -266,7 +266,7 @@ export function checkIsInnerMessage(
 
 export function checkIsPreviewExistingRoomWithFlag(
     obj: IRoom | TPreviewExistingRoomWithFlag,
-) {
+): obj is TPreviewExistingRoomWithFlag {
     const room = obj as TPreviewExistingRoomWithFlag;
     return room.isPreview;
 }

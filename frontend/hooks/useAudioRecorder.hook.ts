@@ -21,12 +21,14 @@ const useAudioRecorder = () => {
                     video: false,
                 });
                 setStream(streamData);
-            } catch (err) {
+            }
+            catch (err) {
                 if (err instanceof Error) {
                     alert(err.message);
                 }
             }
-        } else {
+        }
+        else {
             alert("The MediaRecorder API is not supported in your browser.");
         }
 

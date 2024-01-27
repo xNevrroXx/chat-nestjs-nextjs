@@ -12,7 +12,7 @@ import { ConfigService } from "@nestjs/config";
 import {
     IClientToServerEvents,
     IServerToClientEvents,
-} from "./chat/ISocket-io";
+} from "./chat/socket.models";
 
 // TODO: Using this until socket.io v3 is part of Nest.js, see: https://github.com/nestjs/nest/issues/5676
 export class SocketIoAdapter extends IoAdapter {

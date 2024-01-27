@@ -32,6 +32,27 @@ export interface IServerToClientEvents {
     "message:deleted": (data: IDeletedMessageSocket) => void;
     "message:standard": (data: IStandardMessageSocket) => void;
     "message:forwarded": (data: IForwardedMessageSocket) => void;
+    // WebRTC
+    "webrtc:init-call": () => void;
+    "webrtc:leave": () => void;
+    "webrtc:add-peer": ({
+        peerId,
+        shouldCreateOffer,
+    }: {
+        peerId: string;
+        shouldCreateOffer: boolean;
+    }) => void;
+    "webrtc:remove-peer": ({ peerId }: { peerId: string }) => void;
+    "webrtc:relay-sdp": () => void;
+    "webrtc:relay-ice": () => void;
+    "webrtc:ice-candidate": () => void;
+    "webrtc:session-description": ({
+        peerId,
+        sessionDescription,
+    }: {
+        peerId: string;
+        sessionDescription: RTCSessionDescription;
+    }) => void;
 }
 
 export interface IClientToServerEvents {
@@ -47,4 +68,24 @@ export interface IClientToServerEvents {
     "message:delete": (data: IDeleteMessage) => void;
     "message:forward": (data: IForwardMessage) => void;
     "message:standard": (data: TSendMessage) => void;
+    // WebRTC
+    "webrtc:init-call": ({ roomId }: { roomId: string }) => void;
+    "webrtc:leave": ({ roomId }: { roomId: string }) => void;
+    "webrtc:add-peer": () => void;
+    "webrtc:remove-peer": () => void;
+    "webrtc:relay-sdp": ({
+        peerId,
+        sessionDescription,
+    }: {
+        peerId: string;
+        sessionDescription: RTCSessionDescriptionInit;
+    }) => void;
+    "webrtc:relay-ice": ({
+        peerId,
+        iceCandidate,
+    }: {
+        peerId: string;
+        iceCandidate: RTCIceCandidate;
+    }) => void;
+    "webrtc:ice-candidate": () => void;
 }

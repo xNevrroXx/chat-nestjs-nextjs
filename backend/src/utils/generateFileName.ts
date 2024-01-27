@@ -1,5 +1,5 @@
 import { FileType } from "@prisma/client";
-import { exhaustiveCheck } from "../chat/IChat";
+import { exhaustiveCheck } from "../chat/chat.models";
 
 function generateFileName(
     senderId: string,
