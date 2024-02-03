@@ -1,0 +1,13 @@
+version: "1"
+
+services:
+
+    backend:
+        image: chat:back
+        ports:
+            - 3001:3001
+
+    frontend:
+        image: chat:front
+        ports:
+            - 80:3000
