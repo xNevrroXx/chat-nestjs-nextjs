@@ -21,7 +21,8 @@ const CheckAuth = () => {
         void dispatch(checkAuthentication()).then((data) => {
             if (data.meta.requestStatus === "fulfilled") {
                 router.push(createRoute({ path: ROUTES.MAIN }));
-            } else {
+            }
+            else {
                 router.push(createRoute({ path: ROUTES.AUTH }));
             }
         });

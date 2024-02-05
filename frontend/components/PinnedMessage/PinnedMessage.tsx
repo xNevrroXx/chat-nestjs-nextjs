@@ -1,9 +1,9 @@
 import React, { FC } from "react";
 import { Flex, Typography, theme } from "antd";
-import * as classNames from "classnames";
+import classNames from "classnames";
 import emojiParser from "universal-emoji-parser";
 // own modules
-import { TPinnedMessage } from "../../models/room/IRoom.store.ts";
+import { TPinnedMessage } from "@/models/room/IRoom.store";
 // styles
 import "./pinned-message.scss";
 import { Interweave } from "interweave";

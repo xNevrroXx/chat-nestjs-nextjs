@@ -29,11 +29,15 @@ export class MessageService {
         private readonly linkPreviewService: LinkPreviewService
     ) {}
 
-    async findOne(
-        messageWhereUniqueInput: Prisma.MessageWhereUniqueInput
-    ): Promise<Message | null> {
+    async findOne<T extends Prisma.MessageInclude>(params: {
+        where: Prisma.MessageWhereUniqueInput;
+        include?: T;
+    }): Promise<Message | Prisma.MessageGetPayload<{ include: T }> | null> {
+        const { where, include } = params;
+
         return this.prisma.message.findUnique({
-            where: messageWhereUniqueInput,
+            where,
+            include,
         });
     }
 

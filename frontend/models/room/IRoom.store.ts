@@ -119,6 +119,10 @@ export type TPreviewExistingRoomWithFlag = TPreviewExistingRoom & {
     isPreview: true;
 };
 
+export interface IMessageRead {
+    messageId: string;
+    roomId: string;
+}
 export interface IEditedMessageSocket extends IEditMessage {
     roomId: TValueOf<Pick<IRoom, "id">>;
     updatedAt: TValueOf<Pick<IMessage, "updatedAt">>;

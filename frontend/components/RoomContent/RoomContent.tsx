@@ -1,6 +1,7 @@
 import React, {
     forwardRef,
     RefObject,
+    useCallback,
     useEffect,
     useImperativeHandle,
     useMemo,
@@ -20,6 +21,9 @@ import { TValueOf } from "@/models/TUtils";
 import { TMessageForAction } from "@/models/room/IRoom.general";
 // styles
 import "./room-content.scss";
+import { useAppDispatch } from "@/hooks/store.hook";
+import { readMessageSocket } from "@/store/thunks/room";
+import { useIntersectionObserver } from "@/hooks/useIntersectionObserver.hook";
 
 interface IChatContentProps {
     className?: string;
@@ -46,9 +50,42 @@ const RoomContent = forwardRef<HTMLDivElement, IChatContentProps>(
         },
         outerRef,
     ) => {
-        const innerRef = useRef<HTMLDivElement | null>(null);
+        const dispatch = useAppDispatch();
+        const messageRefs = useRef<HTMLDivElement[]>([]);
 
-        useImperativeHandle(outerRef, () => innerRef.current!, []);
+        const onView = useCallback(
+            (entry: IntersectionObserverEntry) => {
+                if (!entry.isIntersecting) {
+                    return;
+                }
+                const elem = entry.target;
+
+                const messageId = elem.id;
+                const isMessageAlreadyRead = room.messages.find(
+                    (message) => message.id === messageId,
+                )!.hasRead;
+                if (isMessageAlreadyRead) {
+                    return;
+                }
+
+                void dispatch(
+                    readMessageSocket({
+                        roomId: room.id,
+                        messageId: messageId,
+                    }),
+                );
+            },
+            [dispatch, room.id, room.messages],
+        );
+
+        const { rootRef: innerRef } = useIntersectionObserver<HTMLDivElement>({
+            threshold: 0.8,
+            rootMargin: "0px",
+            observedElementRefs: messageRefs,
+            onIntersection: onView,
+        });
+
+        useImperativeHandle(outerRef, () => innerRef.current!, [innerRef]);
 
         const listMessages = useMemo(() => {
             if (!room.messages) {
@@ -57,8 +94,15 @@ const RoomContent = forwardRef<HTMLDivElement, IChatContentProps>(
 
             return room.messages.map((message) => {
                 if (message.isDeleted) return;
+
+                messageRefs.current = [];
                 return (
                     <Message
+                        ref={(ref) => {
+                            if (!messageRefs.current.includes(ref!)) {
+                                messageRefs.current.push(ref!);
+                            }
+                        }}
                         key={message.id}
                         roomType={room.type}
                         userId={user.id}
@@ -72,6 +116,7 @@ const RoomContent = forwardRef<HTMLDivElement, IChatContentProps>(
             });
         }, [
             room.messages,
+            room.type,
             user.id,
             onChooseMessageForAction,
             onOpenUsersListForForwardMessage,
@@ -81,7 +126,7 @@ const RoomContent = forwardRef<HTMLDivElement, IChatContentProps>(
             if (!innerRef.current || !isNeedScrollToLastMessage.current) return;
 
             innerRef.current.scrollTo(0, innerRef.current.scrollHeight);
-        }, [isNeedScrollToLastMessage, listMessages]);
+        }, [innerRef, isNeedScrollToLastMessage, listMessages]);
 
         return (
             <Content
@@ -93,5 +138,6 @@ const RoomContent = forwardRef<HTMLDivElement, IChatContentProps>(
         );
     },
 );
+RoomContent.displayName = "RoomContent";
 
 export default RoomContent;

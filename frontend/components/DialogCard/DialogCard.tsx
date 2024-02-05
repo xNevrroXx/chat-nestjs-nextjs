@@ -24,7 +24,7 @@ interface IDialogCardProps {
     isActive: boolean;
     lastMessageInfo: ILastMessageInfo | null;
     roomType: TValueOf<Pick<IRoom, "type">>;
-    hasDropdown: boolean;
+    hasDropdown?: boolean;
 }
 
 const DialogCard: FC<IDialogCardProps> = ({
@@ -77,17 +77,13 @@ const DialogCard: FC<IDialogCardProps> = ({
                     </Paragraph>
                 )}
             </div>
-            {lastMessageInfo && lastMessageInfo.sender !== "Вы" && (
-                <div className="dialog__message-status">
-                    {lastMessageInfo.hasRead ? (
-                        <div className="dialog__read">
-                            <CheckOutlined />
-                        </div>
-                    ) : (
+            {lastMessageInfo &&
+                lastMessageInfo.sender !== "Вы" &&
+                !lastMessageInfo.hasRead && (
+                    <div className="dialog__message-status">
                         <div className="dialog__not-read"></div>
-                    )}
-                </div>
-            )}
+                    </div>
+                )}
         </li>
     );
 

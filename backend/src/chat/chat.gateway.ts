@@ -32,6 +32,7 @@ import {
     TNewForwardedMessage,
     TNewEditedMessage,
     TDeleteMessage,
+    TReadMessage,
     TPinMessage,
 } from "./IChat";
 import { Prisma, File } from "@prisma/client";
@@ -223,6 +224,53 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         } catch (error) {
             console.warn("error: ", error);
         }
+    }
+
+    @UseGuards(WsAuthGuard)
+    @SubscribeMessage("message:read")
+    async handleReadMessage(
+        @ConnectedSocket() client,
+        @MessageBody() data: TReadMessage
+    ) {
+        const senderPayload: IUserSessionPayload = client.user;
+
+        const sender = await this.userService.findOne({
+            id: senderPayload.id,
+        });
+        if (!sender) {
+            throw new WsException("Не найден отправитель сообщения");
+        }
+
+        const readMessageInfo = (await this.messageService.findOne({
+            where: {
+                id: data.messageId,
+                senderId: {
+                    not: sender.id,
+                },
+                hasRead: false,
+            },
+            include: {
+                room: true,
+            },
+        })) as Prisma.MessageGetPayload<{ include: { room: true } }>;
+
+        if (!readMessageInfo) {
+            throw new WsException("Не найдено сообщение");
+        }
+
+        await this.messageService.update({
+            where: {
+                id: readMessageInfo.id,
+            },
+            data: {
+                hasRead: true,
+            },
+        });
+
+        this.server.to(readMessageInfo.roomId).emit("message:read", {
+            messageId: readMessageInfo.id,
+            roomId: readMessageInfo.roomId,
+        });
     }
 
     @UseGuards(WsAuthGuard)
@@ -431,7 +479,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         }
 
         const forwardedMessage = await this.messageService.findOne({
-            id: message.forwardedMessageId,
+            where: {
+                id: message.forwardedMessageId,
+            },
         });
         if (!forwardedMessage) {
             throw new WsException("Пересылаемое сообщение не существует");

@@ -34,11 +34,15 @@ const ListLocalDialogs: FC<IDialogsProps> = ({
                 undefined;
             let sender: string | undefined = undefined;
             let text: string | undefined = undefined;
-            // find last non-deleted message in the room
+            let hasUnreadMessage: boolean = false;
+            // find the last non-deleted message in the room
             for (let i = room.messages.length - 1; i >= 0; i--) {
                 lastMessage = room.messages[i];
                 if (lastMessage.isDeleted) {
                     continue;
+                }
+                if (!hasUnreadMessage && !lastMessage.hasRead) {
+                    hasUnreadMessage = true;
                 }
 
                 sender =
@@ -68,7 +72,7 @@ const ListLocalDialogs: FC<IDialogsProps> = ({
             return {
                 text,
                 sender,
-                hasRead: lastMessage.hasRead,
+                hasRead: !hasUnreadMessage,
             };
         },
         [user],

@@ -18,6 +18,7 @@ import {
     handleDeletedMessageSocket,
     handleEditedMessageSocket,
     handleForwardedMessageSocket,
+    handleMessageRead,
     handleMessageSocket,
     handlePinnedMessageSocket,
     setUserId,
@@ -100,6 +101,18 @@ const room = createSlice({
             .addCase(createSocketInstance.fulfilled, (state, action) => {
                 // @ts-ignore
                 state.socket = action.payload;
+            })
+            .addCase(handleMessageRead, (state, action) => {
+                const targetChat =
+                    state.local.rooms.byId[action.payload.roomId];
+
+                const targetMessage = targetChat.messages.find(
+                    (message) => message.id === action.payload.messageId,
+                );
+                if (!targetMessage) {
+                    return;
+                }
+                targetMessage.hasRead = true;
             })
             .addCase(handleMessageSocket, (state, action) => {
                 state.local.rooms.byId[action.payload.roomId].messages.push(

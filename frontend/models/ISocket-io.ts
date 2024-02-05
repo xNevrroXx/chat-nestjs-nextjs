@@ -12,6 +12,7 @@ import {
     IDeletedMessageSocket,
     TPinnedMessagesSocket,
     IRoom,
+    IMessageRead,
 } from "@/models/room/IRoom.store";
 import { TUserOnline } from "@/models/auth/IAuth.store";
 
@@ -22,6 +23,7 @@ export interface IServerToClientEvents {
     "room:toggle-typing": (data: IParticipant[]) => void;
     "room:add-or-update": (data: IRoom) => void;
     // message
+    "message:read": (data: IMessageRead) => void;
     "message:pinned": (data: TPinnedMessagesSocket) => void;
     "message:edited": (data: IEditedMessageSocket) => void;
     "message:deleted": (data: IDeletedMessageSocket) => void;
@@ -35,6 +37,7 @@ export interface IClientToServerEvents {
     // room
     "room:join-or-create": (data: { id: string }) => void;
     // message
+    "message:read": (data: IMessageRead) => void;
     "message:pin": (data: IPinMessage) => void;
     "message:edit": (data: IEditMessage) => void;
     "message:delete": (data: IDeleteMessage) => void;

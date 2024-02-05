@@ -7,6 +7,7 @@ import {
     IEditedMessageSocket,
     IDeletedMessageSocket,
     TPinnedMessagesSocket,
+    IMessageRead,
 } from "@/models/room/IRoom.store";
 import { TValueOf } from "@/models/TUtils";
 import { IUserDto } from "@/models/auth/IAuth.store";
@@ -23,6 +24,9 @@ const setUserId =
     createAction<TValueOf<Pick<IUserDto, "id">>>("room/set-user-id");
 const clearPreviewRooms = createAction("room/clear-previews");
 const addOrUpdateRoomSocket = createAction<IRoom>("room/add-or-update");
+const handleMessageRead = createAction<IMessageRead>(
+    "room/socket:handle-message-read",
+);
 const handleMessageSocket = createAction<IMessage>(
     "room/socket:handle-message",
 );
@@ -45,6 +49,7 @@ const handleChangeUserTypingSocket = createAction<IParticipant[]>(
 export {
     setUserId,
     clearPreviewRooms,
+    handleMessageRead,
     handleMessageSocket,
     addOrUpdateRoomSocket,
     handlePinnedMessageSocket,

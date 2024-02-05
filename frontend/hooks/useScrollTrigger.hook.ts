@@ -1,47 +1,43 @@
-import {useCallback, useEffect, useRef} from "react";
+import { useCallback, useEffect, useRef } from "react";
 
 type TTriggerFunction =
-    {
-        toTop: () => void,
-        toBottom: () => void
-    }
-    |
-    {
-        toTop?: undefined,
-        toBottom: () => void
-    }
-    |
-    {
-        toTop: () => void,
-        toBottom?: undefined
-    }
+    | {
+          toTop: () => void;
+          toBottom: () => void;
+      }
+    | {
+          toTop?: undefined;
+          toBottom: () => void;
+      }
+    | {
+          toTop: () => void;
+          toBottom?: undefined;
+      };
 
-type onIntersectProps =
-    {
-        onIntersectionBreakpoint: TTriggerFunction
-        /**
-        * When there is **less** than this value left to the **bottom** of the container, the "onIntersectionBreakpoint" events is triggered<br/>
-        * Default: 200(px)
-        * */
-        breakpointPx: number
-    }
-
+type TOnIntersectProps = {
+    onIntersectionBreakpoint: TTriggerFunction;
+    /**
+     * When there is **less** than this value left to the **bottom** of the container, the "onIntersectionBreakpoint" events is triggered<br/>
+     * Default: 200(px)
+     * */
+    breakpointPx: number;
+};
 
 type TUseScrollTrigger = {
     /**
-    * Default: 250(ms)
-    */
-    wait?: number,
-} & onIntersectProps
+     * Default: 250(ms)
+     */
+    wait?: number;
+} & TOnIntersectProps;
 
 const useScrollTrigger = ({
-                              wait = 100,
-                              breakpointPx = 250,
-                              onIntersectionBreakpoint
-                          }: TUseScrollTrigger) => {
+    wait = 100,
+    breakpointPx = 250,
+    onIntersectionBreakpoint,
+}: TUseScrollTrigger) => {
     const containerRef = useRef<HTMLDivElement | null>(null);
     const prevScrollTopValueRef = useRef<number>(0);
-    const timeoutRef = useRef<number | null>(null);
+    const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     const onChangeScroll = useCallback(() => {
         if (!containerRef.current) return;
@@ -49,17 +45,18 @@ const useScrollTrigger = ({
         if (timeoutRef.current) return;
 
         timeoutRef.current = setTimeout(() => {
-
             if (
-                onIntersectionBreakpoint.toTop
-                && containerEl.offsetHeight + containerEl.scrollTop < containerEl.scrollHeight - breakpointPx
-                && prevScrollTopValueRef.current > containerEl.scrollTop
+                onIntersectionBreakpoint.toTop &&
+                containerEl.offsetHeight + containerEl.scrollTop <
+                    containerEl.scrollHeight - breakpointPx &&
+                prevScrollTopValueRef.current > containerEl.scrollTop
             ) {
                 onIntersectionBreakpoint.toTop();
             }
             else if (
-                onIntersectionBreakpoint.toBottom
-                && containerEl.offsetHeight + containerEl.scrollTop >= containerEl.scrollHeight - breakpointPx
+                onIntersectionBreakpoint.toBottom &&
+                containerEl.offsetHeight + containerEl.scrollTop >=
+                    containerEl.scrollHeight - breakpointPx
             ) {
                 onIntersectionBreakpoint.toBottom();
             }
@@ -73,7 +70,7 @@ const useScrollTrigger = ({
         if (!containerRef.current) return;
 
         const containerEl = containerRef.current;
-        const resizeObserver = new ResizeObserver(entries => {
+        const resizeObserver = new ResizeObserver((entries) => {
             for (const entry of entries) {
                 const containerEl = entry.target;
                 prevScrollTopValueRef.current = containerEl.scrollTop;
@@ -100,4 +97,4 @@ const useScrollTrigger = ({
     return containerRef;
 };
 
-export {useScrollTrigger};
+export { useScrollTrigger };

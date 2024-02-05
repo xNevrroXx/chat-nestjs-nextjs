@@ -33,6 +33,10 @@ export type TPinMessage = {
     roomId: TValueOf<Pick<Room, "id">>;
 };
 
+export type TReadMessage = {
+    messageId: TValueOf<Pick<Message, "id">>;
+};
+
 export interface IGetAttachments {
     attachments: IAttachment[];
 }

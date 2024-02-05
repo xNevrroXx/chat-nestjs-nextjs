@@ -10,6 +10,7 @@ import {
     handleDeletedMessageSocket,
     handleEditedMessageSocket,
     handleForwardedMessageSocket,
+    handleMessageRead,
     handleMessageSocket,
     handlePinnedMessageSocket,
 } from "../actions/room";
@@ -25,6 +26,7 @@ import {
     TSendMessage,
     TSendUserTyping,
     TPreviewExistingRoom,
+    IMessageRead,
 } from "@/models/room/IRoom.store";
 import { TRootState } from "@/store";
 
@@ -55,6 +57,9 @@ const connectSocket = createAsyncThunk<void, void, { state: TRootState }>(
             });
             socket?.on("room:toggle-typing", (data) => {
                 thunkApi.dispatch(handleChangeUserTypingSocket(data));
+            });
+            socket?.on("message:read", (data) => {
+                thunkApi.dispatch(handleMessageRead(data));
             });
             socket?.on("message:standard", (data) => {
                 thunkApi.dispatch(handleMessageSocket(data));
@@ -95,6 +100,24 @@ const disconnectSocket = createAsyncThunk<void, void, { state: TRootState }>(
     },
 );
 
+const readMessageSocket = createAsyncThunk<
+    void,
+    IMessageRead,
+    { state: TRootState }
+>("room/socket:message-read", (data, thunkAPI) => {
+    try {
+        const socket = thunkAPI.getState().room.socket;
+        if (!socket) {
+            throw new Error("There is no socket");
+        }
+
+        socket.emit("message:read", [data]);
+    }
+    catch (error) {
+        return thunkAPI.rejectWithValue(error);
+    }
+});
+
 const sendMessageSocket = createAsyncThunk<
     void,
     TSendMessage,
@@ -107,7 +130,6 @@ const sendMessageSocket = createAsyncThunk<
         }
 
         socket.emit("message:standard", [data]);
-        return;
     }
     catch (error) {
         return thunkAPI.rejectWithValue(error);
@@ -126,7 +148,6 @@ const pinMessageSocket = createAsyncThunk<
         }
 
         socket.emit("message:pin", [data]);
-        return;
     }
     catch (error) {
         return thunkAPI.rejectWithValue(error);
@@ -145,7 +166,6 @@ const editMessageSocket = createAsyncThunk<
         }
 
         socket.emit("message:edit", [data]);
-        return;
     }
     catch (error) {
         return thunkAPI.rejectWithValue(error);
@@ -164,7 +184,6 @@ const deleteMessageSocket = createAsyncThunk<
         }
 
         socket.emit("message:delete", [data]);
-        return;
     }
     catch (error) {
         return thunkAPI.rejectWithValue(error);
@@ -183,7 +202,6 @@ const forwardMessageSocket = createAsyncThunk<
         }
 
         socket.emit("message:forward", [data]);
-        return;
     }
     catch (error) {
         return thunkAPI.rejectWithValue(error);
@@ -202,7 +220,6 @@ const toggleUserTypingSocket = createAsyncThunk<
         }
 
         socket.emit("user:toggle-typing", [data]);
-        return;
     }
     catch (error) {
         return thunkAPI.rejectWithValue(error);
@@ -283,6 +300,7 @@ export {
     createSocketInstance,
     disconnectSocket,
     connectSocket,
+    readMessageSocket,
     sendMessageSocket,
     pinMessageSocket,
     editMessageSocket,
