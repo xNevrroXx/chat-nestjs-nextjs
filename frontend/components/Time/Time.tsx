@@ -29,7 +29,11 @@ const Time: FC<ITimeProps> = ({
             style={{
                 color: isMessageEmpty ? "white" : token.colorTextSecondary,
             }}
-            className={classNames("message__time", "time")}
+            className={classNames(
+                "message__time",
+                "time",
+                isMessageEmpty && "time_on-attachment",
+            )}
         >
             {hasEdited && <i className="time-edited time__part">изменено</i>}
             <span>{createdAt}</span>

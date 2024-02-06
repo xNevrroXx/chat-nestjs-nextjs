@@ -1,6 +1,5 @@
 import React, { FC } from "react";
 import { Avatar, Typography } from "antd";
-import { CheckOutlined } from "@ant-design/icons";
 import classNames from "classnames";
 import { Markup } from "interweave";
 import emojiParser from "universal-emoji-parser";

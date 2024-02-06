@@ -37,6 +37,7 @@ import {
 } from "./IChat";
 import { Prisma, File } from "@prisma/client";
 import { PrismaIncludeFullRoomInfo } from "../room/IRooms";
+import { ForwardedMessagePrisma } from "../message/IMessage";
 
 @WebSocketGateway({
     namespace: "api/chat",
@@ -383,28 +384,35 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
             };
         }>;
 
+        const dependentMessageIds = [
+            ...deletedMessage.repliesThisMessage.map(
+                (replyThisMessage) => replyThisMessage.id
+            ),
+            ...deletedMessage.forwardThisMessage.map(
+                (forwardThisMessage) => forwardThisMessage.id
+            ),
+        ];
         const editedMessageInfo = {
             roomId: deletedMessage.roomId,
             messageId: deletedMessage.id,
+            dependentMessageIds: dependentMessageIds,
             isDeleted: true,
         };
         if (!message.isForEveryone) {
             client.emit("message:deleted", editedMessageInfo);
-        } else if (
-            deletedMessage.repliesThisMessage.length === 0 &&
-            deletedMessage.forwardThisMessage.length === 0
-        ) {
-            // delete the message there no references to this one in other messages
-            void this.messageService.delete({
-                id: deletedMessage.id,
-            });
+        } else {
             this.server
                 .to(deletedMessage.roomId)
                 .emit("message:deleted", editedMessageInfo);
-        } else {
-            client.broadcast
-                .to(deletedMessage.roomId)
-                .emit("message:deleted", editedMessageInfo);
+            if (
+                deletedMessage.repliesThisMessage.length === 0 &&
+                deletedMessage.forwardThisMessage.length === 0
+            ) {
+                // delete the message there no references to this one in other messages
+                void this.messageService.delete({
+                    id: deletedMessage.id,
+                });
+            }
         }
     }
 
@@ -512,26 +520,16 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
                         replyToMessage: {
                             include: {
                                 files: true,
+                                usersDeletedThisMessage: true,
                             },
                         },
+                        usersDeletedThisMessage: true,
                     },
                 },
                 usersDeletedThisMessage: true,
             },
         })) as Prisma.MessageGetPayload<{
-            include: {
-                forwardedMessage: {
-                    include: {
-                        files: true;
-                        replyToMessage: {
-                            include: {
-                                files: true;
-                            };
-                        };
-                    };
-                };
-                usersDeletedThisMessage: true;
-            };
+            include: typeof ForwardedMessagePrisma;
         }>;
         const normalizedMessage = await this.messageService.normalize(
             sender.id,
@@ -662,6 +660,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
                 replyToMessage: {
                     include: {
                         files: true,
+                        usersDeletedThisMessage: true,
                     },
                 },
                 usersDeletedThisMessage: true,
@@ -672,6 +671,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
                 replyToMessage: {
                     include: {
                         files: true;
+                        usersDeletedThisMessage: true;
                     };
                 };
                 usersDeletedThisMessage: true;

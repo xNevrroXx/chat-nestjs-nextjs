@@ -136,6 +136,7 @@ export type TPinnedMessagesSocket = {
 export interface IDeletedMessageSocket {
     roomId: TValueOf<Pick<IRoom, "id">>;
     messageId: TValueOf<Pick<IOriginalMessage, "id">>;
+    dependentMessageIds: TValueOf<Pick<IOriginalMessage, "id">>[];
     isDeleted: boolean;
 }
 

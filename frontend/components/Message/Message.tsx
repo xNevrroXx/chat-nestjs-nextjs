@@ -227,7 +227,16 @@ const Message = forwardRef<HTMLDivElement, IMessageProps>(
                 );
             }
 
-            return <ForwardedMessage message={message} isMine={isMine} />;
+            return (
+                <Fragment>
+                    <ForwardedMessage message={message} isMine={isMine} />
+                    <Time
+                        hasRead={message.hasRead}
+                        hasEdited={!!message.updatedAt}
+                        createdAt={message.createdAt}
+                    />
+                </Fragment>
+            );
         }, [
             message,
             isMine,

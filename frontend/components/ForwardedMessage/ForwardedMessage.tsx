@@ -9,6 +9,7 @@ import { messageOwnerSelector } from "@/store/selectors/messageOwner.selector";
 import { IForwardedMessage } from "@/models/room/IRoom.store";
 // styles
 import "./forwarded-message.scss";
+import Time from "@/components/Time/Time";
 
 const { Text } = Typography;
 
@@ -31,18 +32,23 @@ const ForwardedMessage: FC<TMessageReplyProps> = ({ message, isMine }) => {
 
     return (
         <Flex
+            component="a"
+            // @ts-ignore
+            href={"#".concat(message.forwardedMessageId)}
             vertical
             className={classNames(
                 "forwarded-message",
                 isMine && "forwarded-message_mine",
             )}
-            data-forwarded-message-id={message.id}
+            data-forwarded-message-id={message.forwardedMessageId}
         >
             {ownerMessageElem}
 
-            <a href={"#".concat(message.forwardedMessage.id)}>
-                пересланное сообщение
-            </a>
+            {message.forwardedMessage.isDeleted ? (
+                <Text type={"secondary"}>Сообщение удалено</Text>
+            ) : (
+                <Text>пересланное сообщение</Text>
+            )}
         </Flex>
     );
 };

@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 // interfaces
-import { IRoomSlice } from "@/models/room/IRoom.store";
+import { checkIsMessage, IRoomSlice } from "@/models/room/IRoom.store";
 // actions
 import {
     createRoom,
@@ -148,6 +148,19 @@ const room = createSlice({
                 );
                 if (!targetMessage) return;
                 targetMessage.isDeleted = action.payload.isDeleted;
+
+                const dependentMessages = targetChat.messages.filter(
+                    (message) =>
+                        action.payload.dependentMessageIds.includes(message.id),
+                );
+                dependentMessages.forEach((message) => {
+                    if (checkIsMessage(message)) {
+                        message.replyToMessage!.isDeleted = true;
+                    }
+                    else {
+                        message.forwardedMessage.isDeleted = true;
+                    }
+                });
             })
             .addCase(handleChangeUserTypingSocket, (state, action) => {
                 const targetChat =

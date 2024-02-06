@@ -34,42 +34,51 @@ export type TForwardMessageWithoutFileBlobs = Prisma.MessageGetPayload<{
                     };
                 };
             };
+            usersDeletedThisMessage: true;
         };
     };
 }>;
+
+export const OriginalMessagePrisma = {
+    usersDeletedThisMessage: true,
+    files: true,
+};
+
+export const ReplyMessagePrisma = {
+    files: true,
+    replyToMessage: {
+        include: {
+            files: true,
+            usersDeletedThisMessage: true,
+        },
+    },
+    usersDeletedThisMessage: true,
+};
+
+export const ForwardedMessagePrisma = {
+    files: true,
+    forwardedMessage: {
+        include: {
+            files: true,
+            usersDeletedThisMessage: true,
+        },
+    },
+    usersDeletedThisMessage: true,
+};
+
+export const FullMessageInfo = {
+    ...ReplyMessagePrisma,
+    ...ForwardedMessagePrisma,
+};
 
 export type TNormalizeMessageArgument =
     | Prisma.MessageGetPayload<{
           include: {
               files: true;
-              replyToMessage: {
-                  include: {
-                      files: true;
-                  };
-              };
               forwardedMessage: {
                   include: {
                       files: true;
-                      replyToMessage: {
-                          include: {
-                              files: true;
-                          };
-                      };
-                  };
-              };
-              usersDeletedThisMessage: true;
-          };
-      }>
-    | Prisma.MessageGetPayload<{
-          include: {
-              forwardedMessage: {
-                  include: {
-                      files: true;
-                      replyToMessage: {
-                          include: {
-                              files: true;
-                          };
-                      };
+                      usersDeletedThisMessage: true;
                   };
               };
               usersDeletedThisMessage: true;
@@ -81,21 +90,26 @@ export type TNormalizeMessageArgument =
               replyToMessage: {
                   include: {
                       files: true;
+                      usersDeletedThisMessage: true;
                   };
               };
               usersDeletedThisMessage: true;
           };
       }>;
 
-export interface IStandardMessage extends IInnerMessage {
-    replyToMessage: IInnerMessage | IInnerForwardedMessage | undefined | null;
+export interface IStandardMessage extends IInnerStandardMessage {
+    replyToMessage:
+        | IInnerStandardMessage
+        | IInnerForwardedMessage
+        | undefined
+        | null;
 }
 
 export interface IForwardedMessage extends IInnerForwardedMessage {
-    forwardedMessage: IInnerMessage | IInnerForwardedMessage;
+    forwardedMessage: IInnerStandardMessage | IInnerForwardedMessage;
 }
 
-export interface IInnerMessage extends IOriginalMessage {
+export interface IInnerStandardMessage extends IOriginalMessage {
     files: TFileToClient[];
     replyToMessageId: TValueOf<Pick<IStandardMessage, "id">> | undefined | null;
 }
@@ -129,12 +143,37 @@ export interface IFile {
     createdAt: string;
 }
 
+export function isInnerMessage(
+    obj: IInnerStandardMessage | IInnerForwardedMessage
+): obj is IInnerStandardMessage {
+    return !!(obj as IInnerStandardMessage).files;
+}
+
+// forwarded types check
 export function isForwardedMessagePrisma(
     obj: TMessageWithoutFileBlobs | TForwardMessageWithoutFileBlobs
 ): obj is TForwardMessageWithoutFileBlobs {
     return (
         (obj as TForwardMessageWithoutFileBlobs).forwardedMessage &&
         (obj as TForwardMessageWithoutFileBlobs).forwardedMessage !== null
+    );
+}
+export function isForwardedMessagePrisma2(
+    obj: Prisma.MessageGetPayload<{
+        include: typeof ForwardedMessagePrisma | typeof ReplyMessagePrisma;
+    }>
+): obj is Prisma.MessageGetPayload<{ include: typeof ForwardedMessagePrisma }> {
+    return (
+        (
+            obj as Prisma.MessageGetPayload<{
+                include: typeof ForwardedMessagePrisma;
+            }>
+        ).forwardedMessage &&
+        (
+            obj as Prisma.MessageGetPayload<{
+                include: typeof ForwardedMessagePrisma;
+            }>
+        ).forwardedMessage !== null
     );
 }
 
@@ -148,13 +187,18 @@ export function isForwardedMessage(
 }
 
 export function isInnerForwardedMessage(
-    obj: IInnerMessage | IInnerForwardedMessage
+    obj: IInnerStandardMessage | IInnerForwardedMessage
 ): obj is IInnerForwardedMessage {
     return !!(obj as IInnerForwardedMessage).forwardedMessageId;
 }
 
-export function isInnerMessage(
-    obj: IInnerMessage | IInnerForwardedMessage
-): obj is IInnerMessage {
-    return !!(obj as IInnerMessage).files;
+// reply types check
+export function isReplyMessagePrisma(
+    obj:
+        | TNormalizeMessageArgument
+        | Prisma.MessageGetPayload<{ include: typeof ReplyMessagePrisma }>
+): obj is Prisma.MessageGetPayload<{ include: typeof ReplyMessagePrisma }> {
+    return !!(
+        obj as Prisma.MessageGetPayload<{ include: typeof ReplyMessagePrisma }>
+    ).replyToMessage;
 }

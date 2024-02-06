@@ -2,14 +2,21 @@ import { Injectable } from "@nestjs/common";
 import { DatabaseService } from "../database/database.service";
 import { type Message, Prisma, User } from "@prisma/client";
 import {
+    ForwardedMessagePrisma,
+    FullMessageInfo,
+    IForwardedMessage,
     IInnerForwardedMessage,
-    IInnerMessage,
-    TMessage,
+    IInnerStandardMessage,
+    IOriginalMessage,
     isForwardedMessagePrisma,
+    isForwardedMessagePrisma2,
     isInnerForwardedMessage,
     isInnerMessage,
-    IForwardedMessage,
+    isReplyMessagePrisma,
     IStandardMessage,
+    OriginalMessagePrisma,
+    ReplyMessagePrisma,
+    TMessage,
     TNormalizeMessageArgument,
 } from "./IMessage";
 import { TFileToClient } from "../file/IFile";
@@ -88,139 +95,106 @@ export class MessageService {
         });
     }
 
-    async normalize(
+    async normalizeOriginalMessage(
         recipientId: TValueOf<Pick<User, "id">>,
-        input: TNormalizeMessageArgument
-    ): Promise<TMessage> {
-        const message = excludeSensitiveFields(input, [
+        inputMessagePrisma: Prisma.MessageGetPayload<{
+            include: typeof OriginalMessagePrisma;
+        }>
+    ): Promise<IInnerStandardMessage | IInnerForwardedMessage> {
+        if (!inputMessagePrisma) {
+            return;
+        }
+
+        const message = excludeSensitiveFields(inputMessagePrisma, [
             "isDeleteForEveryone",
             "usersDeletedThisMessage",
         ]) as never as TMessage;
-        message.createdAt = normalizeDate(message.createdAt);
-        let normalizedMessage: IStandardMessage | IForwardedMessage;
-        if (!isForwardedMessagePrisma(message as any)) {
-            normalizedMessage = excludeSensitiveFields(message, [
-                "forwardedMessageId",
-                "forwardedMessage" as any,
-            ]) as IStandardMessage;
-            normalizedMessage.text = codeBlocksToHTML(normalizedMessage.text);
 
-            const hasFiles = normalizedMessage.files.length > 0;
-            let files: TFileToClient[] = [];
-            if (hasFiles) {
-                files = this.fileService.normalizeFiles(
-                    normalizedMessage.files as any[]
-                );
-            }
-            normalizedMessage = {
-                ...normalizedMessage,
-                files,
+        const normalizedOriginalMessage: IOriginalMessage = {
+            id: message.id,
+            roomId: message.roomId,
+            senderId: message.senderId,
+            hasRead: message.hasRead,
+            isDeleted:
+                inputMessagePrisma.isDeleteForEveryone ||
+                inputMessagePrisma.usersDeletedThisMessage.some(
+                    ({ id }) => id === recipientId
+                ),
+            firstLinkInfo: null,
+            links: findLinksInText(message.text),
+            text: codeBlocksToHTML(message.text),
+
+            createdAt: normalizeDate(message.createdAt),
+            updatedAt: message.updatedAt && normalizeDate(message.updatedAt),
+        };
+
+        if (normalizedOriginalMessage.links.length > 0) {
+            const firstLink = normalizedOriginalMessage.links[0];
+            normalizedOriginalMessage.firstLinkInfo =
+                await this.linkPreviewService.getLinkInfo(firstLink);
+        }
+
+        let normalizedInnerMessage:
+            | IInnerStandardMessage
+            | IInnerForwardedMessage;
+        if (inputMessagePrisma.forwardedMessageId) {
+            normalizedInnerMessage = {
+                ...normalizedOriginalMessage,
+                forwardedMessageId: inputMessagePrisma.forwardedMessageId,
+            };
+        } else {
+            normalizedInnerMessage = {
+                ...normalizedOriginalMessage,
+                replyToMessageId: inputMessagePrisma.replyToMessageId,
+                files: [],
             };
 
-            normalizedMessage.links = findLinksInText(normalizedMessage.text);
-
-            if (normalizedMessage.links.length > 0) {
-                normalizedMessage.firstLinkInfo =
-                    await this.linkPreviewService.getLinkInfo(
-                        normalizedMessage.links[0]
-                    );
-            }
-
-            if (normalizedMessage.replyToMessage) {
-                normalizedMessage.replyToMessage.createdAt = normalizeDate(
-                    normalizedMessage.replyToMessage.createdAt
+            const hasFiles = inputMessagePrisma.files.length > 0;
+            if (hasFiles) {
+                normalizedInnerMessage.files = this.fileService.normalizeFiles(
+                    inputMessagePrisma.files as any[]
                 );
-                if (isInnerForwardedMessage(normalizedMessage.replyToMessage)) {
-                    normalizedMessage = {
-                        ...normalizedMessage,
-                        replyToMessage: excludeSensitiveFields(
-                            normalizedMessage.replyToMessage,
-                            ["replyToMessageId", "files", "text"] as any
-                        ) as IInnerForwardedMessage,
-                    } as IStandardMessage;
-                } else if (isInnerMessage(normalizedMessage.replyToMessage)) {
-                    normalizedMessage.replyToMessage.files =
-                        this.fileService.normalizeFiles(
-                            normalizedMessage.replyToMessage.files as any
-                        );
-
-                    normalizedMessage = {
-                        ...normalizedMessage,
-                        replyToMessage: excludeSensitiveFields(
-                            normalizedMessage.replyToMessage,
-                            ["forwardedMessageId"] as any
-                        ) as IInnerMessage,
-                    };
-
-                    if (normalizedMessage.replyToMessage.text) {
-                        normalizedMessage.replyToMessage.links =
-                            findLinksInText(
-                                normalizedMessage.replyToMessage.text
-                            );
-                    }
-                    if (
-                        normalizedMessage.replyToMessage.links &&
-                        normalizedMessage.replyToMessage.links.length > 0
-                    ) {
-                        normalizedMessage.replyToMessage.firstLinkInfo =
-                            await this.linkPreviewService.getLinkInfo(
-                                normalizedMessage.replyToMessage.links[0]
-                            );
-                    }
-                }
-            }
-        } else {
-            normalizedMessage = excludeSensitiveFields(message, [
-                "files",
-                "replyToMessage",
-                "replyToMessageId" as any,
-            ]) as IForwardedMessage;
-
-            if (isInnerForwardedMessage(normalizedMessage.forwardedMessage)) {
-                normalizedMessage.forwardedMessage.createdAt = normalizeDate(
-                    normalizedMessage.forwardedMessage.createdAt
-                );
-                normalizedMessage = {
-                    ...normalizedMessage,
-                    forwardedMessage: excludeSensitiveFields(
-                        normalizedMessage.forwardedMessage,
-                        ["files", "replyToMessageId", "replyToMessage"] as any
-                    ),
-                } as IForwardedMessage;
-            } else {
-                normalizedMessage.forwardedMessage.createdAt = normalizeDate(
-                    normalizedMessage.forwardedMessage.createdAt
-                );
-                normalizedMessage = {
-                    ...normalizedMessage,
-                    forwardedMessage: excludeSensitiveFields(
-                        normalizedMessage.forwardedMessage,
-                        ["forwardedMessageId"] as any
-                    ),
-                } as IForwardedMessage;
-
-                normalizedMessage.forwardedMessage.links = findLinksInText(
-                    normalizedMessage.forwardedMessage.text
-                );
-                if (normalizedMessage.forwardedMessage.links.length > 0) {
-                    normalizedMessage.forwardedMessage.firstLinkInfo =
-                        await this.linkPreviewService.getLinkInfo(
-                            normalizedMessage.forwardedMessage.links[0]
-                        );
-                }
-
-                if (isInnerMessage(normalizedMessage.forwardedMessage)) {
-                    normalizedMessage.forwardedMessage.files =
-                        this.fileService.normalizeFiles(
-                            normalizedMessage.forwardedMessage.files as any
-                        );
-                }
             }
         }
-        normalizedMessage.isDeleted =
-            input.isDeleteForEveryone ||
-            input.usersDeletedThisMessage.some(({ id }) => id === recipientId);
 
-        return normalizedMessage;
+        normalizedInnerMessage.isDeleted =
+            inputMessagePrisma.isDeleteForEveryone ||
+            inputMessagePrisma.usersDeletedThisMessage.some(
+                ({ id }) => id === recipientId
+            );
+
+        return normalizedInnerMessage;
+    }
+
+    async normalize(
+        recipientId: TValueOf<Pick<User, "id">>,
+        inputMessagePrisma: TNormalizeMessageArgument
+    ): Promise<IStandardMessage | IForwardedMessage> {
+        const mainMessage = await this.normalizeOriginalMessage(
+            recipientId,
+            inputMessagePrisma
+        );
+
+        if (isForwardedMessagePrisma2(inputMessagePrisma)) {
+            const innerForwardedMessage = (await this.normalizeOriginalMessage(
+                recipientId,
+                inputMessagePrisma.forwardedMessage
+            )) as IInnerForwardedMessage;
+
+            return {
+                ...(mainMessage as IInnerForwardedMessage),
+                forwardedMessage: innerForwardedMessage,
+            };
+        } else {
+            const innerStandardMessage = (await this.normalizeOriginalMessage(
+                recipientId,
+                inputMessagePrisma.replyToMessage
+            )) as IInnerStandardMessage;
+
+            return {
+                ...(mainMessage as IInnerStandardMessage),
+                replyToMessage: innerStandardMessage,
+            };
+        }
     }
 }

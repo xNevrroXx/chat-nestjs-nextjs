@@ -36,6 +36,36 @@ const MessageReply: FC<TMessageReplyProps> = ({ message, isInput }) => {
         return <Text strong>{ownerMessage.displayName}</Text>;
     }, [ownerMessage]);
 
+    const content = useMemo(() => {
+        if (message.isDeleted) {
+            return <Text type={"secondary"}>Сообщение удалено</Text>;
+        }
+        else if (checkIsInnerMessage(message)) {
+            return (
+                <Fragment>
+                    {message.files && message.files.length > 0 && (
+                        <Text italic>вложения: {message.files.length}</Text>
+                    )}
+
+                    {message.text && (
+                        <Interweave
+                            className="message-reply__text"
+                            tagName="span"
+                            content={message.text}
+                        />
+                    )}
+                </Fragment>
+            );
+        }
+        else {
+            return (
+                <Fragment>
+                    <Text>1 пересланное сообщение</Text>
+                </Fragment>
+            );
+        }
+    }, [message]);
+
     return (
         <Flex
             component="a"
@@ -51,25 +81,7 @@ const MessageReply: FC<TMessageReplyProps> = ({ message, isInput }) => {
         >
             {ownerMessageElem}
 
-            {checkIsInnerMessage(message) ? (
-                <Fragment>
-                    {message.files && message.files.length > 0 && (
-                        <Text italic>вложения: {message.files.length}</Text>
-                    )}
-
-                    {message.text && (
-                        <Interweave
-                            className="message-reply__text"
-                            tagName="span"
-                            content={message.text}
-                        />
-                    )}
-                </Fragment>
-            ) : (
-                <Fragment>
-                    <Text>1 пересланное сообщение</Text>
-                </Fragment>
-            )}
+            {content}
         </Flex>
     );
 };

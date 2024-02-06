@@ -61,6 +61,7 @@ export const PrismaIncludeFullRoomInfo = {
             replyToMessage: {
                 include: {
                     files: true,
+                    usersDeletedThisMessage: true,
                 },
             },
             forwardedMessage: {
@@ -69,8 +70,10 @@ export const PrismaIncludeFullRoomInfo = {
                     replyToMessage: {
                         include: {
                             files: true,
+                            usersDeletedThisMessage: true,
                         },
                     },
+                    usersDeletedThisMessage: true,
                 },
             },
             usersDeletedThisMessage: true,
