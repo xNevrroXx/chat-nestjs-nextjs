@@ -1,4 +1,9 @@
-import { Injectable, UnauthorizedException } from "@nestjs/common";
+import {
+    BadGatewayException,
+    BadRequestException,
+    Injectable,
+    UnauthorizedException,
+} from "@nestjs/common";
 import * as bcrypt from "bcrypt";
 import { IUserSessionPayload } from "../user/IUser";
 import { UserService } from "../user/user.service";
@@ -19,6 +24,10 @@ export class AuthService {
 
         if (!user) {
             throw new UnauthorizedException("Invalid credentials");
+        } else if (!user.password) {
+            throw new BadRequestException(
+                "Try logging in using one of the suggested social networks."
+            );
         }
 
         const isPasswordEquals = await bcrypt.compare(password, user.password);

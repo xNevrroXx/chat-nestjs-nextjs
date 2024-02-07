@@ -5,7 +5,10 @@ interface IProps {
     rootMargin: TValueOf<Pick<IntersectionObserverInit, "rootMargin">>;
     threshold: TValueOf<Pick<IntersectionObserverInit, "threshold">>;
     observedElementRefs: RefObject<Element[]>;
-    onIntersection: (entry: IntersectionObserverEntry) => void;
+    onIntersection: (
+        entry: IntersectionObserverEntry,
+        observer: IntersectionObserver,
+    ) => void;
 }
 const useIntersectionObserver = <T extends HTMLElement>({
     threshold,
@@ -26,9 +29,9 @@ const useIntersectionObserver = <T extends HTMLElement>({
             rootMargin,
         };
 
-        const observer = new IntersectionObserver((entries) => {
+        const observer = new IntersectionObserver((entries, observer) => {
             entries.forEach((entry) => {
-                onIntersection(entry);
+                onIntersection(entry, observer);
             });
         }, options);
 

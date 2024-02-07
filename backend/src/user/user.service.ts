@@ -1,4 +1,10 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
+import {
+    BadRequestException,
+    BeforeApplicationShutdown,
+    Injectable,
+    OnApplicationShutdown,
+    OnModuleDestroy,
+} from "@nestjs/common";
 import {
     Prisma,
     Room,
@@ -11,8 +17,22 @@ import { TValueOf } from "../models/TUtils";
 import { IUserSessionPayload } from "./IUser";
 
 @Injectable()
-export class UserService {
+export class UserService implements BeforeApplicationShutdown {
     constructor(private prisma: DatabaseService) {}
+
+    async beforeApplicationShutdown(signal?: string) {
+        await this.prisma.userOnline.updateMany({
+            data: {
+                isOnline: false,
+            },
+        });
+
+        await this.prisma.userTyping.updateMany({
+            data: {
+                isTyping: false,
+            },
+        });
+    }
 
     async findOne<T extends Prisma.UserInclude>(
         userWhereUniqueInput: Prisma.UserWhereUniqueInput,

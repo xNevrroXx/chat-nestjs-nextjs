@@ -43,6 +43,8 @@ async function bootstrap() {
 
     app.useWebSocketAdapter(new SocketIoAdapter(app, configService));
     app.useGlobalFilters(new HttpExceptionFilter());
+
+    app.enableShutdownHooks();
     await app.listen(3001);
 
     const url = new URL(await app.getUrl());

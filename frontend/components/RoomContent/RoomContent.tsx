@@ -54,19 +54,16 @@ const RoomContent = forwardRef<HTMLDivElement, IChatContentProps>(
         const messageRefs = useRef<HTMLDivElement[]>([]);
 
         const onView = useCallback(
-            (entry: IntersectionObserverEntry) => {
+            (
+                entry: IntersectionObserverEntry,
+                observer: IntersectionObserver,
+            ) => {
                 if (!entry.isIntersecting) {
                     return;
                 }
                 const elem = entry.target;
 
                 const messageId = elem.id;
-                const isMessageAlreadyRead = room.messages.find(
-                    (message) => message.id === messageId,
-                )!.hasRead;
-                if (isMessageAlreadyRead) {
-                    return;
-                }
 
                 void dispatch(
                     readMessageSocket({
@@ -74,8 +71,10 @@ const RoomContent = forwardRef<HTMLDivElement, IChatContentProps>(
                         messageId: messageId,
                     }),
                 );
+
+                observer.unobserve(elem);
             },
-            [dispatch, room.id, room.messages],
+            [dispatch, room.id],
         );
 
         const { rootRef: innerRef } = useIntersectionObserver<HTMLDivElement>({
@@ -99,7 +98,11 @@ const RoomContent = forwardRef<HTMLDivElement, IChatContentProps>(
                 return (
                     <Message
                         ref={(ref) => {
-                            if (!messageRefs.current.includes(ref!)) {
+                            if (
+                                message.senderId !== user.id &&
+                                !messageRefs.current.includes(ref!) &&
+                                !message.hasRead
+                            ) {
                                 messageRefs.current.push(ref!);
                             }
                         }}

@@ -14,6 +14,7 @@ import { login } from "@/store/thunks/authentication";
 import { useRouter } from "next/navigation";
 import { createRoute } from "@/router/createRoute";
 import { ROUTES } from "@/router/routes";
+import { isRejected } from "@reduxjs/toolkit";
 
 const LoginForm = () => {
     const router = useRouter();
@@ -28,7 +29,11 @@ const LoginForm = () => {
         onSubmit: (values, { setSubmitting, resetForm }) => {
             setSubmitting(false);
 
-            void dispatch(login(values)).then(() => {
+            void dispatch(login(values)).then((data) => {
+                if (isRejected(data)) {
+                    return;
+                }
+
                 router.push(
                     createRoute({
                         path: ROUTES.MAIN,
