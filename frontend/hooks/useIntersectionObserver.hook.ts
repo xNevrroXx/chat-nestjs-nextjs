@@ -1,4 +1,4 @@
-import { RefObject, useEffect, useRef } from "react";
+import { DependencyList, RefObject, useEffect, useRef } from "react";
 import { TValueOf } from "@/models/TUtils";
 
 interface IProps {
@@ -10,13 +10,12 @@ interface IProps {
         observer: IntersectionObserver,
     ) => void;
 }
-const useIntersectionObserver = <T extends HTMLElement>({
-    threshold,
-    rootMargin,
-    observedElementRefs,
-    onIntersection,
-}: IProps) => {
+const useIntersectionObserver = <T extends HTMLElement>(
+    { threshold, rootMargin, observedElementRefs, onIntersection }: IProps,
+    deps: DependencyList,
+) => {
     const rootRef = useRef<T | null>(null);
+    const observerRef = useRef<IntersectionObserver | null>(null);
 
     useEffect(() => {
         if (!rootRef) {
@@ -43,10 +42,25 @@ const useIntersectionObserver = <T extends HTMLElement>({
             });
         }
 
+        observerRef.current = observer;
+
         return () => {
             observer.disconnect();
         };
     }, [observedElementRefs, onIntersection, rootMargin, threshold]);
+
+    useEffect(() => {
+        if (!observedElementRefs.current || !observerRef.current) {
+            return;
+        }
+
+        console.log(observedElementRefs);
+        observedElementRefs.current.forEach((elem) => {
+            if (elem) {
+                observerRef.current!.observe(elem);
+            }
+        });
+    }, deps);
 
     return { rootRef };
 };

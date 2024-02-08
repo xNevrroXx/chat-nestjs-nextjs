@@ -77,15 +77,6 @@ const RoomContent = forwardRef<HTMLDivElement, IChatContentProps>(
             [dispatch, room.id],
         );
 
-        const { rootRef: innerRef } = useIntersectionObserver<HTMLDivElement>({
-            threshold: 0.8,
-            rootMargin: "0px",
-            observedElementRefs: messageRefs,
-            onIntersection: onView,
-        });
-
-        useImperativeHandle(outerRef, () => innerRef.current!, [innerRef]);
-
         const listMessages = useMemo(() => {
             if (!room.messages) {
                 return null;
@@ -124,6 +115,18 @@ const RoomContent = forwardRef<HTMLDivElement, IChatContentProps>(
             onChooseMessageForAction,
             onOpenUsersListForForwardMessage,
         ]);
+
+        const { rootRef: innerRef } = useIntersectionObserver<HTMLDivElement>(
+            {
+                threshold: 0.8,
+                rootMargin: "0px",
+                observedElementRefs: messageRefs,
+                onIntersection: onView,
+            },
+            [listMessages],
+        );
+
+        useImperativeHandle(outerRef, () => innerRef.current!, [innerRef]);
 
         useEffect(() => {
             if (!innerRef.current || !isNeedScrollToLastMessage.current) return;
