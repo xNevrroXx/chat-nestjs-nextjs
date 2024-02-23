@@ -3,9 +3,9 @@ import { User } from "@prisma/client";
 import { InternalServerErrorException } from "@nestjs/common";
 
 type TSocketIORoomID = string;
-type TSocketIOClientID = string;
+type TSocketsIOClientID = string;
 interface IUserIDsToSocketIDs {
-    [userId: TValueOf<Pick<User, "id">>]: TSocketIOClientID;
+    [userId: TValueOf<Pick<User, "id">>]: TSocketsIOClientID[];
 }
 interface IUserIdWithRoomIDs {
     userId: TValueOf<Pick<User, "id">>;
@@ -15,7 +15,7 @@ interface ISocketRoomsInfo {
     [roomId: TSocketIORoomID]: IUserIDsToSocketIDs;
 }
 interface ISocketIDsToClientInfo {
-    [clientId: TSocketIOClientID]: IUserIdWithRoomIDs;
+    [clientId: TSocketsIOClientID]: IUserIdWithRoomIDs;
 }
 
 class SocketRoomsInfo {
@@ -34,44 +34,48 @@ class SocketRoomsInfo {
             userId: userId,
             roomIDs: new Set<TSocketIORoomID>(),
         };
-        this._userIDsToSocketIDs[userId] = socketId;
+        if (this._userIDsToSocketIDs[userId]) {
+            this._userIDsToSocketIDs[userId].push(socketId);
+        } else {
+            this._userIDsToSocketIDs[userId] = [socketId];
+        }
     }
 
     /**
-     * @return {string} - client id of the connected user or false.
+     * @return {string[]} - client ids of the connected user or undefined.
      * */
-    joinIfConnected(roomId: string, userId: string): string | undefined {
-        const clientId = this.getSocketIdByUserId(userId);
+    joinIfConnected(
+        roomId: string,
+        userId: string
+    ): readonly string[] | undefined {
+        const clientIds = this.getSocketIdsByUserId(userId);
 
-        if (!clientId) {
+        if (!clientIds) {
             return;
         }
 
-        this.join(roomId, userId, clientId);
-        return clientId;
+        this.join(roomId, userId);
+        return clientIds;
     }
 
     /**
      * Joining a user to a room.
      * @param {string} roomId - Socket.IO room id;
      * @param {string} userId - The user's ID connecting to the aforementioned room;
-     * @param {string} socketId - user's socket id;
      * */
-    join(roomId: string, userId: string, socketId: string) {
+    join(roomId: string, userId: string) {
+        const userSocketIds = this.getSocketIdsByUserId(userId) as string[];
         this._roomIDsToUserInfo[roomId] = {
             ...this._roomIDsToUserInfo[roomId],
-            [userId]: socketId,
+            [userId]: userSocketIds,
         };
 
-        const isExistClient = !!this._socketIDsToUserIDs[socketId];
-        if (!isExistClient) {
-            this.initConnection(userId, socketId);
-        }
-
-        this._socketIDsToUserIDs[socketId] = {
-            ...this._socketIDsToUserIDs[socketId],
-            roomIDs: this._socketIDsToUserIDs[socketId].roomIDs.add(roomId),
-        };
+        userSocketIds.forEach((socketId) => {
+            this._socketIDsToUserIDs[socketId] = {
+                ...this._socketIDsToUserIDs[socketId],
+                roomIDs: this._socketIDsToUserIDs[socketId].roomIDs.add(roomId),
+            };
+        });
     }
 
     /**
@@ -117,9 +121,9 @@ class SocketRoomsInfo {
     getUserInfoBySocketId(clientId: string): Readonly<IUserIdWithRoomIDs> {
         return this._socketIDsToUserIDs[clientId];
     }
-    getSocketIdByUserId(
+    getSocketIdsByUserId(
         userId: string
-    ): Readonly<TSocketIOClientID | undefined> {
+    ): Readonly<TSocketsIOClientID[] | undefined> {
         return this._userIDsToSocketIDs[userId];
     }
 

@@ -1,7 +1,6 @@
 "use client";
 
 import React, { FC } from "react";
-import "./call.scss";
 import {
     MinusOutlined,
     PhoneFilled,
@@ -9,6 +8,8 @@ import {
 } from "@ant-design/icons";
 import { Avatar, Modal, theme } from "antd";
 import { useWebRTC } from "@/hooks/useWebRTC.hook";
+// styles
+import "./call.scss";
 
 const { useToken } = theme;
 
@@ -16,10 +17,9 @@ interface ICallProps {
     roomId: string;
 }
 const Call: FC<ICallProps> = ({ roomId }) => {
-    const { myId, clients, provideMediaRef } = useWebRTC(roomId);
+    const { clients, provideMediaRef } = useWebRTC(roomId);
     const { token } = useToken();
 
-    console.log("clients: ", clients);
     return (
         <Modal
             className={"call"}
@@ -64,16 +64,6 @@ const Call: FC<ICallProps> = ({ roomId }) => {
                         </div>
                     );
                 })}
-                <div>
-                    <video
-                        draggable="false"
-                        autoPlay
-                        disablePictureInPicture
-                        playsInline
-                        id={myId}
-                        ref={(ref) => provideMediaRef(myId, ref!)}
-                    />
-                </div>
             </div>
         </Modal>
     );

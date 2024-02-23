@@ -68,6 +68,7 @@ interface IActiveChatProps {
         >,
     ) => void;
     onJoinRoom: TJoinRoomFn;
+    onInitCall: () => void;
 }
 
 const ActiveRoom: FC<IActiveChatProps> = ({
@@ -76,6 +77,7 @@ const ActiveRoom: FC<IActiveChatProps> = ({
     onCloseRoom,
     openModalToForwardMessage,
     onJoinRoom,
+    onInitCall,
 }) => {
     const { token } = useToken();
     const dispatch = useAppDispatch();
@@ -378,7 +380,10 @@ const ActiveRoom: FC<IActiveChatProps> = ({
                     </div>
                     <div className="active-room__space"></div>
                     <div className="active-room__options">
-                        <PhoneOutlined className="custom" />
+                        <PhoneOutlined
+                            onClick={onInitCall}
+                            className="custom"
+                        />
                         <MenuFoldOutlined className="custom" />
                     </div>
                 </Header>

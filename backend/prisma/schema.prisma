@@ -35,6 +35,8 @@ model User {
     friendshipUser2 Friendship[]           @relation("user2")
     participant     Participant[]          @relation("participant")
     folders         Folder[]               @relation("user_to_folder")
+    calls           Call[]                 @relation("calls")
+    CallParticipant CallParticipant[]      @relation("call_participants")
 
     @@unique([email])
     @@map("user")
@@ -120,6 +122,7 @@ model Room {
 
     creatorUser    User?           @relation("room", fields: [creatorUserId], references: [id], onDelete: Cascade, onUpdate: Cascade)
     messages       Message[]       @relation("room")
+    calls          Call[]          @relation("calls")
     usersTyping    UserTyping[]    @relation("users_typing")
     participants   Participant[]   @relation("participant")
     pinnedMessages PinnedMessage[] @relation("room:pinned_messages")
@@ -155,6 +158,37 @@ model Participant {
 
     @@id([userId, roomId])
     @@map("participant")
+}
+
+model CallParticipant {
+    userId String @map("user_id")
+    callId String @map("call_id")
+
+    hasParticipated Boolean @default(false) @map("has_participated")
+
+    createdAt DateTime  @default(now()) @map("created_at")
+    updatedAt DateTime? @map("updated_at")
+
+    user User @relation("call_participants", fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    call Call @relation("call_participants", fields: [callId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+    @@id([userId, callId])
+    @@map("call_participant")
+}
+
+model Call {
+    id            String @id @default(uuid())
+    initializerId String @map("initializer_id")
+    roomId        String @map("room_id")
+
+    createdAt DateTime  @default(now()) @map("created_at")
+    endedAt   DateTime? @map("ended_at")
+
+    initializer     User              @relation("calls", fields: [initializerId], references: [id], onDelete: NoAction, onUpdate: Cascade)
+    room            Room              @relation("calls", fields: [roomId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    CallParticipant CallParticipant[] @relation("call_participants")
+
+    @@map("call")
 }
 
 model Message {
