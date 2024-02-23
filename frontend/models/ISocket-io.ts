@@ -42,7 +42,13 @@ export interface IServerToClientEvents {
     "webrtc:remove-peer": ({ peerId }: { peerId: string }) => void;
     "webrtc:relay-sdp": () => void;
     "webrtc:relay-ice": () => void;
-    "webrtc:ice-candidate": () => void;
+    "webrtc:ice-candidate": ({
+        peerID,
+        iceCandidate,
+    }: {
+        peerID: string;
+        iceCandidate: RTCIceCandidateInit;
+    }) => void;
     "webrtc:session-description": ({
         peerId,
         sessionDescription,
@@ -65,7 +71,7 @@ export interface IClientToServerEvents {
     "message:forward": (data: IForwardMessage) => void;
     "message:standard": (data: TSendMessage) => void;
     // WebRTC
-    "webrtc:init-call": ({ roomId }: { roomId: string }) => void;
+    "webrtc:join": ({ roomId }: { roomId: string }) => void;
     "webrtc:leave": ({ roomId }: { roomId: string }) => void;
     "webrtc:add-peer": () => void;
     "webrtc:remove-peer": () => void;

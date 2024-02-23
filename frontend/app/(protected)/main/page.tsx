@@ -44,6 +44,7 @@ const { Content } = Layout;
 const Main = () => {
     const router = useRouter();
     const dispatch = useAppDispatch();
+    const [isCalling, setIsCalling] = useState<boolean>(false);
     const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
     const user = useAppSelector((state) => state.authentication.user!);
     const rooms = useAppSelector((state) => state.room.local);
@@ -61,6 +62,10 @@ const Main = () => {
             void router.push(createRoute({ path: ROUTES.AUTH }));
         }
     }, [router, user]);
+
+    const onInitCall = useCallback(() => {
+        setIsCalling(true);
+    }, []);
 
     const onOpenSubmenu = useCallback(() => {
         setIsDrawerOpen(true);
@@ -208,12 +213,14 @@ const Main = () => {
                     activeRoomId={activeRoom ? activeRoom.id : null}
                 />
                 <ActiveRoom
+                    onInitCall={onInitCall}
                     room={activeRoom}
                     user={user}
                     onJoinRoom={onJoinRoom}
                     openModalToForwardMessage={openModalToForwardMessage}
                 />
-                {activeRoom && <Call roomId={activeRoom.id} />}
+                {/*todo: add calling room id to the recent rooms info to achieve an calling during chatting with other users*/}
+                {activeRoom && isCalling && <Call roomId={activeRoom.id} />}
                 <Modal
                     title="Переслать сообщение"
                     open={isOpenModalToForwardMessage}

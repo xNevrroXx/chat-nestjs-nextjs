@@ -86,7 +86,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         });
 
         userRooms.forEach((room) => {
-            this.socketRoomsInfo.join(room.id, userInfo.id, client.id);
+            this.socketRoomsInfo.join(room.id, userInfo.id);
             client.join(room.id);
 
             client.broadcast.to(room.id).emit("user:toggle-online", userOnline);
@@ -690,22 +690,33 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     // WebRTC
     @UseGuards(WsAuthGuard)
-    @SubscribeMessage("webrtc:init-call")
+    @SubscribeMessage("webrtc:join")
     async webrtcJoin(
         @ConnectedSocket() client,
         @MessageBody() { roomId }: IInitCall
     ) {
+        console.log("join");
         const clients = this.socketRoomsInfo.getRoomInfo(roomId);
 
-        for (const [userId, socketId] of Object.entries(clients)) {
-            this.server.to(socketId).emit("webrtc:add-peer", {
-                peerId: socketId,
-                createOffer: false,
+        console.log("clients: ", clients);
+        for (const [userId, socketIds] of Object.entries(clients)) {
+            if (socketIds.includes(client.id)) {
+                continue;
+            }
+
+            // todo: send call request to the all of the client's socket ids and then leave one which accepted the call
+            this.server.to(socketIds[0]).emit("webrtc:add-peer", {
+                peerId: client.id,
+                shouldCreateOffer: false,
             });
 
+            console.log(" client for offer: ", {
+                userId: userId,
+                socketId: socketIds[0],
+            });
             client.emit("webrtc:add-peer", {
-                peerId: socketId,
-                createOffer: true,
+                peerId: socketIds[0],
+                shouldCreateOffer: true,
             });
         }
     }
@@ -716,8 +727,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         @ConnectedSocket() client,
         @MessageBody() { peerId, sessionDescription }: IRelaySdp
     ) {
+        console.log("relay-sdp: ", {
+            peerId,
+            sessionDescriptionType: sessionDescription.type,
+        });
         this.server.to(peerId).emit("webrtc:session-description", {
-            peerId: client.id,
+            peerId: client.id, // todo have to find peerId and its interlocutor
             sessionDescription,
         });
     }
@@ -741,13 +756,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         @MessageBody() { roomId }: ILeaveCall
     ) {
         const clients = this.socketRoomsInfo.getRoomInfo(roomId);
-        for (const [userId, socketId] of Object.entries(clients)) {
-            this.server.to(socketId).emit("webrtc:remove-peer", {
+        for (const [, socketIds] of Object.entries(clients)) {
+            this.server.to(socketIds[0]).emit("webrtc:remove-peer", {
                 peerId: client.id,
             });
 
             client.emit("webrtc:remove-peer", {
-                peerId: socketId,
+                peerId: socketIds[0],
             });
         }
     }

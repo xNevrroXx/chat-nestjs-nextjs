@@ -11,7 +11,7 @@ const roomParticipantsSelector = createSelector(
         return {
             myId: roomSlice.userId,
             participants: roomSlice.local.rooms.byId[roomId].participants.map(
-                (participant) => participant.id,
+                (participant) => participant.userId,
             ),
         };
     },

@@ -54,7 +54,6 @@ const useIntersectionObserver = <T extends HTMLElement>(
             return;
         }
 
-        console.log(observedElementRefs);
         observedElementRefs.current.forEach((elem) => {
             if (elem) {
                 observerRef.current!.observe(elem);
