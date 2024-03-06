@@ -1,5 +1,7 @@
 .auth {
-  height: 100vh;
+    padding: 20px 10px;
+    display: flex;
+    align-items: center;
   text-align: center;
   &__top {
     margin-bottom: 50px;
@@ -16,4 +18,12 @@
   &__change-form {
     cursor: pointer;
   }
+}
+
+@media (min-width: 768px) {
+    .auth {
+        .paper {
+            width: 430px;
+        }
+    }
 }

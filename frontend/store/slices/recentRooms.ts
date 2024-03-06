@@ -3,6 +3,7 @@ import { IRecentRooms } from "@/models/recent-rooms/IRecentRooms.store";
 import {
     addRecentRoomData,
     removeRecentRoomData,
+    resetRecentRoomData,
     updateRecentRoomData,
 } from "@/store/actions/recentRooms";
 
@@ -60,6 +61,9 @@ const recentRooms = createSlice({
 
                 state.allIds.splice(index, 1);
                 delete state.rooms.byId[action.payload];
+            })
+            .addCase(resetRecentRoomData, (state) => {
+                state.currentRoomId = null;
             });
     },
 });

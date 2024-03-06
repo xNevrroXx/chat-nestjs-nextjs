@@ -169,7 +169,7 @@ const Dialogs: FC<IDialogsProps> = ({
     ]);
 
     return (
-        <Layout className="dialogs" style={{ flex: "0 0 30%" }}>
+        <Layout className="dialogs">
             <Header
                 className="dialogs__header"
                 style={{ margin: 0, padding: "0 12px" }}

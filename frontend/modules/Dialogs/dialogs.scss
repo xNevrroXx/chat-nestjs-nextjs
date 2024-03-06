@@ -2,9 +2,16 @@
     min-width: min-content;
     min-width: fit-content;
     position: relative;
+    flex: 0 0 30% !important;
     &__header {
         width: 100%;
         min-height: 40px;
         margin-bottom: 10px;
+    }
+}
+
+@media (max-width: 768px) {
+    .dialogs {
+        flex: 1 0 !important;
     }
 }

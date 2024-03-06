@@ -7,7 +7,7 @@ import {
     Flex,
     Typography,
 } from "antd";
-import { PlusCircleOutlined } from "@ant-design/icons";
+import { PlusCircleOutlined, CloseOutlined } from "@ant-design/icons";
 import { Header } from "antd/lib/layout/layout";
 import { ButtonProps, Drawer } from "antd/lib";
 import { useAppSelector } from "@/hooks/store.hook";
@@ -75,16 +75,23 @@ const SubMenu: FC<ISubMenuProps> = ({
                 <Header
                     style={{
                         padding: "10px 25px 0 25px",
-                        height: "auto",
                         display: "flex",
-                        flexDirection: "column",
+                        justifyContent: "space-between",
                         gap: "5px",
+                        height: "max-content",
                     }}
                 >
-                    <Avatar size={40} />
-                    <Text style={{ wordBreak: "normal" }}>
-                        {user.displayName}
-                    </Text>
+                    <Flex vertical gap={5} style={{ height: "max-content" }}>
+                        <Avatar size={50} />
+                        <Text style={{ wordBreak: "normal" }}>
+                            {user.displayName}
+                        </Text>
+                    </Flex>
+                    <Button
+                        type={"text"}
+                        icon={<CloseOutlined />}
+                        onClick={onClose}
+                    />
                 </Header>
                 <Divider style={{ margin: "15px 0" }} />
                 <Flex vertical gap="small">

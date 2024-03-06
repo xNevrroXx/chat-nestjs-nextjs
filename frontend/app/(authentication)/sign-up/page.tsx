@@ -8,6 +8,7 @@ import { createTitle } from "@/utils/createTitle";
 import { createRoute } from "@/router/createRoute";
 import { ROUTES } from "@/router/routes";
 import Paper from "@/components/Paper/Paper";
+import { Layout } from "antd";
 
 export const metadata: Metadata = {
     title: createTitle("Регистрация"),
@@ -15,7 +16,7 @@ export const metadata: Metadata = {
 
 const Registration = () => {
     return (
-        <div>
+        <Layout style={{ alignItems: "center" }}>
             <div className="auth__top">
                 <Title level={2}>Регистрация</Title>
                 <Title level={5}>
@@ -33,7 +34,7 @@ const Registration = () => {
                     </Link>
                 </Paragraph>
             </Paper>
-        </div>
+        </Layout>
     );
 };
 

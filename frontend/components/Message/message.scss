@@ -195,3 +195,10 @@
   100% {
   }
 }
+
+
+@media (max-width: 768px) {
+    .message {
+        width: 100%;
+    }
+}

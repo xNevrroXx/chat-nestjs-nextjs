@@ -15,7 +15,7 @@ export const metadata = {
 
 const Authentication = () => {
     return (
-        <Layout>
+        <Layout style={{ alignItems: "center" }}>
             <div className="auth__top">
                 <Title level={2}>Войти в аккаунт</Title>
                 <Title level={5}>Пожалуйста, войдите в свой аккаунт</Title>

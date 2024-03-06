@@ -1,4 +1,8 @@
-import { MenuFoldOutlined, PhoneTwoTone } from "@ant-design/icons";
+import {
+    MenuFoldOutlined,
+    PhoneTwoTone,
+    LeftOutlined,
+} from "@ant-design/icons";
 import {
     Avatar,
     Button,
@@ -58,6 +62,7 @@ type TJoinRoomFn = () => Promise<IRoom | undefined>;
 interface IActiveChatProps {
     user: IUserDto;
     room: IRoom | TPreviewExistingRoomWithFlag | null | undefined;
+    onCloseRoom: () => void;
     openModalToForwardMessage: (
         forwardedMessageId: TValueOf<
             Pick<IForwardMessage, "forwardedMessageId">
@@ -69,6 +74,7 @@ interface IActiveChatProps {
 const ActiveRoom: FC<IActiveChatProps> = ({
     user,
     room,
+    onCloseRoom,
     openModalToForwardMessage,
     onJoinRoom,
 }) => {
@@ -336,6 +342,13 @@ const ActiveRoom: FC<IActiveChatProps> = ({
         >
             <Layout>
                 <Header className="active-room__header">
+                    <Button
+                        onClick={onCloseRoom}
+                        className={"active-room__return-btn"}
+                        type={"text"}
+                        size={"large"}
+                        icon={<LeftOutlined />}
+                    />
                     <div className="active-room__info">
                         <Avatar size={42} className="active-room__photo">
                             {/*photo*/}

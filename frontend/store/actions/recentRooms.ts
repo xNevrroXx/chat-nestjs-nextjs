@@ -14,10 +14,12 @@ const update = createAction<Omit<IRecentRoom, "isPreview">>(
 const remove = createAction<TValueOf<Pick<IRoom, "id">>>(
     "recent-rooms/remove-by-id",
 );
+const reset = createAction<void>("recent-rooms/reset");
 const add = createAction<TAddRecentRoomData>("recent-rooms/add");
 
 export {
     update as updateRecentRoomData,
     remove as removeRecentRoomData,
+    reset as resetRecentRoomData,
     add as addRecentRoomData,
 };

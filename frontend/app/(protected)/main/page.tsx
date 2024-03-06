@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
+import React, { Fragment, useCallback, useEffect, useState } from "react";
 import { ConfigProvider, Layout, Modal } from "antd";
 import { useRouter } from "next/navigation";
 // own modules
@@ -24,6 +24,7 @@ import { activeRoomSelector } from "@/store/selectors/activeRoom.selector";
 import {
     addRecentRoomData,
     removeRecentRoomData,
+    resetRecentRoomData,
 } from "@/store/actions/recentRooms";
 // own types
 import type {
@@ -36,10 +37,15 @@ import type { TValueOf } from "@/models/TUtils";
 import { checkIsPreviewExistingRoomWithFlag } from "@/models/room/IRoom.store";
 // styles
 import "./main.scss";
+import { useDeviceDetect } from "@/hooks/useDeviceDetect.hook";
+import { useLocalStorage } from "@/hooks/useLocalStorage";
+import dynamic from "next/dynamic";
 
 const { Content } = Layout;
 
 const Main = () => {
+    const { isDesktop: checkIsDesktop } = useDeviceDetect();
+    const [isDesktop] = useLocalStorage("isDesktop", String(checkIsDesktop()));
     const router = useRouter();
     const dispatch = useAppDispatch();
     const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
@@ -92,6 +98,10 @@ const Main = () => {
         },
         [rooms, activeRoom, dispatch],
     );
+
+    const closeCurrentRoom = useCallback(() => {
+        dispatch(resetRecentRoomData());
+    }, [dispatch]);
 
     const onClickRemoteRoom = useCallback(
         (remoteRoom: TPreviewExistingRoom) => {
@@ -181,36 +191,76 @@ const Main = () => {
         [dispatch],
     );
 
-    return (
-        <Content className="messenger">
-            <MainMenu onOpenSubmenu={onOpenSubmenu} />
-            <SubMenu
-                isOpen={isDrawerOpen}
-                onClose={onCloseSubmenu}
-                openModalToCreateGroup={openModalToCreateGroup}
-            />
-            <ConfigProvider
-                theme={{
-                    ...darkTheme,
-                    components: {
-                        Layout: {
-                            headerBg: "#17212b",
-                        },
-                    },
-                }}
-            >
-                <Dialogs
-                    user={user}
-                    onClickRoom={onChangeActiveDialog}
-                    onClickRemoteRoom={onClickRemoteRoom}
-                    activeRoomId={activeRoom ? activeRoom.id : null}
-                />
+    const content = () => {
+        if (isDesktop === "true") {
+            return (
+                <Fragment>
+                    <MainMenu onOpenSubmenu={onOpenSubmenu} />
+                    <SubMenu
+                        isOpen={isDrawerOpen}
+                        onClose={onCloseSubmenu}
+                        openModalToCreateGroup={openModalToCreateGroup}
+                    />
+                    <Dialogs
+                        user={user}
+                        onClickRoom={onChangeActiveDialog}
+                        onClickRemoteRoom={onClickRemoteRoom}
+                        activeRoomId={activeRoom ? activeRoom.id : null}
+                    />
+                    <ActiveRoom
+                        onCloseRoom={closeCurrentRoom}
+                        room={activeRoom}
+                        user={user}
+                        onJoinRoom={onJoinRoom}
+                        openModalToForwardMessage={openModalToForwardMessage}
+                    />
+                </Fragment>
+            );
+        }
+        else if (activeRoom) {
+            return (
                 <ActiveRoom
+                    onCloseRoom={closeCurrentRoom}
                     room={activeRoom}
                     user={user}
                     onJoinRoom={onJoinRoom}
                     openModalToForwardMessage={openModalToForwardMessage}
                 />
+            );
+        }
+        else {
+            return (
+                <Fragment>
+                    <MainMenu onOpenSubmenu={onOpenSubmenu} />
+                    <SubMenu
+                        isOpen={isDrawerOpen}
+                        onClose={onCloseSubmenu}
+                        openModalToCreateGroup={openModalToCreateGroup}
+                    />
+                    <Dialogs
+                        user={user}
+                        onClickRoom={onChangeActiveDialog}
+                        onClickRemoteRoom={onClickRemoteRoom}
+                        activeRoomId={null}
+                    />
+                </Fragment>
+            );
+        }
+    };
+
+    return (
+        <ConfigProvider
+            theme={{
+                ...darkTheme,
+                components: {
+                    Layout: {
+                        headerBg: "#17212b",
+                    },
+                },
+            }}
+        >
+            <Content className="messenger">
+                {content()}
                 <Modal
                     title="Переслать сообщение"
                     open={isOpenModalToForwardMessage}
@@ -230,9 +280,11 @@ const Main = () => {
                     onCloseModal={closeModalToCreateGroup}
                     isOpen={isOpenModalToCreateGroup}
                 />
-            </ConfigProvider>
-        </Content>
+            </Content>
+        </ConfigProvider>
     );
 };
 
-export default Main;
+export default dynamic(() => Promise.resolve(Main), {
+    ssr: false,
+});
