@@ -7,7 +7,7 @@ import { LiveAudioVisualizer } from "react-audio-visualize";
 import { TValueOf } from "@/models/TUtils";
 import { TUseAudioRecorderReturnType } from "@/hooks/useAudioRecorder.hook";
 import StopCircleOutlined from "@/icons/StopCircleOutlined";
-import AudioElement from "@/components/AudioElement/AudioElement";
+import { AudioElement } from "@/components/AudioElement/AudioElement";
 
 interface IInputDuringAudioProps {
     mediaRecorder: MediaRecorder | null;
@@ -41,7 +41,7 @@ const InputDuringAudio: FC<IInputDuringAudioProps> = ({
         <Flex
             vertical={false}
             style={{ width: "100%" }}
-            align="self-end"
+            align="center"
             gap="middle"
         >
             <div className="input-message__btn-wrapper">
@@ -63,18 +63,26 @@ const InputDuringAudio: FC<IInputDuringAudioProps> = ({
                     />
                 </div>
             )}
-
-            <div className="input-message__field">
-                {audio && audioURL ? (
-                    <AudioElement blob={audio} url={audioURL} />
-                ) : (
+            {audio && audioURL ? (
+                <AudioElement blob={audio} url={audioURL} />
+            ) : (
+                <div className="input-message__field">
                     <LiveAudioVisualizer
-                        width={"550px"}
-                        height={"35px"}
+                        width={"900px"}
+                        height={"30px"}
                         mediaRecorder={mediaRecorder}
                     />
-                )}
-            </div>
+                </div>
+            )}
+            {/*// <div className="input-message__field">*/}
+            {/*//      : (*/}
+            {/*//         <LiveAudioVisualizer*/}
+            {/*//             width={"900px"}*/}
+            {/*//             height={"30px"}*/}
+            {/*//             mediaRecorder={mediaRecorder}*/}
+            {/*//         />*/}
+            {/*//     )}*/}
+            {/*// </div>*/}
 
             <div className="input-message__btn-wrapper">
                 <Button

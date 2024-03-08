@@ -41,10 +41,10 @@ const SPECIAL_KEYS: string[] = [
     "AudioVolumeUp",
     "LaunchMediaPlayer",
     "LaunchApplication1",
-    "LaunchApplication2"
+    "LaunchApplication2",
 ];
 function isSpecialKey(event: KeyboardEvent): boolean {
     return SPECIAL_KEYS.includes(event.key);
 }
 
-export {isSpecialKey};
+export { isSpecialKey };

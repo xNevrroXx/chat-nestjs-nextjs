@@ -1,7 +1,8 @@
 .message {
-  width: 55%;
+    padding: 3px 15px;
+  width: 100%;
   min-width: min-content;
-  max-width: 100%;
+  //max-width: 100%;
   white-space: pre-wrap;
   display: flex;
   gap: 4px;
@@ -12,11 +13,11 @@
   }
 
   &:target {
-    .message__content {
-      animation: fadeInOut 0.7s ease-in-out;
-      animation-iteration-count: 2;
+    //.message__content {
+      animation: fadeInOut 1.5s ease-in-out;
+      animation-iteration-count: 1;
       animation-fill-mode: forwards;
-    }
+    //}
   }
 
   &:hover {
@@ -190,7 +191,7 @@
   0% {
   }
   50% {
-    opacity: .3;
+      background: rgb(43, 82, 119, .18);
   }
   100% {
   }

@@ -14,6 +14,7 @@ import MainMenu from "@/modules/MainMenu/MainMenu";
 import SubMenu from "@/modules/SubMenu/SubMenu";
 import CreateGroupModal from "@/modules/CreateGroupModal/CreateGroupModal";
 import darkTheme from "@/theme/dark.theme";
+import { useWindowDimensions } from "@/hooks/useWindowDimensions.hook";
 // selectors & actions
 import {
     createRoom,
@@ -37,15 +38,12 @@ import type { TValueOf } from "@/models/TUtils";
 import { checkIsPreviewExistingRoomWithFlag } from "@/models/room/IRoom.store";
 // styles
 import "./main.scss";
-import { useDeviceDetect } from "@/hooks/useDeviceDetect.hook";
-import { useLocalStorage } from "@/hooks/useLocalStorage";
-import dynamic from "next/dynamic";
+import { updateScreenInfo } from "@/store/slices/device";
 
 const { Content } = Layout;
 
 const Main = () => {
-    const { isDesktop: checkIsDesktop } = useDeviceDetect();
-    const [isDesktop] = useLocalStorage("isDesktop", String(checkIsDesktop()));
+    const windowDimensions = useWindowDimensions();
     const router = useRouter();
     const dispatch = useAppDispatch();
     const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
@@ -59,6 +57,10 @@ const Main = () => {
     const [forwardedMessageId, setForwardedMessageId] = useState<TValueOf<
         Pick<IForwardMessage, "forwardedMessageId">
     > | null>(null);
+
+    useEffect(() => {
+        dispatch(updateScreenInfo(windowDimensions));
+    }, [dispatch, windowDimensions]);
 
     useEffect(() => {
         if (!user) {
@@ -192,7 +194,7 @@ const Main = () => {
     );
 
     const content = () => {
-        if (isDesktop === "true") {
+        if (windowDimensions.width >= 768) {
             return (
                 <Fragment>
                     <MainMenu onOpenSubmenu={onOpenSubmenu} />
@@ -284,7 +286,4 @@ const Main = () => {
         </ConfigProvider>
     );
 };
-
-export default dynamic(() => Promise.resolve(Main), {
-    ssr: false,
-});
+export default Main;

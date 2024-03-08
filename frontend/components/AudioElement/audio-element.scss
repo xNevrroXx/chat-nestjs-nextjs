@@ -2,12 +2,14 @@
   display: flex;
   width: 100%;
   align-items: flex-end;
-  gap: 1%;
+  gap: 3px;
   justify-content: space-between;
   &__control-btn {
     width: max-content;
   }
   &__waves {
+      align-self: center;
+      flex: 1 1 174px;
     audio {
       display: none;
     }

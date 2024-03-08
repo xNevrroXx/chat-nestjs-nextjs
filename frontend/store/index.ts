@@ -6,6 +6,7 @@ import users from "@/store/slices/users";
 import recentRooms from "@/store/slices/recentRooms";
 import authentication from "@/store/slices/authentication";
 import folders from "@/store/slices/roomsOnFolders";
+import device from "@/store/slices/device";
 
 const loggerMiddleware: Middleware =
     (api) =>
@@ -17,7 +18,7 @@ const loggerMiddleware: Middleware =
     };
 
 const store = configureStore({
-    reducer: { authentication, room, users, recentRooms, folders },
+    reducer: { authentication, room, users, recentRooms, folders, device },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware({
             serializableCheck: {

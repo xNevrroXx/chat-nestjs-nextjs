@@ -11,7 +11,7 @@ import { Button, Image, theme, Typography } from "antd";
 import { FileTwoTone, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 // own modules
 import OriginalMessage from "@/components/OriginalMessage/OriginalMessage";
-import AudioElement from "@/components/AudioElement/AudioElement";
+import { AudioElementWithWrapper } from "@/components/AudioElement/AudioElement";
 import MessageReply from "@/components/MessageReply/MessageReply";
 import ForwardedMessage from "@/components/ForwardedMessage/ForwardedMessage";
 import ReplyOutlined from "@/icons/ReplyOutlined";
@@ -186,7 +186,7 @@ const Message = forwardRef<HTMLDivElement, IMessageProps>(
 
                         {isVoice && files.known.length === 1 ? (
                             <div className="message__audio-element-wrapper">
-                                <AudioElement
+                                <AudioElementWithWrapper
                                     url={files.known[0].url}
                                     width={200}
                                     height={27}
@@ -200,7 +200,7 @@ const Message = forwardRef<HTMLDivElement, IMessageProps>(
                                         hasEdited={!!message.updatedAt}
                                         createdAt={message.createdAt}
                                     />
-                                </AudioElement>
+                                </AudioElementWithWrapper>
                             </div>
                         ) : (
                             <Fragment>

@@ -1,8 +1,8 @@
-import React, { FC, JSX, useEffect, useRef, useState } from "react";
+import React, { FC, Fragment, JSX, useEffect, useRef, useState } from "react";
 import classNames from "classnames";
 // @ts-ignore
 import { AudioVisualizer } from "react-audio-visualize";
-import { Button, theme, Typography } from "antd";
+import { Button, Flex, theme, Typography } from "antd";
 import { PauseCircleOutlined } from "@ant-design/icons";
 // own modules
 import PlayCircleOutlined from "@/icons/PlayCircleOutlined";
@@ -31,8 +31,8 @@ const AudioElement: FC<IVoiceRecording> = ({
     blob: inputBlob,
     url,
     size,
-    height = 50,
-    width = 600,
+    height = 30,
+    width = 950,
     alignCenter,
     children,
 }) => {
@@ -88,12 +88,7 @@ const AudioElement: FC<IVoiceRecording> = ({
     };
 
     return (
-        <div
-            className={classNames(
-                "audio-element",
-                alignCenter && "audio-element_align-center",
-            )}
-        >
+        <Fragment>
             <div className="audio-element__control-btn">
                 {isPlaying ? (
                     <Button
@@ -130,18 +125,33 @@ const AudioElement: FC<IVoiceRecording> = ({
                         onTimeUpdate={onTimeUpdate}
                         onEnded={() => setIsPlaying(false)}
                     />
-                    <div>
-                        {size && (
+                    {size && (
+                        <div>
                             <Text style={{ color: token.colorTextSecondary }}>
                                 {size.value} {size.unit}
                             </Text>
-                        )}
-                        {children}
-                    </div>
+                            {children}
+                        </div>
+                    )}
                 </div>
             )}
-        </div>
+        </Fragment>
+    );
+};
+
+const AudioElementWithWrapper: FC<IVoiceRecording> = (props) => {
+    return (
+        <Flex
+            gap={"middle"}
+            className={classNames(
+                "audio-element",
+                props.alignCenter && "audio-element_align-center",
+            )}
+        >
+            <AudioElement {...props} />
+        </Flex>
     );
 };
 
 export default AudioElement;
+export { AudioElementWithWrapper, AudioElement };

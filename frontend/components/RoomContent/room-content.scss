@@ -1,5 +1,4 @@
 .room-content {
-    padding: 0 15px;
   position: relative;
   display: block;
   overflow-y: auto;
@@ -11,7 +10,7 @@
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
-    gap: 5px;
+    gap: 1px;
     min-height: 100%;
   }
 
