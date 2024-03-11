@@ -30,6 +30,7 @@ import {
 import { IKnownAndUnknownFiles } from "@/models/room/IRoom.general";
 // styles
 import "./message.scss";
+import { TPaddings } from "@/HOC/Message";
 
 const { useToken } = theme;
 const { Text } = Typography;
@@ -37,6 +38,7 @@ const { Text } = Typography;
 interface IMessageProps {
     message: IMessage | IForwardedMessage;
     files: IKnownAndUnknownFiles;
+    paddings: TPaddings;
     isMine: boolean;
     isVoice: boolean;
     onChooseMessageForPin: () => void;
@@ -50,6 +52,7 @@ const Message = forwardRef<HTMLDivElement, IMessageProps>(
     (
         {
             message,
+            paddings,
             isMine,
             isVoice,
             files,
@@ -255,6 +258,8 @@ const Message = forwardRef<HTMLDivElement, IMessageProps>(
                 className={classNames(
                     "message",
                     isMine && "message_mine",
+                    paddings.bottom === "large" &&
+                        "message_padding-bottom-large",
                     message.text &&
                         message.text.includes('<code class="hljs') &&
                         "message_with-code",

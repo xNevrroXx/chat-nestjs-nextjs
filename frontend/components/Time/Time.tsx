@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, useState } from "react";
 import classNames from "classnames";
 import { Typography, theme } from "antd";
 // own modules
@@ -6,6 +6,7 @@ import DoubleCheck from "@/icons/DoubleCheck";
 import Check from "@/icons/Check";
 // styles
 import "./time.scss";
+import { normalizeDate } from "@/utils/normalizeDate";
 
 const { useToken } = theme;
 const { Text } = Typography;
@@ -22,6 +23,7 @@ const Time: FC<ITimeProps> = ({
     hasRead,
     isMessageEmpty = false,
 }) => {
+    const [normalizedCreatedDate] = useState<string>(normalizeDate(createdAt));
     const { token } = useToken();
 
     return (
@@ -36,7 +38,7 @@ const Time: FC<ITimeProps> = ({
             )}
         >
             {hasEdited && <i className="time-edited time__part">изменено</i>}
-            <span>{createdAt}</span>
+            <span>{normalizedCreatedDate}</span>
             {hasRead ? (
                 <span>
                     <DoubleCheck />
@@ -46,11 +48,11 @@ const Time: FC<ITimeProps> = ({
                     <Check />
                 </span>
             )}
-            <div className="time__inner" title={createdAt}>
+            <div className="time__inner" title={normalizedCreatedDate}>
                 {hasEdited && (
                     <i className="time-edited time__part">изменено</i>
                 )}
-                <span>{createdAt}</span>
+                <span>{normalizedCreatedDate}</span>
                 {hasRead ? (
                     <span>
                         <DoubleCheck />

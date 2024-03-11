@@ -256,6 +256,7 @@ const Main = () => {
                 ...darkTheme,
                 components: {
                     Layout: {
+                        siderBg: "#0e1621",
                         headerBg: "#17212b",
                     },
                 },

@@ -309,7 +309,7 @@ const ActiveRoom: FC<IActiveChatProps> = ({
                 theme={{
                     ...darkTheme,
                     token: {
-                        colorBgLayout: "#131d23",
+                        colorBgLayout: "#0e1621",
                     },
                 }}
             >
@@ -336,7 +336,7 @@ const ActiveRoom: FC<IActiveChatProps> = ({
             theme={{
                 ...darkTheme,
                 token: {
-                    colorBgLayout: "#131d23",
+                    colorBgLayout: "#0e1621",
                 },
             }}
         >

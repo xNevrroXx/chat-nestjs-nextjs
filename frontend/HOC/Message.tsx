@@ -26,12 +26,17 @@ import {
     TMessageForAction,
 } from "@/models/room/IRoom.general";
 
+export type TPaddings = {
+    bottom: "small" | "large";
+};
+
 type TMessageProps = {
     roomType: RoomType;
     userId: TValueOf<Pick<IUserDto, "id">>;
     message: IMessage | IForwardedMessage;
     onChooseMessageForForward: () => void;
     onChooseMessageForAction: (messageForAction: TMessageForAction) => void;
+    paddings: TPaddings;
 };
 
 const Message = forwardRef<HTMLDivElement, TMessageProps>(
@@ -42,6 +47,7 @@ const Message = forwardRef<HTMLDivElement, TMessageProps>(
             message,
             onChooseMessageForAction,
             onChooseMessageForForward,
+            paddings,
         },
         outerRef,
     ) => {
@@ -165,6 +171,7 @@ const Message = forwardRef<HTMLDivElement, TMessageProps>(
 
         return (
             <DumbMessage
+                paddings={paddings}
                 ref={innerRef}
                 isMine={isMine}
                 isVoice={isVoice}

@@ -1,12 +1,14 @@
 .message {
-    padding: 3px 15px;
+    padding: 1px 15px;
   width: 100%;
   min-width: min-content;
   //max-width: 100%;
   white-space: pre-wrap;
   display: flex;
-  gap: 4px;
     overflow: hidden;
+    &_padding-bottom-large {
+        padding-bottom: 5px;
+    }
   &_with-code {
     min-width: -moz-available;
     min-width: -webkit-fill-available;
@@ -24,11 +26,6 @@
     .message__actions {
       visibility: visible;
     }
-  }
-
-  &__content {
-    position: relative;
-    background-color: rgb(24, 37, 51);
   }
 
   &__wrapper-inner-content {
@@ -65,10 +62,14 @@
     display: flex;
     flex-direction: column;
     align-self: flex-end;
-    max-width: calc(100% - 54px);
     overflow: hidden;
     border-radius: 15px 15px 15px 3px;
     transition: fadeInOut 125ms;
+
+      max-width: 480px;
+      min-width: min-content;
+      position: relative;
+      background-color: rgb(24, 37, 51);
   }
 
   &__actions {

@@ -14,6 +14,7 @@ const darkTheme: ThemeConfig = {
         Layout: {
             headerBg: "#17212b",
             footerPadding: "20px 20px",
+            siderBg: "#0e1621",
         },
         Drawer: {
             colorBgElevated: "#17212b",

@@ -1,5 +1,6 @@
 import React, {
     forwardRef,
+    Fragment,
     RefObject,
     useCallback,
     useEffect,
@@ -10,7 +11,7 @@ import React, {
 import classNames from "classnames";
 import { Content } from "antd/lib/layout/layout";
 // own modules
-import Message from "@/HOC/Message";
+import Message, { TPaddings } from "@/HOC/Message";
 import { IUserDto } from "@/models/auth/IAuth.store";
 import {
     IForwardMessage,
@@ -82,8 +83,30 @@ const RoomContent = forwardRef<HTMLDivElement, IChatContentProps>(
                 return null;
             }
 
-            return room.messages.map((message) => {
+            return room.messages.map((message, index, messages) => {
                 if (message.isDeleted) return;
+
+                const currentCreatedAt = new Date(message.createdAt);
+                const next = messages[index + 1];
+
+                const paddings: TPaddings = {
+                    bottom: "small",
+                };
+
+                const min = 1000 * 60; // 1 minute in milliseconds
+
+                if (next) {
+                    const nextCreatedAt = new Date(next.createdAt);
+
+                    if (
+                        next.senderId !== message.senderId ||
+                        nextCreatedAt.getTime() - currentCreatedAt.getTime() >
+                            min * 10
+                    ) {
+                        // if more than 10 minutes have past or the sender of the next message does not match the sender of the current message
+                        paddings.bottom = "large";
+                    }
+                }
 
                 messageRefs.current = [];
                 return (
@@ -97,6 +120,7 @@ const RoomContent = forwardRef<HTMLDivElement, IChatContentProps>(
                                 messageRefs.current.push(ref!);
                             }
                         }}
+                        paddings={paddings}
                         key={message.id}
                         roomType={room.type}
                         userId={user.id}
