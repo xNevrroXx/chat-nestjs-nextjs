@@ -124,8 +124,8 @@ export class MessageService {
             links: findLinksInText(message.text),
             text: codeBlocksToHTML(message.text),
 
-            createdAt: normalizeDate(message.createdAt),
-            updatedAt: message.updatedAt && normalizeDate(message.updatedAt),
+            createdAt: message.createdAt,
+            updatedAt: message.updatedAt,
         };
 
         if (normalizedOriginalMessage.links.length > 0) {

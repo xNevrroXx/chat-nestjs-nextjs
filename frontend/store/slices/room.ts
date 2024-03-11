@@ -106,7 +106,7 @@ const room = createSlice({
                 const targetChat =
                     state.local.rooms.byId[action.payload.roomId];
 
-                const targetMessage = targetChat.messages.find(
+                const targetMessage = targetChat.days[action.payload.date].find(
                     (message) => message.id === action.payload.messageId,
                 );
                 if (!targetMessage) {
@@ -115,14 +115,14 @@ const room = createSlice({
                 targetMessage.hasRead = true;
             })
             .addCase(handleMessageSocket, (state, action) => {
-                state.local.rooms.byId[action.payload.roomId].messages.push(
-                    action.payload,
-                );
+                state.local.rooms.byId[action.payload.message.roomId].days[
+                    action.payload.date
+                ].push(action.payload.message);
             })
             .addCase(handleForwardedMessageSocket, (state, action) => {
-                state.local.rooms.byId[action.payload.roomId].messages.push(
-                    action.payload,
-                );
+                state.local.rooms.byId[action.payload.message.roomId].days[
+                    action.payload.date
+                ].push(action.payload.message);
             })
             .addCase(handlePinnedMessageSocket, (state, action) => {
                 state.local.rooms.byId[action.payload.roomId].pinnedMessages =
@@ -132,7 +132,7 @@ const room = createSlice({
                 const targetChat =
                     state.local.rooms.byId[action.payload.roomId];
 
-                const targetMessage = targetChat.messages.find(
+                const targetMessage = targetChat.days[action.payload.date].find(
                     (chat) => chat.id === action.payload.messageId,
                 );
                 if (!targetMessage) return;
@@ -143,24 +143,25 @@ const room = createSlice({
                 const targetChat =
                     state.local.rooms.byId[action.payload.roomId];
 
-                const targetMessage = targetChat.messages.find(
+                const targetMessage = targetChat.days[action.payload.date].find(
                     (chat) => chat.id === action.payload.messageId,
                 );
                 if (!targetMessage) return;
                 targetMessage.isDeleted = action.payload.isDeleted;
 
-                const dependentMessages = targetChat.messages.filter(
-                    (message) =>
-                        action.payload.dependentMessageIds.includes(message.id),
-                );
-                dependentMessages.forEach((message) => {
-                    if (checkIsMessage(message)) {
-                        message.replyToMessage!.isDeleted = true;
-                    }
-                    else {
-                        message.forwardedMessage.isDeleted = true;
-                    }
-                });
+                // todo fix
+                // const dependentMessages = targetChat.messages.filter(
+                //     (message) =>
+                //         action.payload.dependentMessageIds.includes(message.id),
+                // );
+                // dependentMessages.forEach((message) => {
+                //     if (checkIsMessage(message)) {
+                //         message.replyToMessage!.isDeleted = true;
+                //     }
+                //     else {
+                //         message.forwardedMessage.isDeleted = true;
+                //     }
+                // });
             })
             .addCase(handleChangeUserTypingSocket, (state, action) => {
                 const targetChat =

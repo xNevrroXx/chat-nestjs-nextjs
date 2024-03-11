@@ -1,0 +1,19 @@
+.block-by-day {
+    margin-bottom: 4px;
+    &__date-wrapper {
+        padding-bottom: 4px;
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+    }
+    &__date {
+        color: white;
+        padding: 5px 15px;
+        background: #1e2c3a;
+        border-radius: 20px;
+    }
+}
+
+.block-by-day:last-of-type {
+    margin-bottom: 0;
+}

@@ -1,10 +1,15 @@
 import { Injectable } from "@nestjs/common";
 import { Prisma, Room, RoomType } from "@prisma/client";
 import { DatabaseService } from "../database/database.service";
-import { PrismaIncludeFullRoomInfo, IRoom, TRoomPreview } from "./IRooms";
+import {
+    PrismaIncludeFullRoomInfo,
+    IRoom,
+    TRoomPreview,
+    IMessagesByDays,
+} from "./IRooms";
 import { ParticipantService } from "../participant/participant.service";
-import { TMessage } from "../message/IMessage";
 import { MessageService } from "../message/message.service";
+import { DATE_FORMATTER_DATE } from "../utils/normalizeDate";
 
 @Injectable()
 export class RoomService {
@@ -20,8 +25,8 @@ export class RoomService {
             include: typeof PrismaIncludeFullRoomInfo;
         }>
     ): Promise<IRoom> {
-        const normalizedMessages = await unnormalizedRoom.messages.reduce<
-            Promise<TMessage[]>
+        const normalizedMessagesByDays = await unnormalizedRoom.messages.reduce<
+            Promise<IMessagesByDays>
         >(async (prevPromise, unnormalizedMessage) => {
             const prev = await prevPromise;
 
@@ -29,10 +34,17 @@ export class RoomService {
                 userId,
                 unnormalizedMessage
             );
+            const date = DATE_FORMATTER_DATE.format(
+                new Date(normalizedMessage.createdAt)
+            );
 
-            prev.push(normalizedMessage);
+            if (!prev[date]) {
+                prev[date] = [];
+            }
+            prev[date].push(normalizedMessage);
+
             return prev;
-        }, Promise.resolve([]));
+        }, Promise.resolve({}));
 
         const normalizedParticipants = unnormalizedRoom.participants
             .filter((participant) => participant.userId !== userId)
@@ -49,7 +61,7 @@ export class RoomService {
             ...unnormalizedRoom,
             name: roomName,
             participants: normalizedParticipants,
-            messages: normalizedMessages,
+            days: normalizedMessagesByDays,
             folderIds: unnormalizedRoom.roomOnFolder.map(
                 (roomOnFolder) => roomOnFolder.folderId
             ),
@@ -64,6 +76,8 @@ export class RoomService {
             ),
         };
         delete result.roomOnFolder;
+        delete (result as IRoom & { messages: unknown; roomOnFolder: unknown })
+            .messages;
         return result;
     }
 

@@ -5,7 +5,7 @@ import { TNormalizedParticipant } from "../participant/IParticipant";
 import { IsString, Length } from "class-validator";
 
 export interface IRoom extends Room {
-    messages: TMessage[];
+    days: IMessagesByDays;
     participants: TNormalizedParticipant[];
     pinnedMessages: {
         id: string;
@@ -13,6 +13,10 @@ export interface IRoom extends Room {
         text: string;
     }[];
     folderIds: string[];
+}
+
+export interface IMessagesByDays {
+    [date: string]: TMessage[];
 }
 
 export type TRoomPreview = {

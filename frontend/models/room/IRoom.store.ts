@@ -40,12 +40,16 @@ export interface IRoom {
     type: RoomType;
     folderIds: TValueOf<Pick<IFolder, "id">>[];
     creatorUser?: TValueOf<Pick<IUserDto, "id">>;
-    messages: (IMessage | IForwardedMessage)[];
+    days: IMessagesByDays;
     participants: IParticipant[];
     pinnedMessages: TPinnedMessage[];
 
     createdAt: string;
     updatedAt: string | undefined | null;
+}
+
+export interface IMessagesByDays {
+    [date: string]: (IMessage | IForwardedMessage)[];
 }
 
 export interface IParticipant {
@@ -119,13 +123,26 @@ export type TPreviewExistingRoomWithFlag = TPreviewExistingRoom & {
     isPreview: true;
 };
 
-export interface IMessageRead {
+export interface IGetStandardMessage {
+    message: IMessage;
+    date: keyof IMessagesByDays;
+}
+
+export interface IGetForwardedMessage {
+    message: IForwardedMessage;
+    date: keyof IMessagesByDays;
+}
+
+export interface IGetMessageRead {
     messageId: string;
     roomId: string;
+    date: keyof IMessagesByDays;
 }
+
 export interface IEditedMessageSocket extends IEditMessage {
     roomId: TValueOf<Pick<IRoom, "id">>;
     updatedAt: TValueOf<Pick<IMessage, "updatedAt">>;
+    date: keyof IMessagesByDays;
 }
 
 export type TPinnedMessagesSocket = {
@@ -138,9 +155,15 @@ export interface IDeletedMessageSocket {
     messageId: TValueOf<Pick<IOriginalMessage, "id">>;
     dependentMessageIds: TValueOf<Pick<IOriginalMessage, "id">>[];
     isDeleted: boolean;
+    date: keyof IMessagesByDays;
 }
 
 // only client types(without responses) to send data
+export interface IMessageRead {
+    messageId: string;
+    roomId: string;
+}
+
 export type TCreateGroupRoom = {
     name: TValueOf<Pick<IRoom, "name">>;
     type: RoomType.GROUP;

@@ -26,6 +26,7 @@ import {
     TSendMessage,
     TSendUserTyping,
     TPreviewExistingRoom,
+    IGetMessageRead,
     IMessageRead,
 } from "@/models/room/IRoom.store";
 import { TRootState } from "@/store";

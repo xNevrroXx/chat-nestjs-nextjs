@@ -23,7 +23,9 @@ const Time: FC<ITimeProps> = ({
     hasRead,
     isMessageEmpty = false,
 }) => {
-    const [normalizedCreatedDate] = useState<string>(normalizeDate(createdAt));
+    const [normalizedCreatedDate] = useState<string>(
+        normalizeDate("short time", createdAt),
+    );
     const { token } = useToken();
 
     return (

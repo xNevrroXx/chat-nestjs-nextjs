@@ -38,6 +38,7 @@ import {
 import { Prisma, File } from "@prisma/client";
 import { PrismaIncludeFullRoomInfo } from "../room/IRooms";
 import { ForwardedMessagePrisma } from "../message/IMessage";
+import { DATE_FORMATTER_DATE } from "../utils/normalizeDate";
 
 @WebSocketGateway({
     namespace: "api/chat",
@@ -271,6 +272,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         this.server.to(readMessageInfo.roomId).emit("message:read", {
             messageId: readMessageInfo.id,
             roomId: readMessageInfo.roomId,
+            date: DATE_FORMATTER_DATE.format(
+                new Date(readMessageInfo.createdAt)
+            ),
         });
     }
 
@@ -397,6 +401,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
             messageId: deletedMessage.id,
             dependentMessageIds: dependentMessageIds,
             isDeleted: true,
+            date: DATE_FORMATTER_DATE.format(
+                new Date(deletedMessage.createdAt)
+            ),
         };
         if (!message.isForEveryone) {
             client.emit("message:deleted", editedMessageInfo);
@@ -458,6 +465,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
             messageId: message.messageId,
             text: codeBlocksToHTML(message.text),
             updatedAt: updatedMessage.updatedAt,
+            date: DATE_FORMATTER_DATE.format(
+                new Date(updatedMessage.createdAt)
+            ),
         };
 
         this.server
@@ -536,9 +546,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
             newMessage
         );
 
-        this.server
-            .to(forwardedMessage.roomId)
-            .emit("message:forwarded", normalizedMessage);
+        this.server.to(forwardedMessage.roomId).emit("message:forwarded", {
+            message: normalizedMessage,
+            date: DATE_FORMATTER_DATE.format(
+                new Date(normalizedMessage.createdAt)
+            ),
+        });
     }
 
     @UseGuards(WsAuthGuard)
@@ -682,8 +695,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
             newMessage
         );
 
-        this.server
-            .to(message.roomId)
-            .emit("message:standard", normalizedMessage);
+        this.server.to(message.roomId).emit("message:standard", {
+            message: normalizedMessage,
+            date: DATE_FORMATTER_DATE.format(
+                new Date(normalizedMessage.createdAt)
+            ),
+        });
     }
 }
