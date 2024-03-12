@@ -270,11 +270,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         });
 
         this.server.to(readMessageInfo.roomId).emit("message:read", {
-            messageId: readMessageInfo.id,
             roomId: readMessageInfo.roomId,
-            date: DATE_FORMATTER_DATE.format(
-                new Date(readMessageInfo.createdAt)
-            ),
+            message: {
+                id: readMessageInfo.id,
+                date: DATE_FORMATTER_DATE.format(
+                    new Date(readMessageInfo.createdAt)
+                ),
+            },
         });
     }
 
@@ -389,21 +391,33 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         }>;
 
         const dependentMessageIds = [
-            ...deletedMessage.repliesThisMessage.map(
-                (replyThisMessage) => replyThisMessage.id
-            ),
-            ...deletedMessage.forwardThisMessage.map(
-                (forwardThisMessage) => forwardThisMessage.id
-            ),
+            ...deletedMessage.repliesThisMessage.map((replyThisMessage) => {
+                return {
+                    id: replyThisMessage.id,
+                    date: DATE_FORMATTER_DATE.format(
+                        new Date(replyThisMessage.createdAt)
+                    ),
+                };
+            }),
+            ...deletedMessage.forwardThisMessage.map((forwardThisMessage) => {
+                return {
+                    id: forwardThisMessage.id,
+                    date: DATE_FORMATTER_DATE.format(
+                        new Date(forwardThisMessage.createdAt)
+                    ),
+                };
+            }),
         ];
         const editedMessageInfo = {
             roomId: deletedMessage.roomId,
-            messageId: deletedMessage.id,
-            dependentMessageIds: dependentMessageIds,
+            message: {
+                id: deletedMessage.id,
+                date: DATE_FORMATTER_DATE.format(
+                    new Date(deletedMessage.createdAt)
+                ),
+            },
+            dependentMessages: dependentMessageIds,
             isDeleted: true,
-            date: DATE_FORMATTER_DATE.format(
-                new Date(deletedMessage.createdAt)
-            ),
         };
         if (!message.isForEveryone) {
             client.emit("message:deleted", editedMessageInfo);
@@ -462,12 +476,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
         const editedMessageInfo = {
             roomId: updatedMessage.roomId,
-            messageId: message.messageId,
-            text: codeBlocksToHTML(message.text),
-            updatedAt: updatedMessage.updatedAt,
-            date: DATE_FORMATTER_DATE.format(
-                new Date(updatedMessage.createdAt)
-            ),
+            message: {
+                id: message.messageId,
+                text: codeBlocksToHTML(message.text),
+                date: DATE_FORMATTER_DATE.format(
+                    new Date(updatedMessage.createdAt)
+                ),
+                updatedAt: updatedMessage.updatedAt,
+            },
         };
 
         this.server

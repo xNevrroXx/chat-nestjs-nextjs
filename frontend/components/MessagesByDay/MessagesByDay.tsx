@@ -39,13 +39,12 @@ const MessagesByDay: FC<TProps> = ({
     roomType,
     messageRefs,
 }) => {
-    const messageByUserElems = useMemo(() => {
+    const messagesByUserElems = useMemo(() => {
         const resultElems: JSX.Element[] = [];
 
         let currentUserId = null;
         let messagesByCurrentUser: (IMessage | IForwardedMessage)[] = [];
 
-        console.log("messages: ", messages);
         for (let i = 0, length = messages.length; i < length; i++) {
             const message = messages[i];
 
@@ -53,15 +52,10 @@ const MessagesByDay: FC<TProps> = ({
                 continue;
             }
 
-            console.log("is equals: ", currentUserId === message.senderId);
             if (!currentUserId) {
-                console.log("1");
                 currentUserId = message.senderId;
             }
             else if (currentUserId !== message.senderId) {
-                console.log("currentUser: ", currentUserId);
-                console.log("message.senderId: ", message.senderId);
-                console.log("2: ", "push " + messagesByCurrentUser.length);
                 resultElems.push(
                     <MessagesByUser
                         key={date + currentUserId + message.createdAt}
@@ -120,15 +114,21 @@ const MessagesByDay: FC<TProps> = ({
         userId,
     ]);
 
+    if (messagesByUserElems.length === 0) {
+        return;
+    }
+
     return (
         <div className={"block-by-day"}>
             <div className={"block-by-day__date-wrapper"}>
-                <div style={{ flexBasis: "17%" }} />
+                <div />
                 <div className={"block-by-day__date"}>
                     <Text>{normalizeDate("auto date", date)}</Text>
                 </div>
             </div>
-            <div className={"block-by-day__messages"}>{messageByUserElems}</div>
+            <div className={"block-by-day__messages"}>
+                {messagesByUserElems}
+            </div>
         </div>
     );
 };

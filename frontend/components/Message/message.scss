@@ -202,5 +202,9 @@
 @media (max-width: 768px) {
     .message {
         width: 100%;
+        padding: 1px 10px 1px 50px;
+        &_padding-bottom-large {
+            padding-bottom: 6px;
+        }
     }
 }

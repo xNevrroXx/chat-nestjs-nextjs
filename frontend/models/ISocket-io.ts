@@ -1,8 +1,6 @@
 import {
     TSendMessage,
-    IMessage,
     IForwardMessage,
-    IForwardedMessage,
     TSendUserTyping,
     IParticipant,
     IPinMessage,
@@ -12,8 +10,10 @@ import {
     IDeletedMessageSocket,
     TPinnedMessagesSocket,
     IRoom,
-    IGetMessageRead,
+    IReadMessageSocket,
     IMessageRead,
+    IStandardMessageSocket,
+    IForwardedMessageSocket,
 } from "@/models/room/IRoom.store";
 import { TUserOnline } from "@/models/auth/IAuth.store";
 
@@ -24,12 +24,12 @@ export interface IServerToClientEvents {
     "room:toggle-typing": (data: IParticipant[]) => void;
     "room:add-or-update": (data: IRoom) => void;
     // message
-    "message:read": (data: IGetMessageRead) => void;
+    "message:read": (data: IReadMessageSocket) => void;
     "message:pinned": (data: TPinnedMessagesSocket) => void;
     "message:edited": (data: IEditedMessageSocket) => void;
     "message:deleted": (data: IDeletedMessageSocket) => void;
-    "message:standard": (data: IMessage) => void;
-    "message:forwarded": (data: IForwardedMessage) => void;
+    "message:standard": (data: IStandardMessageSocket) => void;
+    "message:forwarded": (data: IForwardedMessageSocket) => void;
 }
 
 export interface IClientToServerEvents {

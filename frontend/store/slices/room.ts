@@ -106,18 +106,28 @@ const room = createSlice({
                 const targetChat =
                     state.local.rooms.byId[action.payload.roomId];
 
-                const targetMessage = targetChat.days[action.payload.date].find(
-                    (message) => message.id === action.payload.messageId,
-                );
+                const targetMessage = targetChat.days[
+                    action.payload.message.date
+                ].find((message) => message.id === action.payload.message.id);
                 if (!targetMessage) {
                     return;
                 }
                 targetMessage.hasRead = true;
             })
             .addCase(handleMessageSocket, (state, action) => {
-                state.local.rooms.byId[action.payload.message.roomId].days[
-                    action.payload.date
-                ].push(action.payload.message);
+                const messagesByDays =
+                    state.local.rooms.byId[action.payload.message.roomId];
+
+                if (!messagesByDays.days[action.payload.date]) {
+                    messagesByDays.days[action.payload.date] = [
+                        action.payload.message,
+                    ];
+                }
+                else {
+                    messagesByDays.days[action.payload.date].push(
+                        action.payload.message,
+                    );
+                }
             })
             .addCase(handleForwardedMessageSocket, (state, action) => {
                 state.local.rooms.byId[action.payload.message.roomId].days[
@@ -132,36 +142,47 @@ const room = createSlice({
                 const targetChat =
                     state.local.rooms.byId[action.payload.roomId];
 
-                const targetMessage = targetChat.days[action.payload.date].find(
-                    (chat) => chat.id === action.payload.messageId,
-                );
-                if (!targetMessage) return;
-                targetMessage.text = action.payload.text;
-                targetMessage.updatedAt = action.payload.updatedAt;
+                const targetMessage = targetChat.days[
+                    action.payload.message.date
+                ].find((chat) => chat.id === action.payload.message.id);
+
+                if (!targetMessage) {
+                    return;
+                }
+
+                targetMessage.text = action.payload.message.text;
+                targetMessage.updatedAt = action.payload.message.updatedAt;
             })
             .addCase(handleDeletedMessageSocket, (state, action) => {
                 const targetChat =
                     state.local.rooms.byId[action.payload.roomId];
 
-                const targetMessage = targetChat.days[action.payload.date].find(
-                    (chat) => chat.id === action.payload.messageId,
-                );
-                if (!targetMessage) return;
+                const targetMessage = targetChat.days[
+                    action.payload.message.date
+                ].find((chat) => chat.id === action.payload.message.id);
+
+                if (!targetMessage) {
+                    return;
+                }
                 targetMessage.isDeleted = action.payload.isDeleted;
 
-                // todo fix
-                // const dependentMessages = targetChat.messages.filter(
-                //     (message) =>
-                //         action.payload.dependentMessageIds.includes(message.id),
-                // );
-                // dependentMessages.forEach((message) => {
-                //     if (checkIsMessage(message)) {
-                //         message.replyToMessage!.isDeleted = true;
-                //     }
-                //     else {
-                //         message.forwardedMessage.isDeleted = true;
-                //     }
-                // });
+                // if (targetChat.days[action.payload.message.date].length === 1) {
+                //     delete targetChat.days[action.payload.message.date];
+                // }
+
+                action.payload.dependentMessages.forEach((dependentMessage) => {
+                    const msg = targetChat.days[dependentMessage.date].find(
+                        (msg) => dependentMessage.id === msg.id,
+                    );
+                    if (msg) {
+                        if (checkIsMessage(msg)) {
+                            msg.replyToMessage!.isDeleted = true;
+                        }
+                        else {
+                            msg.forwardedMessage.isDeleted = true;
+                        }
+                    }
+                });
             })
             .addCase(handleChangeUserTypingSocket, (state, action) => {
                 const targetChat =

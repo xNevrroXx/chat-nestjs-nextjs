@@ -133,16 +133,22 @@ export interface IGetForwardedMessage {
     date: keyof IMessagesByDays;
 }
 
-export interface IGetMessageRead {
-    messageId: string;
+export interface IReadMessageSocket {
+    message: {
+        id: string;
+        date: keyof IMessagesByDays;
+    };
     roomId: string;
-    date: keyof IMessagesByDays;
 }
 
-export interface IEditedMessageSocket extends IEditMessage {
+export interface IEditedMessageSocket {
     roomId: TValueOf<Pick<IRoom, "id">>;
-    updatedAt: TValueOf<Pick<IMessage, "updatedAt">>;
-    date: keyof IMessagesByDays;
+    message: {
+        id: string;
+        text: string;
+        date: keyof IMessagesByDays;
+        updatedAt: TValueOf<Pick<IMessage, "updatedAt">>;
+    };
 }
 
 export type TPinnedMessagesSocket = {
@@ -152,9 +158,26 @@ export type TPinnedMessagesSocket = {
 
 export interface IDeletedMessageSocket {
     roomId: TValueOf<Pick<IRoom, "id">>;
-    messageId: TValueOf<Pick<IOriginalMessage, "id">>;
-    dependentMessageIds: TValueOf<Pick<IOriginalMessage, "id">>[];
+    message: {
+        id: string;
+        date: keyof IMessagesByDays;
+    };
+    dependentMessages: [
+        {
+            id: string;
+            date: keyof IMessagesByDays;
+        },
+    ];
     isDeleted: boolean;
+}
+
+export interface IStandardMessageSocket {
+    message: IMessage;
+    date: keyof IMessagesByDays;
+}
+
+export interface IForwardedMessageSocket {
+    message: IForwardedMessage;
     date: keyof IMessagesByDays;
 }
 

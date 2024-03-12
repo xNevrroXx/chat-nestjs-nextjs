@@ -4,11 +4,14 @@
         position: sticky;
         z-index: 10;
         top: 0;
-        padding-top: 5px;
-        padding-bottom: 4px;
+        padding: 5px 0 4px;
         display: flex;
         justify-content: flex-start;
         align-items: center;
+
+        div:first-child {
+            flex-basis: 17%;
+        }
     }
     &__date {
         color: white;
@@ -20,4 +23,18 @@
 
 .block-by-day:last-of-type {
     margin-bottom: 0;
+}
+
+@media (max-width: 767.9px) {
+    .block-by-day {
+        &__date-wrapper {
+            justify-content: center;
+            div:first-child {
+                display: none;
+            }
+        }
+        &__date {
+            padding: 3px 10px;
+        }
+    }
 }

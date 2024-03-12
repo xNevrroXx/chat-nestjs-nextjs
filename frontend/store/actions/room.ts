@@ -7,7 +7,7 @@ import {
     IEditedMessageSocket,
     IDeletedMessageSocket,
     TPinnedMessagesSocket,
-    IGetMessageRead,
+    IReadMessageSocket,
     IGetStandardMessage,
     IGetForwardedMessage,
 } from "@/models/room/IRoom.store";
@@ -26,7 +26,7 @@ const setUserId =
     createAction<TValueOf<Pick<IUserDto, "id">>>("room/set-user-id");
 const clearPreviewRooms = createAction("room/clear-previews");
 const addOrUpdateRoomSocket = createAction<IRoom>("room/add-or-update");
-const handleMessageRead = createAction<IGetMessageRead>(
+const handleMessageRead = createAction<IReadMessageSocket>(
     "room/socket:handle-message-read",
 );
 const handleMessageSocket = createAction<IGetStandardMessage>(
