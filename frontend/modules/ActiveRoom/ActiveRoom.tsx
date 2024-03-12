@@ -350,20 +350,29 @@ const ActiveRoom: FC<IActiveChatProps> = ({
                         icon={<LeftOutlined />}
                     />
                     <div className="active-room__info">
-                        <Avatar size={42} className="active-room__photo">
-                            {/*photo*/}
-                        </Avatar>
-                        <Flex className="active-room__wrapper">
+                        <div className="active-room__wrapper">
                             <Title level={5} className="active-room__name">
                                 {room.name}
                             </Title>
-                            <Text
-                                style={{ color: token.colorTextDisabled }}
-                                className="active-room__status"
-                            >
-                                {userStatuses}
-                            </Text>
-                        </Flex>
+                            <Flex gap={"small"}>
+                                {room.type === RoomType.GROUP && (
+                                    <Text
+                                        style={{
+                                            color: token.colorTextDisabled,
+                                        }}
+                                        className="active-room__status"
+                                    >
+                                        {room.participants.length + 1} уч.
+                                    </Text>
+                                )}
+                                <Text
+                                    style={{ color: token.colorTextDisabled }}
+                                    className="active-room__status"
+                                >
+                                    {userStatuses}
+                                </Text>
+                            </Flex>
+                        </div>
                     </div>
                     <div className="active-room__space"></div>
                     <div className="active-room__options">

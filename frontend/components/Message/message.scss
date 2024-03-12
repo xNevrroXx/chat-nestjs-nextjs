@@ -1,5 +1,5 @@
 .message {
-    padding: 1px 15px;
+    padding: 1px 50px;
   width: 100%;
   min-width: min-content;
   //max-width: 100%;
@@ -7,7 +7,7 @@
   display: flex;
     overflow: hidden;
     &_padding-bottom-large {
-        padding-bottom: 5px;
+        padding-bottom: 8px;
     }
   &_with-code {
     min-width: -moz-available;

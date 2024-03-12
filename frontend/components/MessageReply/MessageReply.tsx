@@ -25,7 +25,7 @@ type TMessageReplyProps = {
 const MessageReply: FC<TMessageReplyProps> = ({ message, isInput }) => {
     const { token } = useToken();
     const ownerMessage = useAppSelector((state) =>
-        messageOwnerSelector(state, message),
+        messageOwnerSelector(state, message.senderId),
     );
 
     const ownerMessageElem = useMemo(() => {

@@ -36,9 +36,12 @@ const ListLocalDialogs: FC<IDialogsProps> = ({
             let text: string | undefined = undefined;
             let hasUnreadMessage: boolean = false;
             // find the last non-deleted message in the room
-            const date = Object.keys(room.days)[
-                Object.keys(room.days).length - 1
-            ];
+            const dates = Object.keys(room.days);
+            if (dates.length === 0) {
+                return null;
+            }
+
+            const date = dates[dates.length - 1];
             for (let i = room.days[date].length - 1; i >= 0; i--) {
                 lastMessage = room.days[date][i];
                 if (lastMessage.isDeleted) {

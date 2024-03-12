@@ -1,6 +1,10 @@
 .block-by-day {
     margin-bottom: 4px;
     &__date-wrapper {
+        position: sticky;
+        z-index: 10;
+        top: 0;
+        padding-top: 5px;
         padding-bottom: 4px;
         display: flex;
         justify-content: flex-start;

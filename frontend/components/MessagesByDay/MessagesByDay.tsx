@@ -1,4 +1,5 @@
-import React, { FC, MutableRefObject, RefObject, useMemo } from "react";
+import React, { FC, MutableRefObject, useMemo } from "react";
+import { Typography } from "antd";
 import { normalizeDate } from "@/utils/normalizeDate";
 import Message, { TPaddings } from "@/HOC/Message";
 import {
@@ -11,6 +12,9 @@ import { TValueOf } from "@/models/TUtils";
 import { IUserDto } from "@/models/auth/IAuth.store";
 import "./messages-by-day.scss";
 import { TMessageForAction } from "@/models/room/IRoom.general";
+import MessagesByUser from "@/components/MessagesByUser/MessagesByUser";
+
+const { Text } = Typography;
 
 type TProps = {
     date: string;
@@ -35,67 +39,96 @@ const MessagesByDay: FC<TProps> = ({
     roomType,
     messageRefs,
 }) => {
-    const messageElems = useMemo(() => {
-        return messages.map((message, index, messages) => {
-            if (message.isDeleted) return;
+    const messageByUserElems = useMemo(() => {
+        const resultElems: JSX.Element[] = [];
 
-            const currentCreatedAt = new Date(message.createdAt);
-            const next = messages[index + 1];
+        let currentUserId = null;
+        let messagesByCurrentUser: (IMessage | IForwardedMessage)[] = [];
 
-            const paddings: TPaddings = {
-                bottom: "small",
-            };
+        console.log("messages: ", messages);
+        for (let i = 0, length = messages.length; i < length; i++) {
+            const message = messages[i];
 
-            const min = 1000 * 60; // 1 minute in milliseconds
-
-            if (next) {
-                const nextCreatedAt = new Date(next.createdAt);
-
-                if (
-                    next.senderId !== message.senderId ||
-                    nextCreatedAt.getTime() - currentCreatedAt.getTime() >
-                        min * 10
-                ) {
-                    // if more than 10 minutes have past or the sender of the next message does not match the sender of the current message
-                    paddings.bottom = "large";
-                }
+            if (message.isDeleted) {
+                continue;
             }
 
-            messageRefs.current = [];
-            return (
-                <Message
-                    ref={(ref) => {
-                        if (
-                            message.senderId !== userId &&
-                            !messageRefs.current.includes(ref!) &&
-                            !message.hasRead
-                        ) {
-                            messageRefs.current.push(ref!);
+            console.log("is equals: ", currentUserId === message.senderId);
+            if (!currentUserId) {
+                console.log("1");
+                currentUserId = message.senderId;
+            }
+            else if (currentUserId !== message.senderId) {
+                console.log("currentUser: ", currentUserId);
+                console.log("message.senderId: ", message.senderId);
+                console.log("2: ", "push " + messagesByCurrentUser.length);
+                resultElems.push(
+                    <MessagesByUser
+                        key={date + currentUserId + message.createdAt}
+                        date={date}
+                        hasLastLargePadding={true}
+                        messages={messagesByCurrentUser}
+                        userId={userId}
+                        messagesByUserId={currentUserId}
+                        onChooseMessageForAction={onChooseMessageForAction}
+                        onOpenUsersListForForwardMessage={
+                            onOpenUsersListForForwardMessage
                         }
-                    }}
-                    paddings={paddings}
-                    key={message.id}
-                    roomType={roomType}
-                    userId={userId}
-                    message={message}
-                    onChooseMessageForAction={onChooseMessageForAction}
-                    onChooseMessageForForward={() =>
-                        onOpenUsersListForForwardMessage(message.id)
+                        roomType={roomType}
+                        messageRefs={messageRefs}
+                    />,
+                );
+
+                currentUserId = message.senderId;
+                messagesByCurrentUser = [];
+            }
+
+            messagesByCurrentUser.push(message);
+        }
+
+        messagesByCurrentUser.length > 0 &&
+            currentUserId &&
+            resultElems.push(
+                <MessagesByUser
+                    key={
+                        date +
+                        currentUserId +
+                        messages[messages.length - 1].createdAt
                     }
-                />
+                    date={date}
+                    messagesByUserId={currentUserId}
+                    hasLastLargePadding={false}
+                    messages={messagesByCurrentUser}
+                    userId={userId}
+                    onChooseMessageForAction={onChooseMessageForAction}
+                    onOpenUsersListForForwardMessage={
+                        onOpenUsersListForForwardMessage
+                    }
+                    roomType={roomType}
+                    messageRefs={messageRefs}
+                />,
             );
-        });
-    }, []);
+
+        return resultElems;
+    }, [
+        date,
+        messageRefs,
+        messages,
+        onChooseMessageForAction,
+        onOpenUsersListForForwardMessage,
+        roomType,
+        userId,
+    ]);
 
     return (
         <div className={"block-by-day"}>
             <div className={"block-by-day__date-wrapper"}>
                 <div style={{ flexBasis: "17%" }} />
                 <div className={"block-by-day__date"}>
-                    {normalizeDate("auto date", date)}
+                    <Text>{normalizeDate("auto date", date)}</Text>
                 </div>
             </div>
-            <div className={"block-by-day__messages"}>{messageElems}</div>
+            <div className={"block-by-day__messages"}>{messageByUserElems}</div>
         </div>
     );
 };

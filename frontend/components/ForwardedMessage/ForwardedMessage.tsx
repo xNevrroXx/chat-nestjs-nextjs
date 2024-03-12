@@ -19,7 +19,7 @@ type TMessageReplyProps = {
 };
 const ForwardedMessage: FC<TMessageReplyProps> = ({ message, isMine }) => {
     const ownerMessage = useAppSelector((state) =>
-        messageOwnerSelector(state, message.forwardedMessage),
+        messageOwnerSelector(state, message.forwardedMessage.senderId),
     );
 
     const ownerMessageElem = useMemo(() => {
