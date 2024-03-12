@@ -60,6 +60,9 @@ export class RoomService {
         const result: IRoom & { roomOnFolder: unknown } = {
             ...unnormalizedRoom,
             name: roomName,
+            color: unnormalizedRoom.color
+                ? unnormalizedRoom.color
+                : normalizedParticipants[0].color,
             participants: normalizedParticipants,
             days: normalizedMessagesByDays,
             folderIds: unnormalizedRoom.roomOnFolder.map(

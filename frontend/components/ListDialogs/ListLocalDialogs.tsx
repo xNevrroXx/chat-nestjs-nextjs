@@ -7,10 +7,12 @@ import {
     IForwardedMessage,
     IMessage,
     IRoom,
+    RoomType,
 } from "@/models/room/IRoom.store";
 import { TValueOf } from "@/models/TUtils";
 import { IUserDto } from "@/models/auth/IAuth.store";
 import { ILastMessageInfo } from "@/models/room/IRoom.general";
+
 // styles
 
 interface IDialogsProps {
@@ -92,6 +94,7 @@ const ListLocalDialogs: FC<IDialogsProps> = ({
                 <DialogCard
                     key={room.id.toString() + "dialog card"}
                     id={room.id}
+                    color={room.color}
                     onClick={() => onClickDialog(room.id)}
                     dialogName={room.name}
                     isActive={activeRoomId === room.id}

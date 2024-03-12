@@ -119,7 +119,10 @@ const MessagesByUser: FC<TProps> = ({
                     paddingLeft: "14px",
                 }}
             >
-                <Avatar size={30} style={{ fontSize: "13px" }}>
+                <Avatar
+                    size={30}
+                    style={{ fontSize: "13px", backgroundColor: user!.color }}
+                >
                     {getNameInitials({
                         name: (user && user.displayName) || "",
                     })}

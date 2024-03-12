@@ -20,6 +20,7 @@ export interface IUserAuth extends TPartialBy<IUser, "displayName"> {
 
 export interface IUserDto extends IUser {
     id: string;
+    color: string;
     createdAt: string;
     updatedAt: string | undefined;
     userOnline: TUserOnline;

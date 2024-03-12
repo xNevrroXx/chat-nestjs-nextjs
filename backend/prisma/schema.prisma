@@ -20,6 +20,7 @@ model User {
     age         Int?
     sex         Sex?
     password    String?
+    color       String
 
     createdAt DateTime  @default(now()) @map("created_at")
     updatedAt DateTime? @map("updated_at")
@@ -112,6 +113,7 @@ model Room {
     creatorUserId String?  @map("user_id")
     type          RoomType
     name          String?
+    color         String?
 
     createdAt DateTime  @default(now()) @map("created_at")
     updatedAt DateTime? @map("updated_at")

@@ -17,6 +17,7 @@ import { YandexOAuthGuard } from "./strategies/yandex.auth.guard";
 import { UserDto, UserRegister } from "../user/userDto";
 import { LocalAuthGuard } from "./strategies/local.auth.guard";
 import { Response } from "express";
+import { generateRandomBrightColor } from "../utils/generateRandomBrightColor";
 
 @Controller("auth")
 export class AuthController {
@@ -64,6 +65,7 @@ export class AuthController {
         const hashedPassword = await bcrypt.hash(user.password, 3);
         await this.userService.create({
             ...user,
+            color: generateRandomBrightColor(),
             displayName: user.displayName
                 ? user.displayName
                 : user.givenName + " " + user.familyName,

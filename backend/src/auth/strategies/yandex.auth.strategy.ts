@@ -4,6 +4,7 @@ import { Injectable } from "@nestjs/common";
 import { UserRegisterOAuth } from "../../user/userDto";
 import { UserService } from "../../user/user.service";
 import { AppConstantsService } from "../../app.constants.service";
+import { generateRandomBrightColor } from "../../utils/generateRandomBrightColor";
 
 @Injectable()
 export class YandexAuthStrategy extends PassportStrategy(Strategy, "yandex") {
@@ -35,7 +36,10 @@ export class YandexAuthStrategy extends PassportStrategy(Strategy, "yandex") {
                 name.familyName,
                 emails[0].value
             );
-            user = await this.userService.create(newUser);
+            user = await this.userService.create({
+                ...newUser,
+                color: generateRandomBrightColor(),
+            });
         }
         done(null, user);
     }

@@ -36,6 +36,7 @@ export interface IRoomSlice {
 export interface IRoom {
     id: string;
     name: string;
+    color: string;
     userId: TValueOf<Pick<IUserDto, "id">>;
     type: RoomType;
     folderIds: TValueOf<Pick<IFolder, "id">>[];
@@ -54,6 +55,7 @@ export interface IMessagesByDays {
 
 export interface IParticipant {
     id: string;
+    color: string;
     roomId: TValueOf<Pick<IRoom, "id">>;
     userId: TValueOf<Pick<IUserDto, "id">>;
     nickname: string;

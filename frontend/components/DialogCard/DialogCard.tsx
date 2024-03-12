@@ -24,6 +24,7 @@ interface IDialogCardProps {
     lastMessageInfo: ILastMessageInfo | null;
     roomType: TValueOf<Pick<IRoom, "type">>;
     hasDropdown?: boolean;
+    color: string;
 }
 
 const DialogCard: FC<IDialogCardProps> = ({
@@ -34,6 +35,7 @@ const DialogCard: FC<IDialogCardProps> = ({
     isActive,
     roomType,
     hasDropdown = false,
+    color,
 }) => {
     const content = (
         <li
@@ -43,7 +45,14 @@ const DialogCard: FC<IDialogCardProps> = ({
             onClick={onClick}
         >
             <div className="dialog__left">
-                <Avatar size={48} className="dialog__photo">
+                <Avatar
+                    size={48}
+                    className="dialog__photo"
+                    style={{
+                        backgroundColor: color,
+                        fontWeight: 600,
+                    }}
+                >
                     {getNameInitials({
                         name: dialogName,
                     })}

@@ -4,6 +4,7 @@ import { UserService } from "../../user/user.service";
 import { UserRegisterOAuth } from "../../user/userDto";
 import { Injectable } from "@nestjs/common";
 import { AppConstantsService } from "../../app.constants.service";
+import { generateRandomBrightColor } from "../../utils/generateRandomBrightColor";
 
 @Injectable()
 export class GoogleAuthStrategy extends PassportStrategy(Strategy, "google") {
@@ -36,7 +37,10 @@ export class GoogleAuthStrategy extends PassportStrategy(Strategy, "google") {
                 name.familyName,
                 emails[0].value
             );
-            user = await this.userService.create(newUser);
+            user = await this.userService.create({
+                ...newUser,
+                color: generateRandomBrightColor(),
+            });
         }
         done(null, user);
     }

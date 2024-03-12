@@ -78,6 +78,7 @@ export class ParticipantService {
             ...participant,
             isTyping: isTyping,
             nickname: userNickname,
+            color: participant.user.color,
         };
         delete participantInfo.user;
 

@@ -24,6 +24,7 @@ import {
 import { DatabaseService } from "../database/database.service";
 import { IUserSessionPayload } from "../user/IUser";
 import { TNormalizedList } from "../models/TNormalizedList";
+import { generateRandomBrightColor } from "../utils/generateRandomBrightColor";
 
 @Controller("room")
 export class RoomController {
@@ -47,6 +48,7 @@ export class RoomController {
             data: {
                 type,
                 name,
+                color: generateRandomBrightColor(),
                 participants: {
                     createMany: {
                         data: [

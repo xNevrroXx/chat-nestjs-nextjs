@@ -11,11 +11,14 @@ import type { TUserLogin, TUserDto, TUser } from "./IUser";
 export class UserDto implements TUserDto {
     id: string;
     email: string;
-    displayName;
+    displayName: string;
     givenName: string;
     familyName: string;
     age: number;
     sex: "MALE" | "FEMALE";
+    color: string;
+    createdAt: Date;
+    updatedAt: Date | null;
 
     constructor(data: TUserDto) {
         this.id = data.id;
@@ -25,6 +28,9 @@ export class UserDto implements TUserDto {
         this.familyName = data.familyName;
         this.age = data.age;
         this.sex = data.sex;
+        this.color = data.color;
+        this.createdAt = data.createdAt;
+        this.updatedAt = data.updatedAt;
     }
 }
 

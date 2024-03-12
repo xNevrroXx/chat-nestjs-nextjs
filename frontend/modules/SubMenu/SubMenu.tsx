@@ -12,6 +12,7 @@ import { Header } from "antd/lib/layout/layout";
 import { ButtonProps, Drawer } from "antd/lib";
 import { useAppSelector } from "@/hooks/store.hook";
 import { FlexButton } from "@/components/Button/FlexButton";
+import { getNameInitials } from "@/utils/getNameInitials";
 
 const { Text } = Typography;
 
@@ -82,7 +83,17 @@ const SubMenu: FC<ISubMenuProps> = ({
                     }}
                 >
                     <Flex vertical gap={5} style={{ height: "max-content" }}>
-                        <Avatar size={50} />
+                        <Avatar
+                            size={50}
+                            style={{
+                                backgroundColor: user.color,
+                                fontWeight: 600,
+                            }}
+                        >
+                            {getNameInitials({
+                                name: user.displayName,
+                            })}
+                        </Avatar>
                         <Text style={{ wordBreak: "normal" }}>
                             {user.displayName}
                         </Text>

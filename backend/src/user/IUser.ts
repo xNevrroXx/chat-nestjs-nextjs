@@ -1,9 +1,9 @@
 import { TValueOf } from "../models/TUtils";
 import { Prisma, User } from "@prisma/client";
 
-export type TUser = Omit<User, "id" | "createdAt" | "updatedAt">;
+export type TUser = Omit<User, "id" | "createdAt" | "updatedAt" | "color">;
 
-export type TUserDto = { id: string } & Omit<TUser, "password">;
+export type TUserDto = Omit<User, "password">;
 
 export interface IUserSessionPayload {
     id: TValueOf<Pick<TUserDto, "id">>;
