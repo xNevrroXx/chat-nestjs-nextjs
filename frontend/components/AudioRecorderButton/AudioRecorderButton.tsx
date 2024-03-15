@@ -1,5 +1,5 @@
 import React, { FC, Fragment, useMemo } from "react";
-import { AudioTwoTone } from "@ant-design/icons";
+import { AudioOutlined } from "@ant-design/icons";
 import { TUseAudioRecorderReturnType } from "@/hooks/useAudioRecorder.hook";
 import { TValueOf } from "@/models/TUtils";
 import { Button } from "antd";
@@ -22,7 +22,7 @@ const AudioRecorderButton: FC<IAudioRecorderProps> = ({
             return (
                 <Button
                     type="text"
-                    icon={<AudioTwoTone className="custom" />}
+                    icon={<AudioOutlined className="custom" />}
                     onClick={startRecording}
                     size="large"
                 />
@@ -32,7 +32,7 @@ const AudioRecorderButton: FC<IAudioRecorderProps> = ({
         return (
             <Button
                 type="text"
-                icon={<AudioTwoTone className="custom" />}
+                icon={<AudioOutlined className="custom" />}
                 onClick={stopRecording}
                 size="large"
             />

@@ -46,12 +46,6 @@
     position: relative;
   }
 
-  &__emoji-picker {
-    position: absolute;
-    bottom: 30px;
-    right: 0;
-  }
-
   &__placeholder {
     font-size: 13px;
     z-index: 1;
@@ -70,4 +64,21 @@
     cursor: pointer;
     display: flex;
   }
+}
+
+
+@media (max-width: 767.9px) {
+    .react-emoji {
+        position: static !important;
+        .react-input-emoji--container {
+            flex: 1 0 auto;
+        }
+        &-picker--container {
+            position: static !important;
+        }
+        &-picker--wrapper {
+            bottom: 100% !important;
+            right: calc((100vw - 352px) / 2) !important;
+        }
+    }
 }

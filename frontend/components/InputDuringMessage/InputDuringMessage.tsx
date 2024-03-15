@@ -1,6 +1,6 @@
 import React, { forwardRef, Fragment, useRef } from "react";
 import {
-    PlusCircleTwoTone,
+    PlusCircleOutlined,
     SendOutlined,
     SmileOutlined,
 } from "@ant-design/icons";
@@ -68,7 +68,7 @@ const InputDuringMessage = forwardRef<HTMLDivElement, IInputDuringMessageProps>(
                         <Button
                             ref={buttonAddFilesRef}
                             type="text"
-                            icon={<PlusCircleTwoTone className="custom" />}
+                            icon={<PlusCircleOutlined className="custom" />}
                             onClick={onClickButtonFiles}
                             size="large"
                         />
@@ -117,7 +117,6 @@ const InputDuringMessage = forwardRef<HTMLDivElement, IInputDuringMessageProps>(
                             ref={emojiButtonRef}
                             type="text"
                             icon={<SmileOutlined className="custom" />}
-                            onClick={sendMessage}
                             size="large"
                         />
                     </div>

@@ -1,10 +1,9 @@
 import {
     MenuFoldOutlined,
-    PhoneTwoTone,
+    PhoneOutlined,
     LeftOutlined,
 } from "@ant-design/icons";
 import {
-    Avatar,
     Button,
     Checkbox,
     ConfigProvider,
@@ -376,7 +375,7 @@ const ActiveRoom: FC<IActiveChatProps> = ({
                     </div>
                     <div className="active-room__space"></div>
                     <div className="active-room__options">
-                        <PhoneTwoTone className="custom" />
+                        <PhoneOutlined className="custom" />
                         <MenuFoldOutlined className="custom" />
                     </div>
                 </Header>
