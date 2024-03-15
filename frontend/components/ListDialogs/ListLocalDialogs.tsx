@@ -7,7 +7,6 @@ import {
     IForwardedMessage,
     IMessage,
     IRoom,
-    RoomType,
 } from "@/models/room/IRoom.store";
 import { TValueOf } from "@/models/TUtils";
 import { IUserDto } from "@/models/auth/IAuth.store";
@@ -32,47 +31,58 @@ const ListLocalDialogs: FC<IDialogsProps> = ({
 }) => {
     const findLastMessageInfo = useCallback(
         (room: IRoom): ILastMessageInfo | null => {
+            // find the last non-deleted message in the room
             let lastMessage: IMessage | IForwardedMessage | undefined =
                 undefined;
             let sender: string | undefined = undefined;
             let text: string | undefined = undefined;
             let hasUnreadMessage: boolean = false;
-            // find the last non-deleted message in the room
             const dates = Object.keys(room.days);
+
             if (dates.length === 0) {
                 return null;
             }
 
-            const date = dates[dates.length - 1];
-            for (let i = room.days[date].length - 1; i >= 0; i--) {
-                lastMessage = room.days[date][i];
-                if (lastMessage.isDeleted) {
-                    continue;
-                }
-                if (!hasUnreadMessage && !lastMessage.hasRead) {
-                    hasUnreadMessage = true;
-                }
+            for (let i = dates.length - 1; i >= 0; i--) {
+                const date = dates[i];
 
-                sender =
-                    lastMessage.senderId === user.id
-                        ? "Вы"
-                        : room.participants.find(
-                              (participant) =>
-                                  participant.userId === lastMessage!.senderId,
-                          )!.nickname;
-
-                if (!lastMessage.text) {
-                    if (checkIsMessage(lastMessage)) {
-                        text =
-                            "вложения - " + lastMessage.files.length.toString();
+                for (let j = room.days[date].length - 1; j >= 0; j--) {
+                    lastMessage = room.days[date][j];
+                    if (lastMessage.isDeleted) {
+                        continue;
                     }
-                    text = "пересланное сообщение";
+                    if (!hasUnreadMessage && !lastMessage.hasRead) {
+                        hasUnreadMessage = true;
+                    }
+
+                    sender =
+                        lastMessage.senderId === user.id
+                            ? "Вы"
+                            : room.participants.find(
+                                  (participant) =>
+                                      participant.userId ===
+                                      lastMessage!.senderId,
+                              )!.nickname;
+
+                    if (!lastMessage.text) {
+                        if (checkIsMessage(lastMessage)) {
+                            text =
+                                "вложения - " +
+                                lastMessage.files.length.toString();
+                        }
+                        text = "пересланное сообщение";
+                    }
+                    else {
+                        text = lastMessage.text;
+                    }
+                    break;
                 }
-                else {
-                    text = lastMessage.text;
+
+                if (text) {
+                    break;
                 }
-                break;
             }
+
             if (!sender || !text || !lastMessage) {
                 return null;
             }

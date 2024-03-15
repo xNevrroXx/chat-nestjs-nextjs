@@ -152,6 +152,26 @@ const room = createSlice({
 
                 targetMessage.text = action.payload.message.text;
                 targetMessage.updatedAt = action.payload.message.updatedAt;
+
+                action.payload.dependentMessages.forEach((dependentMessage) => {
+                    const msg = targetChat.days[dependentMessage.date].find(
+                        (msg) => dependentMessage.id === msg.id,
+                    );
+                    if (msg) {
+                        if (checkIsMessage(msg)) {
+                            msg.replyToMessage!.updatedAt =
+                                action.payload.message.updatedAt;
+                            msg.replyToMessage!.text =
+                                action.payload.message.text;
+                        }
+                        else {
+                            msg.forwardedMessage.updatedAt =
+                                action.payload.message.updatedAt;
+                            msg.forwardedMessage.text =
+                                action.payload.message.text;
+                        }
+                    }
+                });
             })
             .addCase(handleDeletedMessageSocket, (state, action) => {
                 const targetChat =
@@ -165,10 +185,6 @@ const room = createSlice({
                     return;
                 }
                 targetMessage.isDeleted = action.payload.isDeleted;
-
-                // if (targetChat.days[action.payload.message.date].length === 1) {
-                //     delete targetChat.days[action.payload.message.date];
-                // }
 
                 action.payload.dependentMessages.forEach((dependentMessage) => {
                     const msg = targetChat.days[dependentMessage.date].find(

@@ -88,6 +88,14 @@ const MessagesByUser: FC<TProps> = ({
                             messageRefs.current.push(ref!);
                         }
                     }}
+                    shouldSpecifyAuthor={
+                        roomType === RoomType.GROUP &&
+                        index === 0 &&
+                        user && {
+                            color: user.color,
+                            displayName: user.displayName,
+                        }
+                    }
                     paddings={paddings}
                     key={message.id}
                     roomType={roomType}

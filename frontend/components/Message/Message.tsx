@@ -39,6 +39,12 @@ interface IMessageProps {
     message: IMessage | IForwardedMessage;
     files: IKnownAndUnknownFiles;
     paddings: TPaddings;
+    shouldSpecifyAuthor:
+        | false
+        | {
+              color: string;
+              displayName: string;
+          };
     isMine: boolean;
     isVoice: boolean;
     onChooseMessageForPin: () => void;
@@ -55,6 +61,7 @@ const Message = forwardRef<HTMLDivElement, IMessageProps>(
             paddings,
             isMine,
             isVoice,
+            shouldSpecifyAuthor,
             files,
             onChooseMessageForPin,
             onChooseMessageForEdit,
@@ -265,7 +272,21 @@ const Message = forwardRef<HTMLDivElement, IMessageProps>(
                         "message_with-code",
                 )}
             >
-                <div className="message__content">{messageContent}</div>
+                <div className="message__content">
+                    {shouldSpecifyAuthor && (
+                        <div className={"message__header"}>
+                            <Text
+                                style={{
+                                    color: shouldSpecifyAuthor.color,
+                                    lineHeight: "normal",
+                                }}
+                            >
+                                {shouldSpecifyAuthor.displayName}
+                            </Text>
+                        </div>
+                    )}
+                    {messageContent}
+                </div>
                 <div className="message__actions">
                     <Button
                         type="text"

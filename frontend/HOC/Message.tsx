@@ -37,6 +37,12 @@ type TMessageProps = {
     onChooseMessageForForward: () => void;
     onChooseMessageForAction: (messageForAction: TMessageForAction) => void;
     paddings: TPaddings;
+    shouldSpecifyAuthor?:
+        | false
+        | {
+              color: string;
+              displayName: string;
+          };
 };
 
 const Message = forwardRef<HTMLDivElement, TMessageProps>(
@@ -48,6 +54,7 @@ const Message = forwardRef<HTMLDivElement, TMessageProps>(
             onChooseMessageForAction,
             onChooseMessageForForward,
             paddings,
+            shouldSpecifyAuthor = false,
         },
         outerRef,
     ) => {
@@ -163,7 +170,7 @@ const Message = forwardRef<HTMLDivElement, TMessageProps>(
                 action: MessageAction.DELETE,
                 isForEveryone: false,
             });
-        }, [onChooseMessageForAction, message]);
+        }, [roomType, message, userId, onChooseMessageForAction]);
 
         const isMine = useMemo((): boolean => {
             return userId === message.senderId;
@@ -182,6 +189,7 @@ const Message = forwardRef<HTMLDivElement, TMessageProps>(
                 onChooseMessageForReply={onClickMessageForReply}
                 onChooseMessageForForward={onChooseMessageForForward}
                 message={message}
+                shouldSpecifyAuthor={shouldSpecifyAuthor}
             />
         );
     },

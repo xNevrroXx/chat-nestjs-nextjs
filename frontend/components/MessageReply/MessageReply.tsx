@@ -33,7 +33,11 @@ const MessageReply: FC<TMessageReplyProps> = ({ message, isInput }) => {
             return;
         }
 
-        return <Text strong>{ownerMessage.displayName}</Text>;
+        return (
+            <Text style={{ color: ownerMessage.color }}>
+                {ownerMessage.displayName}
+            </Text>
+        );
     }, [ownerMessage]);
 
     const content = useMemo(() => {

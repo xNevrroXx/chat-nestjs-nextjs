@@ -459,7 +459,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
             throw new WsException("Не найден отправитель сообщения");
         }
 
-        const updatedMessage = await this.messageService.update({
+        const updatedMessage = (await this.messageService.update({
             where: {
                 id: message.messageId,
             },
@@ -467,12 +467,40 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
                 text: message.text,
                 updatedAt: new Date(),
             },
-        });
+            include: {
+                repliesThisMessage: true,
+                forwardThisMessage: true,
+            },
+        })) as Prisma.MessageGetPayload<{
+            include: {
+                repliesThisMessage: true;
+                forwardThisMessage: true;
+            };
+        }>;
         if (!updatedMessage || updatedMessage.senderId !== sender.id) {
             throw new WsException(
                 "Сообщение либо не существует, либо вы пытаетесь изменить не свое сообщение"
             );
         }
+
+        const dependentMessageIds = [
+            ...updatedMessage.repliesThisMessage.map((replyThisMessage) => {
+                return {
+                    id: replyThisMessage.id,
+                    date: DATE_FORMATTER_DATE.format(
+                        new Date(replyThisMessage.createdAt)
+                    ),
+                };
+            }),
+            ...updatedMessage.forwardThisMessage.map((forwardThisMessage) => {
+                return {
+                    id: forwardThisMessage.id,
+                    date: DATE_FORMATTER_DATE.format(
+                        new Date(forwardThisMessage.createdAt)
+                    ),
+                };
+            }),
+        ];
 
         const editedMessageInfo = {
             roomId: updatedMessage.roomId,
@@ -484,6 +512,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
                 ),
                 updatedAt: updatedMessage.updatedAt,
             },
+            dependentMessages: dependentMessageIds,
         };
 
         this.server

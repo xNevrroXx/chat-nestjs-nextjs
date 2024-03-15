@@ -151,6 +151,12 @@ export interface IEditedMessageSocket {
         date: keyof IMessagesByDays;
         updatedAt: TValueOf<Pick<IMessage, "updatedAt">>;
     };
+    dependentMessages: [
+        {
+            id: string;
+            date: keyof IMessagesByDays;
+        },
+    ];
 }
 
 export type TPinnedMessagesSocket = {
