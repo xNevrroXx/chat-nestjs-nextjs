@@ -7,7 +7,10 @@ import {
     getAllFolders,
     removeFolder,
 } from "@/store/thunks/roomsOnFolders";
-import { changeCurrentFolder } from "@/store/actions/roomsOnFolders";
+import {
+    changeCurrentFolder,
+    excludeRoomFromFolders,
+} from "@/store/actions/roomsOnFolders";
 
 const initialState: IRoomOnFoldersSlice = {
     folders: {
@@ -53,6 +56,22 @@ const roomsOnFolders = createSlice({
                     store.folders.byId[action.payload.folderId].roomIds.filter(
                         (roomId) => roomId !== action.payload.roomId,
                     );
+            })
+            .addCase(excludeRoomFromFolders, (store, action) => {
+                const exclusionRoom = action.payload;
+                store.allIds.forEach((folderId) => {
+                    const isContain =
+                        store.folders.byId[folderId].roomIds.includes(
+                            exclusionRoom,
+                        );
+
+                    if (isContain) {
+                        store.folders.byId[folderId].roomIds =
+                            store.folders.byId[folderId].roomIds.filter(
+                                (roomId) => roomId !== exclusionRoom,
+                            );
+                    }
+                });
             });
     },
 });

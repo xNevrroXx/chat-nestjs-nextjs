@@ -1,40 +1,83 @@
 import {
     Body,
     Controller,
+    Delete,
     Get,
+    HttpCode,
+    HttpStatus,
     Post,
     Query,
     Req,
+    UseFilters,
     UseGuards,
 } from "@nestjs/common";
 import { stringSimilarity } from "string-similarity-js";
 import { Request } from "express";
 import { AuthGuard } from "../auth/auth.guard";
 import { RoomService } from "./room.service";
-import { MessageService } from "../message/message.service";
-import { ParticipantService } from "../participant/participant.service";
 import { Prisma, RoomType, User } from "@prisma/client";
-import { UserService } from "../user/user.service";
 import {
     IRoom,
+    TRoomPreview,
     NewRoom,
     PrismaIncludeFullRoomInfo,
-    TRoomPreview,
 } from "./IRooms";
 import { DatabaseService } from "../database/database.service";
 import { IUserSessionPayload } from "../user/IUser";
 import { TNormalizedList } from "../models/TNormalizedList";
 import { generateRandomBrightColor } from "../utils/generateRandomBrightColor";
+import { MessageService } from "../message/message.service";
+import { WsExceptionFilter } from "../exceptions/ws-exception.filter";
 
 @Controller("room")
 export class RoomController {
     constructor(
-        private readonly participantService: ParticipantService,
         private readonly messageService: MessageService,
         private readonly roomService: RoomService,
-        private readonly userService: UserService,
         private readonly prismaService: DatabaseService
     ) {}
+
+    @Delete("clear-my-history")
+    @HttpCode(HttpStatus.OK)
+    @UseGuards(AuthGuard)
+    async clearMyHistory(
+        @Req() request,
+        @Body() { roomId }: { roomId: string }
+    ) {
+        const userInfo = request.user;
+
+        const messages = await this.messageService.findMany({
+            where: {
+                roomId,
+            },
+        });
+
+        for (let i = 0; i < messages.length; i++) {
+            const msg = messages[i];
+
+            await this.prismaService.userOnDeletedMessage.upsert({
+                update: {},
+                create: {
+                    user: {
+                        connect: {
+                            id: userInfo.id,
+                        },
+                    },
+                    message: {
+                        connect: {
+                            id: msg.id,
+                        },
+                    },
+                },
+                where: {
+                    userId_messageId: {
+                        userId: userInfo.id,
+                        messageId: msg.id,
+                    },
+                },
+            });
+        }
+    }
 
     @Post("create")
     @UseGuards(AuthGuard)
@@ -78,6 +121,7 @@ export class RoomController {
     }
 
     @Get("all")
+    @UseFilters(new WsExceptionFilter())
     @UseGuards(AuthGuard)
     async getAll(@Req() request): Promise<TNormalizedList<IRoom>> {
         const userPayload = request.user;
@@ -86,9 +130,16 @@ export class RoomController {
             where: {
                 participants: {
                     some: {
-                        userId: {
-                            equals: userPayload.id,
-                        },
+                        AND: [
+                            {
+                                userId: {
+                                    equals: userPayload.id,
+                                },
+                            },
+                            {
+                                isStillMember: true,
+                            },
+                        ],
                     },
                 },
             },
@@ -146,7 +197,7 @@ export class RoomController {
                             INNER JOIN room as intersecting_room
                                ON target_user_participant.room_id = intersecting_room.id
                        AND p.room_id = target_user_participant.room_id
-                       AND intersecting_room.type = "PRIVATE"
+                       AND intersecting_room.type = 'PRIVATE'
                 ) ON u.id = p.user_id
             WHERE
                 target_user_participant.user_id is null
@@ -154,7 +205,7 @@ export class RoomController {
                     (
                         u.display_name LIKE ${"%" + query + "%"}
                         OR
-                        CONCAT(u.given_name, " ", u.family_name) LIKE ${
+                        CONCAT(u.given_name, ' ', u.family_name) LIKE ${
                             "%" + query + "%"
                         }
                     )
@@ -165,20 +216,60 @@ export class RoomController {
             ? []
             : ((await this.roomService.findMany({
                   where: {
-                      AND: [
+                      OR: [
                           {
-                              name: {
-                                  contains: query as string,
-                              },
-                          },
-                          {
-                              participants: {
-                                  every: {
-                                      userId: {
-                                          not: userPayload.id,
+                              AND: [
+                                  {
+                                      name: {
+                                          contains: query as string,
                                       },
                                   },
-                              },
+                                  {
+                                      participants: {
+                                          every: {
+                                              userId: {
+                                                  not: userPayload.id,
+                                              },
+                                          },
+                                      },
+                                  },
+                              ],
+                          },
+                          {
+                              AND: [
+                                  {
+                                      OR: [
+                                          {
+                                              name: {
+                                                  equals: null,
+                                              },
+                                          },
+                                          {
+                                              name: {
+                                                  contains: query as string,
+                                              },
+                                          },
+                                      ],
+                                  },
+                                  {
+                                      participants: {
+                                          some: {
+                                              AND: [
+                                                  {
+                                                      userId: {
+                                                          equals: userPayload.id,
+                                                      },
+                                                  },
+                                                  {
+                                                      isStillMember: {
+                                                          equals: false,
+                                                      },
+                                                  },
+                                              ],
+                                          },
+                                      },
+                                  },
+                              ],
                           },
                       ],
                   },
@@ -187,8 +278,14 @@ export class RoomController {
                   include: typeof PrismaIncludeFullRoomInfo;
               }>[]);
 
-        const roomsAndUsers = users
-            .map<TRoomPreview>((user) => {
+        const roomsAndUsers: Prisma.RoomGetPayload<{
+            include: typeof PrismaIncludeFullRoomInfo;
+        }>[] = users
+            .map<
+                Prisma.RoomGetPayload<{
+                    include: typeof PrismaIncludeFullRoomInfo;
+                }>
+            >((user) => {
                 // Here we have the FAKE room id, because we don't have the private room with this user,
                 // so we use the user interlocutor id
                 return {
@@ -198,38 +295,72 @@ export class RoomController {
                     participants: [
                         {
                             userId: user.id,
+                            roomId: user.id,
+                            isStillMember: true,
+                            color: user.color,
+                            nickname: user.displayName,
+                            user: {
+                                ...user,
+                                userTyping: {
+                                    id: "123",
+                                    roomId: user.id,
+                                    userId: user.id,
+                                    updatedAt: null,
+                                    isTyping: false,
+                                },
+                                userOnline: {
+                                    id: "123",
+                                    roomId: user.id,
+                                    userId: user.id,
+                                    updatedAt: null,
+                                    isOnline: false,
+                                },
+                            },
+                            createdAt: null,
+                            updatedAt: null,
                         },
                     ],
+                    usersTyping: [],
                     pinnedMessages: [],
                     messages: [],
+                    roomOnFolder: [],
+                    wasMember: false,
+                    creatorUserId: null,
+                    creatorUser: null,
+                    updatedAt: null,
+                    createdAt: null,
+                    color: null,
+                    isPreview: true,
                 };
             })
             .concat(
-                ...rooms.map<TRoomPreview>((room) => {
-                    return {
-                        id: room.id,
-                        name: room.name,
-                        type: RoomType.GROUP,
-                        participants: [],
-                        pinnedMessages: [],
-                        messages: [],
-                    };
-                })
+                rooms.map((room) => ({
+                    ...room,
+                    isPreview: true,
+                    wasMember: room.participants.some(
+                        (member) => member.userId === userPayload.id
+                    ),
+                }))
             )
-            // .filter((room) =>
-            //     room.name
-            //         .toLowerCase()
-            //         .includes((query as string).toLowerCase())
-            // )
             .sort((room1, room2) => {
                 return (
-                    stringSimilarity(query as string, room2.name) -
-                    stringSimilarity(query as string, room2.name)
+                    stringSimilarity(query as string, room2.name || "") -
+                    stringSimilarity(query as string, room1.name || "")
                 );
             });
 
-        return roomsAndUsers.sort((user) =>
-            stringSimilarity(query as string, user.name)
+        const normalizedRoomPromises: Promise<IRoom>[] = roomsAndUsers.map(
+            (room) => {
+                return this.roomService.normalize(userPayload.id, room);
+            }
         );
+        const normalizedRooms = await Promise.all(normalizedRoomPromises);
+        return normalizedRooms
+            .filter((room) =>
+                room.name.toLowerCase().includes(query.toLowerCase())
+            )
+            .sort((room) =>
+                stringSimilarity(query as string, room.name)
+            ) as TRoomPreview[];
     }
 }

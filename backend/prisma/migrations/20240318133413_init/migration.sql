@@ -8,6 +8,7 @@ CREATE TABLE `user` (
     `age` INTEGER NULL,
     `sex` ENUM('MALE', 'FEMALE') NULL,
     `password` VARCHAR(191) NULL,
+    `color` VARCHAR(191) NOT NULL,
     `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updated_at` DATETIME(3) NULL,
 
@@ -76,6 +77,7 @@ CREATE TABLE `room` (
     `user_id` VARCHAR(191) NULL,
     `type` ENUM('PRIVATE', 'GROUP') NOT NULL,
     `name` VARCHAR(191) NULL,
+    `color` VARCHAR(191) NULL,
     `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updated_at` DATETIME(3) NULL,
 
@@ -84,8 +86,8 @@ CREATE TABLE `room` (
 
 -- CreateTable
 CREATE TABLE `rooms_on_folders` (
-    `folderId` VARCHAR(191) NOT NULL,
     `roomId` VARCHAR(191) NOT NULL,
+    `folderId` VARCHAR(191) NOT NULL,
     `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updated_at` DATETIME(3) NULL,
 
@@ -96,6 +98,9 @@ CREATE TABLE `rooms_on_folders` (
 CREATE TABLE `participant` (
     `user_id` VARCHAR(191) NOT NULL,
     `room_id` VARCHAR(191) NOT NULL,
+    `is_still_member` BOOLEAN NOT NULL DEFAULT true,
+    `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updated_at` DATETIME(3) NULL,
 
     PRIMARY KEY (`user_id`, `room_id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -114,6 +119,16 @@ CREATE TABLE `message` (
     `updated_at` DATETIME(3) NULL,
 
     PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `user_on_deleted_message` (
+    `userId` VARCHAR(191) NOT NULL,
+    `messageId` VARCHAR(191) NOT NULL,
+    `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updated_at` DATETIME(3) NULL,
+
+    PRIMARY KEY (`userId`, `messageId`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -149,15 +164,6 @@ CREATE TABLE `session` (
 
     UNIQUE INDEX `session_sid_key`(`sid`),
     PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
-CREATE TABLE `_deleted_messages` (
-    `A` VARCHAR(191) NOT NULL,
-    `B` VARCHAR(191) NOT NULL,
-
-    UNIQUE INDEX `_deleted_messages_AB_unique`(`A`, `B`),
-    INDEX `_deleted_messages_B_index`(`B`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- AddForeignKey
@@ -209,6 +215,12 @@ ALTER TABLE `message` ADD CONSTRAINT `message_reply_to_message_id_fkey` FOREIGN 
 ALTER TABLE `message` ADD CONSTRAINT `message_forwarded_message_id_fkey` FOREIGN KEY (`forwarded_message_id`) REFERENCES `message`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE `user_on_deleted_message` ADD CONSTRAINT `user_on_deleted_message_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `user_on_deleted_message` ADD CONSTRAINT `user_on_deleted_message_messageId_fkey` FOREIGN KEY (`messageId`) REFERENCES `message`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE `pinned_message` ADD CONSTRAINT `pinned_message_message_id_fkey` FOREIGN KEY (`message_id`) REFERENCES `message`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -216,9 +228,3 @@ ALTER TABLE `pinned_message` ADD CONSTRAINT `pinned_message_room_id_fkey` FOREIG
 
 -- AddForeignKey
 ALTER TABLE `file` ADD CONSTRAINT `file_message_id_fkey` FOREIGN KEY (`message_id`) REFERENCES `message`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `_deleted_messages` ADD CONSTRAINT `_deleted_messages_A_fkey` FOREIGN KEY (`A`) REFERENCES `message`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `_deleted_messages` ADD CONSTRAINT `_deleted_messages_B_fkey` FOREIGN KEY (`B`) REFERENCES `user`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;

@@ -19,11 +19,14 @@ export interface IMessagesByDays {
     [date: string]: TMessage[];
 }
 
-export type TRoomPreview = {
+export type TRoomPreview = IRoom & IRoomPreviewFromUser;
+
+export interface IRoomPreviewFromUser {
+    id: string;
     name?: string;
     type: RoomType;
-    id: string;
-};
+    wasMember: boolean;
+}
 
 export class NewRoom {
     @IsString()
@@ -65,7 +68,7 @@ export const PrismaIncludeFullRoomInfo = {
             replyToMessage: {
                 include: {
                     files: true,
-                    usersDeletedThisMessage: true,
+                    userDeletedThisMessage: true,
                 },
             },
             forwardedMessage: {
@@ -74,13 +77,13 @@ export const PrismaIncludeFullRoomInfo = {
                     replyToMessage: {
                         include: {
                             files: true,
-                            usersDeletedThisMessage: true,
+                            userDeletedThisMessage: true,
                         },
                     },
-                    usersDeletedThisMessage: true,
+                    userDeletedThisMessage: true,
                 },
             },
-            usersDeletedThisMessage: true,
+            userDeletedThisMessage: true,
         },
         orderBy: {
             createdAt: "asc" as const,

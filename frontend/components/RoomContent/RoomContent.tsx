@@ -79,6 +79,10 @@ const RoomContent = forwardRef<HTMLDivElement, IChatContentProps>(
 
         const listMessages = useMemo(() => {
             const content: JSX.Element[] = [];
+            if (!room.days) {
+                return;
+            }
+
             for (const [date, messages] of Object.entries(room.days)) {
                 content.push(
                     <MessagesByDay

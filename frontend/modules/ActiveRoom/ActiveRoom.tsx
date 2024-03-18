@@ -81,7 +81,7 @@ const ActiveRoom: FC<IActiveChatProps> = ({
     const dispatch = useAppDispatch();
     const typingTimoutRef = useRef<NodeJS.Timeout | null>(null);
     const interlocutor = useAppSelector((state) => {
-        if (!room || room.type === RoomType.GROUP) return;
+        if (!room || room.type === RoomType.GROUP || !room.participants) return;
         return state.users.users.find(
             (user) => user.id === room.participants[0].userId,
         );
@@ -361,7 +361,10 @@ const ActiveRoom: FC<IActiveChatProps> = ({
                                         }}
                                         className="active-room__status"
                                     >
-                                        {room.participants.length + 1} уч.
+                                        {room.participants.filter(
+                                            (member) => member.isStillMember,
+                                        ).length + 1}{" "}
+                                        уч.
                                     </Text>
                                 )}
                                 <Text
@@ -380,7 +383,7 @@ const ActiveRoom: FC<IActiveChatProps> = ({
                     </div>
                 </Header>
 
-                {room.pinnedMessages.length > 0 && (
+                {room.pinnedMessages && room.pinnedMessages.length > 0 && (
                     <PinnedMessages pinnedMessages={room.pinnedMessages} />
                 )}
 

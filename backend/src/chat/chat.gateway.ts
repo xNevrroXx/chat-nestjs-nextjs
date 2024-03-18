@@ -8,7 +8,7 @@ import {
     ConnectedSocket,
     WsException,
 } from "@nestjs/websockets";
-import { UseGuards } from "@nestjs/common";
+import { Body, Delete, Req, UseFilters, UseGuards } from "@nestjs/common";
 import { Server, Socket } from "socket.io";
 import * as mime from "mime-types";
 // own modules
@@ -39,6 +39,9 @@ import { Prisma, File } from "@prisma/client";
 import { PrismaIncludeFullRoomInfo } from "../room/IRooms";
 import { ForwardedMessagePrisma } from "../message/IMessage";
 import { DATE_FORMATTER_DATE } from "../utils/normalizeDate";
+import { AuthGuard } from "../auth/auth.guard";
+import { RoomsOnFoldersService } from "../rooms-on-folders/rooms-on-folders.service";
+import { WsExceptionFilter } from "../exceptions/ws-exception.filter";
 
 @WebSocketGateway({
     namespace: "api/chat",
@@ -57,7 +60,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         private readonly authService: AuthService,
         private readonly fileService: FileService,
         private readonly messageService: MessageService,
-        private readonly participantService: ParticipantService
+        private readonly participantService: ParticipantService,
+        private readonly roomOnFoldersService: RoomsOnFoldersService
     ) {
         this.socketRoomsInfo = new SocketRoomsInfo();
     }
@@ -94,7 +98,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
     async handleDisconnect(@ConnectedSocket() client) {
-        const userToRoomInfo = this.socketRoomsInfo.leave(client.id);
+        const userToRoomInfo = this.socketRoomsInfo.leaveAll(client.id);
         if (!userToRoomInfo) {
             return;
         }
@@ -162,6 +166,67 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
                         .emit("room:add-or-update", room);
                 });
         });
+    }
+
+    @UseGuards(WsAuthGuard)
+    @SubscribeMessage("room:leave")
+    async leaveRoom(
+        @ConnectedSocket() client,
+        @MessageBody() { roomId }: { roomId: string }
+    ) {
+        const userId = client.user.id;
+
+        await this.roomService.update({
+            where: {
+                id: roomId,
+            },
+            data: {
+                participants: {
+                    update: {
+                        where: {
+                            userId_roomId: {
+                                roomId,
+                                userId,
+                            },
+                        },
+                        data: {
+                            isStillMember: false,
+                            updatedAt: new Date(),
+                        },
+                    },
+                },
+            },
+        });
+
+        const userFoldersWithLeavedRoom =
+            await this.roomOnFoldersService.findMany({
+                where: {
+                    userId,
+                    roomOnFolder: {
+                        some: {
+                            roomId,
+                        },
+                    },
+                },
+            });
+
+        userFoldersWithLeavedRoom.forEach((folder) => {
+            void this.roomOnFoldersService.removeRoomFromFolder({
+                where: {
+                    folderId_roomId: {
+                        roomId: roomId,
+                        folderId: folder.id,
+                    },
+                },
+            });
+        });
+
+        const userWhoLeft = this.socketRoomsInfo.leaveOne(client.id, roomId);
+        client.leave(roomId);
+
+        this.server
+            .to(roomId)
+            .emit("room:left", { roomId, userId: userWhoLeft.userId });
     }
 
     @UseGuards(WsAuthGuard)
@@ -368,9 +433,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
             message.isForEveryone
                 ? { isDeleteForEveryone: true }
                 : {
-                      usersDeletedThisMessage: {
-                          connect: {
-                              id: sender.id,
+                      userDeletedThisMessage: {
+                          create: {
+                              user: {
+                                  connect: {
+                                      id: sender.id,
+                                  },
+                              },
                           },
                       },
                   };
@@ -521,6 +590,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
     @UseGuards(WsAuthGuard)
+    @UseFilters(new WsExceptionFilter())
     @SubscribeMessage("message:forward")
     async handleForwardMessage(
         @ConnectedSocket() client,
@@ -575,13 +645,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
                         replyToMessage: {
                             include: {
                                 files: true,
-                                usersDeletedThisMessage: true,
+                                userDeletedThisMessage: true,
                             },
                         },
-                        usersDeletedThisMessage: true,
+                        userDeletedThisMessage: true,
                     },
                 },
-                usersDeletedThisMessage: true,
+                userDeletedThisMessage: true,
             },
         })) as Prisma.MessageGetPayload<{
             include: typeof ForwardedMessagePrisma;
@@ -600,6 +670,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
     @UseGuards(WsAuthGuard)
+    @UseFilters(new WsExceptionFilter())
     @SubscribeMessage("message:standard")
     async handleMessage(
         @ConnectedSocket() client,
@@ -718,10 +789,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
                 replyToMessage: {
                     include: {
                         files: true,
-                        usersDeletedThisMessage: true,
+                        userDeletedThisMessage: true,
                     },
                 },
-                usersDeletedThisMessage: true,
+                userDeletedThisMessage: true,
             },
         })) as Prisma.MessageGetPayload<{
             include: {
@@ -729,10 +800,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
                 replyToMessage: {
                     include: {
                         files: true;
-                        usersDeletedThisMessage: true;
+                        userDeletedThisMessage: true;
                     };
                 };
-                usersDeletedThisMessage: true;
+                userDeletedThisMessage: true;
             };
         }>;
         const normalizedMessage = await this.messageService.normalize(

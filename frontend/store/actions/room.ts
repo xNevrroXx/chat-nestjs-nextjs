@@ -1,15 +1,14 @@
 import { createAction } from "@reduxjs/toolkit";
 import {
     IRoom,
-    IMessage,
     IParticipant,
-    IForwardedMessage,
     IEditedMessageSocket,
     IDeletedMessageSocket,
     TPinnedMessagesSocket,
     IReadMessageSocket,
     IGetStandardMessage,
     IGetForwardedMessage,
+    ILeaveRoom,
 } from "@/models/room/IRoom.store";
 import { TValueOf } from "@/models/TUtils";
 import { IUserDto } from "@/models/auth/IAuth.store";
@@ -18,6 +17,7 @@ import {
     TExcludeRoom,
 } from "@/models/rooms-on-folders/IRoomOnFolders.store";
 
+const userLeftRoom = createAction<ILeaveRoom>("room/left-room");
 const excludeFromFolder = createAction<TExcludeRoom>(
     "room/exclude-from-folder",
 );
@@ -50,6 +50,7 @@ const handleChangeUserTypingSocket = createAction<IParticipant[]>(
 
 export {
     setUserId,
+    userLeftRoom,
     clearPreviewRooms,
     handleMessageRead,
     handleMessageSocket,

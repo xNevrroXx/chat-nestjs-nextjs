@@ -109,17 +109,23 @@ const MessagesByUser: FC<TProps> = ({
             );
         });
     }, [
+        hasLastLargePadding,
         messageRefs,
         messages,
         onChooseMessageForAction,
         onOpenUsersListForForwardMessage,
         roomType,
+        user,
         userId,
     ]);
 
+    if (!user) {
+        return;
+    }
+
     return (
         <div className={"block-by-user"}>
-            <div className={"block-by-day__messages"}>{messageElems}</div>
+            {messageElems}
             <div
                 style={{
                     position: "absolute",
@@ -129,7 +135,7 @@ const MessagesByUser: FC<TProps> = ({
             >
                 <Avatar
                     size={30}
-                    style={{ fontSize: "13px", backgroundColor: user!.color }}
+                    style={{ fontSize: "13px", backgroundColor: user.color }}
                 >
                     {getNameInitials({
                         name: (user && user.displayName) || "",

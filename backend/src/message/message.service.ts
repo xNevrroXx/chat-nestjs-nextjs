@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { DatabaseService } from "../database/database.service";
-import { type Message, Prisma, User } from "@prisma/client";
+import { type Message, Prisma, PrismaPromise, User } from "@prisma/client";
 import {
     ForwardedMessagePrisma,
     FullMessageInfo,
@@ -89,6 +89,18 @@ export class MessageService {
         });
     }
 
+    updateMany(params: {
+        where: Prisma.MessageWhereInput;
+        data: Prisma.MessageUpdateInput;
+    }): PrismaPromise<Prisma.BatchPayload> {
+        const { where, data } = params;
+
+        return this.prisma.message.updateMany({
+            where,
+            data,
+        });
+    }
+
     async delete(where: Prisma.MessageWhereUniqueInput): Promise<Message> {
         return this.prisma.message.delete({
             where,
@@ -107,7 +119,7 @@ export class MessageService {
 
         const message = excludeSensitiveFields(inputMessagePrisma, [
             "isDeleteForEveryone",
-            "usersDeletedThisMessage",
+            "userDeletedThisMessage",
         ]) as never as TMessage;
 
         const normalizedOriginalMessage: IOriginalMessage = {
@@ -117,8 +129,8 @@ export class MessageService {
             hasRead: message.hasRead,
             isDeleted:
                 inputMessagePrisma.isDeleteForEveryone ||
-                inputMessagePrisma.usersDeletedThisMessage.some(
-                    ({ id }) => id === recipientId
+                inputMessagePrisma.userDeletedThisMessage.some(
+                    ({ userId }) => userId === recipientId
                 ),
             firstLinkInfo: null,
             links: findLinksInText(message.text),
@@ -127,11 +139,36 @@ export class MessageService {
             createdAt: message.createdAt,
             updatedAt: message.updatedAt,
         };
-
+        //
+        // console.log("message id: ", inputMessagePrisma.id);
+        // console.log("recipient: ", recipientId);
+        // console.log(
+        //     "inputMessagePrisma.userDeletedThisMessage: ",
+        //     inputMessagePrisma.userDeletedThisMessage
+        // );
+        // console.log(
+        //     "isDeleted: ",
+        //     inputMessagePrisma.userDeletedThisMessage.some(
+        //         ({ userId }) => userId === recipientId
+        //     )
+        // );
         if (normalizedOriginalMessage.links.length > 0) {
             const firstLink = normalizedOriginalMessage.links[0];
-            normalizedOriginalMessage.firstLinkInfo =
-                await this.linkPreviewService.getLinkInfo(firstLink);
+            try {
+                normalizedOriginalMessage.firstLinkInfo =
+                    await this.linkPreviewService.getLinkInfo(firstLink);
+            } catch (error) {
+                normalizedOriginalMessage.firstLinkInfo = {
+                    url: firstLink,
+                    title: "",
+                    shortTitle: undefined,
+                    favicon: "",
+                    description: "",
+                    image: "",
+                    author: "",
+                };
+                console.warn(error);
+            }
         }
 
         let normalizedInnerMessage:
@@ -159,8 +196,8 @@ export class MessageService {
 
         normalizedInnerMessage.isDeleted =
             inputMessagePrisma.isDeleteForEveryone ||
-            inputMessagePrisma.usersDeletedThisMessage.some(
-                ({ id }) => id === recipientId
+            inputMessagePrisma.userDeletedThisMessage.some(
+                ({ userId }) => userId === recipientId
             );
 
         return normalizedInnerMessage;

@@ -45,10 +45,11 @@ function getNameInitials({
     maxLetters = 2,
     delimiter = " ",
 }: IParams): string {
-    const name = inputName.trim();
-    if (!name || name.length <= 1) {
-        return name.trim();
+    if (!inputName || inputName.length <= 1) {
+        return inputName;
     }
+
+    const name = inputName.trim();
 
     let result = "";
     const sliced = name.split(delimiter);

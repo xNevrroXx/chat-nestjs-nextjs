@@ -84,12 +84,42 @@ export class RoomService {
         return result;
     }
 
-    async joinRoom(userId: string, { id, type }: TRoomPreview): Promise<IRoom> {
+    async joinRoom(
+        userId: string,
+        { id, type, wasMember }: TRoomPreview
+    ): Promise<IRoom> {
         let newRoom: Prisma.RoomGetPayload<{
             include: typeof PrismaIncludeFullRoomInfo;
         }>;
 
-        if (type === RoomType.PRIVATE) {
+        if (wasMember) {
+            const userAsParticipantInfo = (await this.participantService.update(
+                {
+                    where: {
+                        userId_roomId: {
+                            roomId: id,
+                            userId: userId,
+                        },
+                    },
+                    data: {
+                        isStillMember: true,
+                    },
+                    include: {
+                        room: {
+                            include: PrismaIncludeFullRoomInfo,
+                        },
+                    },
+                }
+            )) as Prisma.ParticipantGetPayload<{
+                include: {
+                    room: {
+                        include: typeof PrismaIncludeFullRoomInfo;
+                    };
+                };
+            }>;
+
+            newRoom = userAsParticipantInfo.room;
+        } else if (type === RoomType.PRIVATE) {
             newRoom = (await this.create({
                 data: {
                     type,
@@ -141,13 +171,6 @@ export class RoomService {
 
             newRoom = userAsParticipantInfo.room;
         }
-
-        // const roomFullInfo = await this.findOne({
-        //     where: {
-        //         id: newRoom.id,
-        //     },
-        //     include: PrismaIncludeFullRoomInfo,
-        // });
 
         return this.normalize(userId, newRoom);
     }

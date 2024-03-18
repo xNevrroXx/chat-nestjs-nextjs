@@ -1,6 +1,6 @@
-import axios, {AxiosResponse} from "axios";
-import {ILinkPreviewInfo} from "../models/other/ILinkPreviewInfo.ts";
-import {API_URL} from "../http";
+import axios, { AxiosResponse } from "axios";
+import { ILinkPreviewInfo } from "@/models/other/ILinkPreviewInfo";
+import { API_URL } from "@/http";
 
 class LinkPreviewService {
     protected static base = "/link-preview";
@@ -10,4 +10,4 @@ class LinkPreviewService {
     }
 }
 
-export {LinkPreviewService};
+export { LinkPreviewService };

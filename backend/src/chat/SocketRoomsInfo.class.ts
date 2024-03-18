@@ -79,7 +79,7 @@ class SocketRoomsInfo {
      * @param {string} socketId - user's socket id;
      * @return {IUserIdWithRoomIDs} - the object contains the user IDs and their rooms;
      * */
-    leave(socketId: string): IUserIdWithRoomIDs {
+    leaveAll(socketId: string): IUserIdWithRoomIDs {
         const { userId, roomIDs } = this._socketIDsToUserIDs[socketId];
 
         roomIDs.forEach((roomId) => {
@@ -87,6 +87,21 @@ class SocketRoomsInfo {
         });
         delete this._socketIDsToUserIDs[socketId];
         delete this._userIDsToSocketIDs[userId];
+
+        return { userId, roomIDs };
+    }
+
+    /**
+     * Leaving a room by a user.
+     * @param {string} socketId - user's socket id;
+     * @param {string} roomId - room id to leave a group;
+     * @return {IUserIdWithRoomIDs} - the object contains the user IDs and their rooms;
+     * */
+    leaveOne(socketId: string, roomId: string): IUserIdWithRoomIDs {
+        const { userId, roomIDs } = this._socketIDsToUserIDs[socketId];
+
+        delete this._roomIDsToUserInfo[roomId][userId];
+        this._socketIDsToUserIDs[socketId].roomIDs.delete(roomId);
 
         return { userId, roomIDs };
     }

@@ -30,6 +30,9 @@ import {
     IMessageRead,
 } from "@/models/room/IRoom.store";
 import { TRootState } from "@/store";
+import { TValueOf } from "@/models/TUtils";
+import { excludeRoomFromFolders } from "@/store/actions/roomsOnFolders";
+import { removeRecentRoomData } from "@/store/actions/recentRooms";
 
 const createSocketInstance = createAsyncThunk<
     SocketIOService,
@@ -293,11 +296,50 @@ const joinRoom = createAsyncThunk<
     }
 });
 
+const leaveRoom = createAsyncThunk<
+    TValueOf<Pick<IRoom, "id">>,
+    TValueOf<Pick<IRoom, "id">>,
+    { state: TRootState }
+>("room/leave", async (roomId, thunkAPI) => {
+    try {
+        const socket = thunkAPI.getState().room.socket;
+
+        if (!socket) {
+            throw new Error("There is no socket");
+        }
+
+        thunkAPI.dispatch(removeRecentRoomData(roomId));
+        thunkAPI.dispatch(excludeRoomFromFolders(roomId));
+        socket.emit("room:leave", [{ roomId }]);
+        return roomId;
+    }
+    catch (error) {
+        return thunkAPI.rejectWithValue(error);
+    }
+});
+
+const clearMyHistory = createAsyncThunk<
+    TValueOf<Pick<IRoom, "id">>,
+    TValueOf<Pick<IRoom, "id">>,
+    { state: TRootState }
+>("room/clear-my-history", async (roomId, thunkAPI) => {
+    try {
+        await RoomService.clearMyHistory({ roomId });
+
+        return roomId;
+    }
+    catch (error) {
+        return thunkAPI.rejectWithValue(error);
+    }
+});
+
 export {
     getAll,
     getPreviews,
     joinRoom,
+    leaveRoom,
     createRoom,
+    clearMyHistory,
     createSocketInstance,
     disconnectSocket,
     connectSocket,

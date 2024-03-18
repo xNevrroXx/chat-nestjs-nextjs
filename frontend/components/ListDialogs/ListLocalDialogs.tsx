@@ -37,6 +37,7 @@ const ListLocalDialogs: FC<IDialogsProps> = ({
             let sender: string | undefined = undefined;
             let text: string | undefined = undefined;
             let hasUnreadMessage: boolean = false;
+
             const dates = Object.keys(room.days);
 
             if (dates.length === 0) {

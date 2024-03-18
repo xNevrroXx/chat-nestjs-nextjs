@@ -34,13 +34,13 @@ export type TForwardMessageWithoutFileBlobs = Prisma.MessageGetPayload<{
                     };
                 };
             };
-            usersDeletedThisMessage: true;
+            userDeletedThisMessage: true;
         };
     };
 }>;
 
 export const OriginalMessagePrisma = {
-    usersDeletedThisMessage: true,
+    userDeletedThisMessage: true,
     files: true,
 };
 
@@ -49,10 +49,10 @@ export const ReplyMessagePrisma = {
     replyToMessage: {
         include: {
             files: true,
-            usersDeletedThisMessage: true,
+            userDeletedThisMessage: true,
         },
     },
-    usersDeletedThisMessage: true,
+    userDeletedThisMessage: true,
 };
 
 export const ForwardedMessagePrisma = {
@@ -60,10 +60,10 @@ export const ForwardedMessagePrisma = {
     forwardedMessage: {
         include: {
             files: true,
-            usersDeletedThisMessage: true,
+            userDeletedThisMessage: true,
         },
     },
-    usersDeletedThisMessage: true,
+    userDeletedThisMessage: true,
 };
 
 export const FullMessageInfo = {
@@ -78,10 +78,10 @@ export type TNormalizeMessageArgument =
               forwardedMessage: {
                   include: {
                       files: true;
-                      usersDeletedThisMessage: true;
+                      userDeletedThisMessage: true;
                   };
               };
-              usersDeletedThisMessage: true;
+              userDeletedThisMessage: true;
           };
       }>
     | Prisma.MessageGetPayload<{
@@ -90,10 +90,10 @@ export type TNormalizeMessageArgument =
               replyToMessage: {
                   include: {
                       files: true;
-                      usersDeletedThisMessage: true;
+                      userDeletedThisMessage: true;
                   };
               };
-              usersDeletedThisMessage: true;
+              userDeletedThisMessage: true;
           };
       }>;
 

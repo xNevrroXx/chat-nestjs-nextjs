@@ -1,5 +1,5 @@
 function brToNewLineChars(text: string) {
-    return text.replace(/<\/?br\s*\/?>/mg, "\n");
+    return text.replace(/<\/?br\s*\/?>/gm, "\n");
 }
 
-export {brToNewLineChars};
+export { brToNewLineChars };

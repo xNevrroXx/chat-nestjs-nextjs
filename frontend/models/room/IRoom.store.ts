@@ -60,6 +60,7 @@ export interface IParticipant {
     userId: TValueOf<Pick<IUserDto, "id">>;
     nickname: string;
     isTyping: boolean;
+    isStillMember: boolean;
 }
 
 export type TPinnedMessage = {
@@ -120,7 +121,9 @@ export interface IFile {
 }
 
 // HTTP response types
-export type TPreviewExistingRoom = Omit<IRoom, "createdAt" | "updatedAt">;
+export type TPreviewExistingRoom = Omit<IRoom, "createdAt" | "updatedAt"> & {
+    wasMember: boolean;
+};
 export type TPreviewExistingRoomWithFlag = TPreviewExistingRoom & {
     isPreview: true;
 };
@@ -193,6 +196,11 @@ export interface IForwardedMessageSocket {
 export interface IMessageRead {
     messageId: string;
     roomId: string;
+}
+
+export interface ILeaveRoom {
+    roomId: string;
+    userId: string;
 }
 
 export type TCreateGroupRoom = {

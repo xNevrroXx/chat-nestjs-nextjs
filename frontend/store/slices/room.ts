@@ -3,11 +3,13 @@ import { createSlice } from "@reduxjs/toolkit";
 import { checkIsMessage, IRoomSlice } from "@/models/room/IRoom.store";
 // actions
 import {
+    clearMyHistory,
     createRoom,
     createSocketInstance,
     getAll,
     getPreviews,
     joinRoom,
+    leaveRoom,
 } from "@/store/thunks/room";
 import {
     addOrUpdateRoomSocket,
@@ -22,6 +24,7 @@ import {
     handleMessageSocket,
     handlePinnedMessageSocket,
     setUserId,
+    userLeftRoom,
 } from "@/store/actions/room";
 import { FetchingStatus } from "@/hooks/useFetch.hook";
 
@@ -94,6 +97,20 @@ const room = createSlice({
             .addCase(joinRoom.fulfilled, (state, action) => {
                 state.local.allIds.push(action.payload.id);
                 state.local.rooms.byId[action.payload.id] = action.payload;
+            })
+            .addCase(leaveRoom.fulfilled, (state, action) => {
+                state.local.allIds = state.local.allIds.filter(
+                    (id) => id !== action.payload,
+                );
+                delete state.local.rooms.byId[action.payload];
+            })
+            .addCase(userLeftRoom, (state, action) => {
+                state.local.rooms.byId[action.payload.roomId].participants.find(
+                    (member) => member.userId === action.payload.userId,
+                )!.isStillMember = false;
+            })
+            .addCase(clearMyHistory.fulfilled, (state, action) => {
+                state.local.rooms.byId[action.payload].days = {};
             })
             .addCase(setUserId, (state, action) => {
                 state.userId = action.payload;

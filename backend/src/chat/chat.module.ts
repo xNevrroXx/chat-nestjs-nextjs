@@ -5,6 +5,7 @@ import { FileModule } from "../file/file.module";
 import { MessageModule } from "../message/message.module";
 import { UserModule } from "../user/user.module";
 import { ParticipantModule } from "../participant/participant.module";
+import { RoomsOnFoldersModule } from "../rooms-on-folders/rooms-on-folders.module";
 
 @Module({
     imports: [
@@ -13,6 +14,7 @@ import { ParticipantModule } from "../participant/participant.module";
         UserModule,
         MessageModule,
         ParticipantModule,
+        RoomsOnFoldersModule,
     ],
     providers: [ChatGateway],
 })

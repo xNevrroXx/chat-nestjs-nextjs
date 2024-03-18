@@ -23,6 +23,7 @@ const ListRemoteDialogs: FC<IDialogsProps> = ({
         return rooms.map((room) => {
             return (
                 <DialogCard
+                    color={room.color}
                     key={room.id.toString() + "dialog card"}
                     id={room.id}
                     onClick={() => onClickRemoteRoom(room)}

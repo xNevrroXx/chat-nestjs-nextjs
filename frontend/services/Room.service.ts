@@ -7,6 +7,7 @@ import {
     TCreateGroupRoom,
     TPreviewExistingRoom,
 } from "@/models/room/IRoom.store";
+import { TValueOf } from "@/models/TUtils";
 
 class RoomService {
     protected static base = "/room";
@@ -15,6 +16,14 @@ class RoomService {
         data: TPreviewExistingRoom,
     ): Promise<AxiosResponse<IRoom>> {
         return $api.post<IRoom>(this.base + "/join", data);
+    }
+
+    static async clearMyHistory(data: {
+        roomId: TValueOf<Pick<IRoom, "id">>;
+    }): Promise<AxiosResponse> {
+        return $api.delete(this.base + "/clear-my-history", {
+            data,
+        });
     }
 
     static async create(data: TCreateGroupRoom): Promise<AxiosResponse<IRoom>> {
