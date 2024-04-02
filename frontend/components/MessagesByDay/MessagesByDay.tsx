@@ -5,7 +5,7 @@ import Message, { TPaddings } from "@/HOC/Message";
 import {
     IForwardedMessage,
     IForwardMessage,
-    IMessage,
+    IStandardMessage,
     RoomType,
 } from "@/models/room/IRoom.store";
 import { TValueOf } from "@/models/TUtils";
@@ -18,7 +18,7 @@ const { Text } = Typography;
 
 type TProps = {
     date: string;
-    messages: (IMessage | IForwardedMessage)[];
+    messages: (IStandardMessage | IForwardedMessage)[];
     userId: TValueOf<Pick<IUserDto, "id">>;
     onChooseMessageForAction: (messageForAction: TMessageForAction) => void;
     onOpenUsersListForForwardMessage: (
@@ -43,7 +43,8 @@ const MessagesByDay: FC<TProps> = ({
         const resultElems: JSX.Element[] = [];
 
         let currentUserId = null;
-        let messagesByCurrentUser: (IMessage | IForwardedMessage)[] = [];
+        let messagesByCurrentUser: (IStandardMessage | IForwardedMessage)[] =
+            [];
 
         for (let i = 0, length = messages.length; i < length; i++) {
             const message = messages[i];

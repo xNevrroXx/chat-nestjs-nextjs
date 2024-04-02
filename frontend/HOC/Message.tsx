@@ -11,10 +11,10 @@ import React, {
 import DumbMessage from "@/components/Message/Message";
 // types
 import {
-    checkIsMessage,
+    checkIsStandardMessage,
     FileType,
-    IForwardedMessage,
-    IMessage,
+    IInnerForwardedMessage,
+    IInnerStandardMessage,
     RoomType,
 } from "@/models/room/IRoom.store";
 import { IUserDto } from "@/models/auth/IAuth.store";
@@ -33,7 +33,7 @@ export type TPaddings = {
 type TMessageProps = {
     roomType: RoomType;
     userId: TValueOf<Pick<IUserDto, "id">>;
-    message: IMessage | IForwardedMessage;
+    message: IInnerStandardMessage | IInnerForwardedMessage;
     onChooseMessageForForward: () => void;
     onChooseMessageForAction: (messageForAction: TMessageForAction) => void;
     paddings: TPaddings;
@@ -70,7 +70,7 @@ const Message = forwardRef<HTMLDivElement, TMessageProps>(
 
         useEffect(() => {
             if (
-                !checkIsMessage(message) ||
+                !checkIsStandardMessage(message) ||
                 !message.files ||
                 message.files.length === 0
             ) {
@@ -147,7 +147,7 @@ const Message = forwardRef<HTMLDivElement, TMessageProps>(
         }, [onChooseMessageForAction, message]);
 
         const onClickMessageForEdit = useCallback(() => {
-            if (!checkIsMessage(message)) return;
+            if (!checkIsStandardMessage(message)) return;
 
             onChooseMessageForAction({
                 message,

@@ -1,8 +1,8 @@
 import React, { FC, MutableRefObject, useMemo } from "react";
 import {
-    IForwardedMessage,
     IForwardMessage,
-    IMessage,
+    IInnerForwardedMessage,
+    IInnerStandardMessage,
     RoomType,
 } from "@/models/room/IRoom.store";
 import { TValueOf } from "@/models/TUtils";
@@ -18,7 +18,7 @@ import { messageOwnerSelector } from "@/store/selectors/messageOwner.selector";
 
 type TProps = {
     date: string;
-    messages: (IMessage | IForwardedMessage)[];
+    messages: (IInnerStandardMessage | IInnerForwardedMessage)[];
     userId: TValueOf<Pick<IUserDto, "id">>;
     onChooseMessageForAction: (messageForAction: TMessageForAction) => void;
     onOpenUsersListForForwardMessage: (
@@ -126,13 +126,7 @@ const MessagesByUser: FC<TProps> = ({
     return (
         <div className={"block-by-user"}>
             {messageElems}
-            <div
-                style={{
-                    position: "absolute",
-                    bottom: "1px",
-                    paddingLeft: "14px",
-                }}
-            >
+            <div className={"block-by-user__avatar"}>
                 <Avatar
                     size={30}
                     style={{ fontSize: "13px", backgroundColor: user.color }}

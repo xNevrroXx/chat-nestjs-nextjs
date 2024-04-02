@@ -2,30 +2,20 @@ import { Injectable } from "@nestjs/common";
 import { DatabaseService } from "../database/database.service";
 import { type Message, Prisma, PrismaPromise, User } from "@prisma/client";
 import {
-    ForwardedMessagePrisma,
-    FullMessageInfo,
-    IForwardedMessage,
     IInnerForwardedMessage,
     IInnerStandardMessage,
     IOriginalMessage,
-    isForwardedMessagePrisma,
     isForwardedMessagePrisma2,
-    isInnerForwardedMessage,
-    isInnerMessage,
     isReplyMessagePrisma,
-    IStandardMessage,
-    OriginalMessagePrisma,
-    ReplyMessagePrisma,
     TMessage,
     TNormalizeMessageArgument,
 } from "./IMessage";
-import { TFileToClient } from "../file/IFile";
 import { excludeSensitiveFields } from "../utils/excludeSensitiveFields";
 import { FileService } from "../file/file.service";
 import { findLinksInText } from "../utils/findLinksInText";
 import { LinkPreviewService } from "../link-preview/link-preview.service";
 import { TValueOf } from "../models/TUtils";
-import { normalizeDate } from "../utils/normalizeDate";
+import { DATE_FORMATTER_DATE } from "../utils/normalizeDate";
 import { codeBlocksToHTML } from "../utils/codeBlocksToHTML";
 
 @Injectable()
@@ -107,11 +97,9 @@ export class MessageService {
         });
     }
 
-    async normalizeOriginalMessage(
+    async normalize(
         recipientId: TValueOf<Pick<User, "id">>,
-        inputMessagePrisma: Prisma.MessageGetPayload<{
-            include: typeof OriginalMessagePrisma;
-        }>
+        inputMessagePrisma: TNormalizeMessageArgument
     ): Promise<IInnerStandardMessage | IInnerForwardedMessage> {
         if (!inputMessagePrisma) {
             return;
@@ -120,6 +108,9 @@ export class MessageService {
         const message = excludeSensitiveFields(inputMessagePrisma, [
             "isDeleteForEveryone",
             "userDeletedThisMessage",
+            "replyToMessageId",
+            // @ts-ignore
+            "replyToMessage",
         ]) as never as TMessage;
 
         const normalizedOriginalMessage: IOriginalMessage = {
@@ -174,17 +165,37 @@ export class MessageService {
         let normalizedInnerMessage:
             | IInnerStandardMessage
             | IInnerForwardedMessage;
-        if (inputMessagePrisma.forwardedMessageId) {
+        if (isForwardedMessagePrisma2(inputMessagePrisma)) {
+            const date = DATE_FORMATTER_DATE.format(
+                new Date(inputMessagePrisma.forwardedMessage.createdAt)
+            );
+
             normalizedInnerMessage = {
                 ...normalizedOriginalMessage,
-                forwardedMessageId: inputMessagePrisma.forwardedMessageId,
+                forwardedMessage: {
+                    id: inputMessagePrisma.forwardedMessageId,
+                    date: date,
+                },
             };
         } else {
             normalizedInnerMessage = {
                 ...normalizedOriginalMessage,
-                replyToMessageId: inputMessagePrisma.replyToMessageId,
+                replyToMessage: null,
                 files: [],
             };
+
+            if (isReplyMessagePrisma(inputMessagePrisma)) {
+                const date =
+                    inputMessagePrisma.replyToMessage &&
+                    DATE_FORMATTER_DATE.format(
+                        new Date(inputMessagePrisma.replyToMessage.createdAt)
+                    );
+
+                normalizedInnerMessage.replyToMessage = {
+                    id: inputMessagePrisma.replyToMessageId,
+                    date: date,
+                };
+            }
 
             const hasFiles = inputMessagePrisma.files.length > 0;
             if (hasFiles) {
@@ -203,35 +214,35 @@ export class MessageService {
         return normalizedInnerMessage;
     }
 
-    async normalize(
-        recipientId: TValueOf<Pick<User, "id">>,
-        inputMessagePrisma: TNormalizeMessageArgument
-    ): Promise<IStandardMessage | IForwardedMessage> {
-        const mainMessage = await this.normalizeOriginalMessage(
-            recipientId,
-            inputMessagePrisma
-        );
-
-        if (isForwardedMessagePrisma2(inputMessagePrisma)) {
-            const innerForwardedMessage = (await this.normalizeOriginalMessage(
-                recipientId,
-                inputMessagePrisma.forwardedMessage
-            )) as IInnerForwardedMessage;
-
-            return {
-                ...(mainMessage as IInnerForwardedMessage),
-                forwardedMessage: innerForwardedMessage,
-            };
-        } else {
-            const innerStandardMessage = (await this.normalizeOriginalMessage(
-                recipientId,
-                inputMessagePrisma.replyToMessage
-            )) as IInnerStandardMessage;
-
-            return {
-                ...(mainMessage as IInnerStandardMessage),
-                replyToMessage: innerStandardMessage,
-            };
-        }
-    }
+    // async normalize(
+    //     recipientId: TValueOf<Pick<User, "id">>,
+    //     inputMessagePrisma: TNormalizeMessageArgument
+    // ): Promise<IStandardMessage | IForwardedMessage> {
+    //     const mainMessage = await this.normalizeOriginalMessage(
+    //         recipientId,
+    //         inputMessagePrisma
+    //     );
+    //
+    //     if (isForwardedMessagePrisma2(inputMessagePrisma)) {
+    //         const innerForwardedMessage = (await this.normalizeOriginalMessage(
+    //             recipientId,
+    //             inputMessagePrisma.forwardedMessage
+    //         )) as IInnerForwardedMessage;
+    //
+    //         return {
+    //             ...(mainMessage as IInnerForwardedMessage),
+    //             forwardedMessage: innerForwardedMessage,
+    //         };
+    //     } else {
+    //         const innerStandardMessage = (await this.normalizeOriginalMessage(
+    //             recipientId,
+    //             inputMessagePrisma.replyToMessage
+    //         )) as IInnerStandardMessage;
+    //
+    //         return {
+    //             ...(mainMessage as IInnerStandardMessage),
+    //             replyToMessage: innerStandardMessage,
+    //         };
+    //     }
+    // }
 }

@@ -1,32 +1,37 @@
-import {useCallback, useState} from "react";
-import {AxiosRequestConfig} from "axios";
+import { useCallback, useState } from "react";
+import { AxiosRequestConfig } from "axios";
 import $api from "../http";
 
 export enum FetchingStatus {
     IDLE = "IDLE",
     FETCHING = "FETCHING",
     FULFILLED = "FULFILLED",
-    REJECTED = "REJECTED"
+    REJECTED = "REJECTED",
 }
 
-const useFetch = <T>(url: string | undefined) => {
+const useFetch = <T,>(url: string | undefined) => {
     const [status, setStatus] = useState<FetchingStatus>(FetchingStatus.IDLE);
     const [data, setData] = useState<T | null>(null);
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     const [error, setError] = useState<unknown | null>(null);
 
-    const request = useCallback(async (config: AxiosRequestConfig): Promise<T | void> => {
-        if (!url) return;
-        setStatus(FetchingStatus.FETCHING);
+    const request = useCallback(
+        async (config: AxiosRequestConfig): Promise<T | void> => {
+            if (!url) return;
+            setStatus(FetchingStatus.FETCHING);
 
-        try {
-            const response = await $api<T>(url, config);
-            setData(response.data);
-            setStatus(FetchingStatus.FULFILLED);
-        } catch (error) {
-            setError(error);
-            setStatus(FetchingStatus.REJECTED);
-        }
-    }, [url]);
+            try {
+                const response = await $api<T>(url, config);
+                setData(response.data);
+                setStatus(FetchingStatus.FULFILLED);
+            }
+            catch (error) {
+                setError(error);
+                setStatus(FetchingStatus.REJECTED);
+            }
+        },
+        [url],
+    );
 
     const clear = useCallback(() => {
         setStatus(FetchingStatus.IDLE);
@@ -34,7 +39,7 @@ const useFetch = <T>(url: string | undefined) => {
         setError(null);
     }, []);
 
-    return {status, data, error, request, clear};
+    return { status, data, error, request, clear };
 };
 
-export {useFetch};
+export { useFetch };

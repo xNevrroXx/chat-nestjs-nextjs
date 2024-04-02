@@ -28,11 +28,15 @@ import {
     TPreviewExistingRoom,
     IReadMessageSocket,
     IMessageRead,
+    IGetStandardMessage,
+    IInnerStandardMessage,
+    IInnerForwardedMessage,
 } from "@/models/room/IRoom.store";
 import { TRootState } from "@/store";
 import { TValueOf } from "@/models/TUtils";
 import { excludeRoomFromFolders } from "@/store/actions/roomsOnFolders";
 import { removeRecentRoomData } from "@/store/actions/recentRooms";
+import { MessageService } from "@/services/Message.service";
 
 const createSocketInstance = createAsyncThunk<
     SocketIOService,
@@ -230,6 +234,19 @@ const toggleUserTypingSocket = createAsyncThunk<
     }
 });
 
+const getMessageById = createAsyncThunk<
+    IInnerStandardMessage | IInnerForwardedMessage,
+    string
+>("room/get-message-by-id", async (messageId, thunkAPI) => {
+    try {
+        const response = await MessageService.getById(messageId);
+        return response.data;
+    }
+    catch (error) {
+        return thunkAPI.rejectWithValue(error);
+    }
+});
+
 const getAll = createAsyncThunk("room/get-all", async (_, thunkAPI) => {
     try {
         const response = await RoomService.getAll();
@@ -336,6 +353,7 @@ const clearMyHistory = createAsyncThunk<
 export {
     getAll,
     getPreviews,
+    getMessageById,
     joinRoom,
     leaveRoom,
     createRoom,

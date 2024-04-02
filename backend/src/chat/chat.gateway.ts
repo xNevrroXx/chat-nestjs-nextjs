@@ -76,9 +76,18 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
             where: {
                 participants: {
                     some: {
-                        userId: {
-                            equals: userInfo.id,
-                        },
+                        AND: [
+                            {
+                                userId: {
+                                    equals: userInfo.id,
+                                },
+                            },
+                            {
+                                isStillMember: {
+                                    equals: true,
+                                },
+                            },
+                        ],
                     },
                 },
             },
@@ -133,17 +142,22 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
         unnormalizedRoom.participants.forEach((participant) => {
             // the participant maybe didn't connect to the new room.
-            const participantClientId = this.socketRoomsInfo.joinIfConnected(
+            const participantClientIds = this.socketRoomsInfo.joinIfConnected(
                 unnormalizedRoom.id,
                 participant.userId
             );
-            const participantSocket =
-                // @ts-ignore
-                this.server.sockets.get(participantClientId);
+            const participantSockets: Socket[] = participantClientIds.map(
+                (socketId) => {
+                    // @ts-ignore
+                    return this.server.sockets.get(socketId);
+                }
+            );
 
-            if (participantSocket) {
+            if (participantSockets && participantSockets.length > 0) {
                 // participant is online - we have to manually join this one to the room.
-                participantSocket.join(unnormalizedRoom.id);
+                participantSockets.forEach((participantSocket) => {
+                    participantSocket.join(unnormalizedRoom.id);
+                });
             }
         });
 
@@ -648,6 +662,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
                                 userDeletedThisMessage: true,
                             },
                         },
+                        forwardedMessage: {
+                            include: {
+                                files: true,
+                                userDeletedThisMessage: true,
+                            },
+                        },
                         userDeletedThisMessage: true,
                     },
                 },
@@ -656,13 +676,20 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         })) as Prisma.MessageGetPayload<{
             include: typeof ForwardedMessagePrisma;
         }>;
+
         const normalizedMessage = await this.messageService.normalize(
             sender.id,
             newMessage
         );
 
-        this.server.to(forwardedMessage.roomId).emit("message:forwarded", {
+        const normalizedForwardedMessage = await this.messageService.normalize(
+            sender.id,
+            newMessage.forwardedMessage
+        );
+
+        this.server.to(normalizedMessage.roomId).emit("message:forwarded", {
             message: normalizedMessage,
+            forwardedMessage: normalizedForwardedMessage,
             date: DATE_FORMATTER_DATE.format(
                 new Date(normalizedMessage.createdAt)
             ),

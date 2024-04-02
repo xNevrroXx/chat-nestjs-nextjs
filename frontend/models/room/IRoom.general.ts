@@ -1,4 +1,8 @@
-import { IFile, IForwardedMessage, IMessage } from "@/models/room/IRoom.store";
+import {
+    IFile,
+    IInnerForwardedMessage,
+    IInnerStandardMessage,
+} from "@/models/room/IRoom.store";
 
 export interface ILastMessageInfo {
     sender: string;
@@ -29,28 +33,28 @@ export enum MessageAction {
 
 export type TMessageForAction =
     | {
-          message: IMessage | IForwardedMessage;
+          message: IInnerStandardMessage | IInnerForwardedMessage;
           action:
               | MessageAction.PIN
               | MessageAction.REPLY
               | MessageAction.FORWARD;
       }
     | {
-          message: IMessage | IForwardedMessage;
+          message: IInnerStandardMessage | IInnerForwardedMessage;
           action: MessageAction.DELETE;
           isForEveryone: boolean;
       }
     | {
-          message: IMessage;
+          message: IInnerStandardMessage;
           action: MessageAction.EDIT;
       };
 
 export type TMessageForActionEditOrReply =
     | {
-          message: IMessage | IForwardedMessage;
+          message: IInnerStandardMessage | IInnerForwardedMessage;
           action: MessageAction.REPLY;
       }
     | {
-          message: IMessage;
+          message: IInnerStandardMessage;
           action: MessageAction.EDIT;
       };

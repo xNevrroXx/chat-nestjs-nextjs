@@ -272,7 +272,6 @@ const Main = () => {
         >
             <Content className="messenger">
                 {content()}
-                {activeRoom && <Call roomId={activeRoom.id} />}
                 {/*todo: add calling room id to the recent rooms info to achieve an calling during chatting with other users*/}
                 {activeRoom && isCalling && <Call roomId={activeRoom.id} />}
                 <Modal

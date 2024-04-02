@@ -1,3 +1,9 @@
+export const DATE_FORMATTER_SHORT = new Intl.DateTimeFormat("en", {
+    day: "numeric",
+    month: "numeric",
+    year: "numeric",
+});
+
 const DATE_FORMATTER_FULL_DATE = new Intl.DateTimeFormat("ru", {
     day: "numeric",
     month: "long",

@@ -6,9 +6,9 @@ import {
     IDeletedMessageSocket,
     TPinnedMessagesSocket,
     IReadMessageSocket,
-    IGetStandardMessage,
-    IGetForwardedMessage,
     ILeaveRoom,
+    IStandardMessageSocket,
+    IForwardedMessageSocket,
 } from "@/models/room/IRoom.store";
 import { TValueOf } from "@/models/TUtils";
 import { IUserDto } from "@/models/auth/IAuth.store";
@@ -29,7 +29,7 @@ const addOrUpdateRoomSocket = createAction<IRoom>("room/add-or-update");
 const handleMessageRead = createAction<IReadMessageSocket>(
     "room/socket:handle-message-read",
 );
-const handleMessageSocket = createAction<IGetStandardMessage>(
+const handleMessageSocket = createAction<IStandardMessageSocket>(
     "room/socket:handle-message",
 );
 const handlePinnedMessageSocket = createAction<TPinnedMessagesSocket>(
@@ -41,7 +41,7 @@ const handleEditedMessageSocket = createAction<IEditedMessageSocket>(
 const handleDeletedMessageSocket = createAction<IDeletedMessageSocket>(
     "room/socket:handle-deleted-message",
 );
-const handleForwardedMessageSocket = createAction<IGetForwardedMessage>(
+const handleForwardedMessageSocket = createAction<IForwardedMessageSocket>(
     "room/socket:handle-forwarded-message",
 );
 const handleChangeUserTypingSocket = createAction<IParticipant[]>(

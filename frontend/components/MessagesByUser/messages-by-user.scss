@@ -1,3 +1,12 @@
 .block-by-user {
     position: relative;
+    &__avatar {
+        position: absolute;
+        bottom: 1px;
+        padding-left: 14px;
+    }
+}
+
+.message_padding-bottom-large + .block-by-user__avatar {
+    bottom: 7px;
 }

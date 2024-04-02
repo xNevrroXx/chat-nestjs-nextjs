@@ -6,7 +6,6 @@ import useFileUpload from "react-use-file-upload";
 import InputDuringMessage from "@/components/InputDuringMessage/InputDuringMessage";
 import InputDuringAudio from "@/components/InputDuringAudio/InputDuringAudio";
 import { useAudioRecorder } from "@/hooks/useAudioRecorder.hook";
-import MessageReply from "@/components/MessageReply/MessageReply";
 import { isSpecialKey } from "@/utils/checkIsNotSpecialKey";
 import {
     FileType,
@@ -27,6 +26,8 @@ import {
     TMessageForAction,
     TMessageForActionEditOrReply,
 } from "@/models/room/IRoom.general";
+import { DATE_FORMATTER_SHORT } from "@/utils/normalizeDate";
+import SubMessage from "@/components/SubMessage/SubMessage";
 
 interface IInputMessage {
     onSendMessage: (
@@ -229,11 +230,19 @@ const InputMessage: FC<IInputMessage> = ({
                 align="self-start"
                 gap="small"
             >
-                {messageForAction && (
+                {messageForAction && currentRoomId && (
                     <Flex align="center">
-                        <MessageReply
+                        <SubMessage
                             isInput={true}
-                            message={messageForAction.message}
+                            roomId={currentRoomId}
+                            messageBriefInfo={{
+                                id: messageForAction.message.id,
+                                date: DATE_FORMATTER_SHORT.format(
+                                    new Date(
+                                        messageForAction.message.createdAt,
+                                    ),
+                                ),
+                            }}
                         />
                         <Button
                             size="small"

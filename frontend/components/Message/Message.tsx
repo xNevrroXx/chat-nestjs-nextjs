@@ -12,8 +12,6 @@ import { FileTwoTone, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 // own modules
 import OriginalMessage from "@/components/OriginalMessage/OriginalMessage";
 import { AudioElementWithWrapper } from "@/components/AudioElement/AudioElement";
-import MessageReply from "@/components/MessageReply/MessageReply";
-import ForwardedMessage from "@/components/ForwardedMessage/ForwardedMessage";
 import ReplyOutlined from "@/icons/ReplyOutlined";
 import PinOutlined from "@/icons/PinOutlined";
 import ForwardOutlined from "@/icons/ForwardOutlined";
@@ -22,21 +20,22 @@ import Time from "@/components/Time/Time";
 import { truncateTheText } from "@/utils/truncateTheText";
 // types
 import {
-    checkIsMessage,
+    checkIsStandardMessage,
     IFile,
-    IForwardedMessage,
-    IMessage,
+    IInnerForwardedMessage,
+    IInnerStandardMessage,
 } from "@/models/room/IRoom.store";
 import { IKnownAndUnknownFiles } from "@/models/room/IRoom.general";
 // styles
 import "./message.scss";
 import { TPaddings } from "@/HOC/Message";
+import SubMessage from "@/components/SubMessage/SubMessage";
 
 const { useToken } = theme;
 const { Text } = Typography;
 
 interface IMessageProps {
-    message: IMessage | IForwardedMessage;
+    message: IInnerStandardMessage | IInnerForwardedMessage;
     files: IKnownAndUnknownFiles;
     paddings: TPaddings;
     shouldSpecifyAuthor:
@@ -187,11 +186,14 @@ const Message = forwardRef<HTMLDivElement, IMessageProps>(
         ]);
 
         const messageContent = useMemo(() => {
-            if (checkIsMessage(message)) {
+            if (checkIsStandardMessage(message)) {
                 return (
                     <Fragment>
                         {message.replyToMessage && (
-                            <MessageReply message={message.replyToMessage} />
+                            <SubMessage
+                                messageBriefInfo={message.replyToMessage}
+                                roomId={message.roomId}
+                            />
                         )}
 
                         {isVoice && files.known.length === 1 ? (
@@ -239,7 +241,10 @@ const Message = forwardRef<HTMLDivElement, IMessageProps>(
 
             return (
                 <Fragment>
-                    <ForwardedMessage message={message} isMine={isMine} />
+                    <SubMessage
+                        messageBriefInfo={message.forwardedMessage}
+                        roomId={message.roomId}
+                    />
                     <Time
                         hasRead={message.hasRead}
                         hasEdited={!!message.updatedAt}

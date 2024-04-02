@@ -1,7 +1,6 @@
 import React, {
     ChangeEventHandler,
     FC,
-    Fragment,
     useCallback,
     useEffect,
     useMemo,
@@ -24,6 +23,7 @@ import { getPreviews } from "@/store/thunks/room";
 // styles
 import "./dialogs.scss";
 import { resetRecentRoomData } from "@/store/actions/recentRooms";
+import { usePrevious } from "@/hooks/usePrevious";
 
 const { Header, Content } = Layout;
 const { Title, Text } = Typography;
@@ -43,6 +43,7 @@ const Dialogs: FC<IDialogsProps> = ({
 }) => {
     const dispatch = useAppDispatch();
     const [dialogQueryString, setDialogQueryString] = useState<string>("");
+    const prevQueryString = usePrevious(dialogQueryString);
     const filteredLocalDialogs = useAppSelector((state) =>
         filteredRoomsSelector(state, dialogQueryString),
     );
@@ -53,7 +54,7 @@ const Dialogs: FC<IDialogsProps> = ({
     const [isPending, startTransition] = useTransition();
 
     useEffect(() => {
-        if (dialogQueryString.length === 0) {
+        if (dialogQueryString.length === 0 && prevQueryString.length !== 0) {
             dispatch(clearPreviewRooms());
             if (
                 filteredLocalDialogs.every((room) => room.id !== activeRoomId)
@@ -62,9 +63,16 @@ const Dialogs: FC<IDialogsProps> = ({
             }
             return;
         }
-
-        void dispatch(getPreviews(dialogQueryString));
-    }, [activeRoomId, dialogQueryString, dispatch, filteredLocalDialogs]);
+        if (prevQueryString !== dialogQueryString) {
+            void dispatch(getPreviews(dialogQueryString));
+        }
+    }, [
+        activeRoomId,
+        dialogQueryString,
+        dispatch,
+        filteredLocalDialogs,
+        prevQueryString,
+    ]);
 
     const onChangeQuery: ChangeEventHandler<HTMLInputElement> = useCallback(
         (event) => {

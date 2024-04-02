@@ -31,6 +31,13 @@ export interface IRoomSlice {
         rooms: TPreviewExistingRoom[];
         status: FetchingStatus;
     };
+    forwardedMessages: {
+        byId: {
+            [id: TValueOf<Pick<IOriginalMessage, "id">>]: IOriginalMessage;
+            // | (Pick<IOriginalMessage, "id" | "roomId"> & { date: string });
+        };
+        allIds: TValueOf<Pick<IOriginalMessage, "id">>[];
+    };
     socket: SocketIOService | null;
 }
 export interface IRoom {
@@ -50,7 +57,7 @@ export interface IRoom {
 }
 
 export interface IMessagesByDays {
-    [date: string]: (IMessage | IForwardedMessage)[];
+    [date: string]: (IInnerStandardMessage | IInnerForwardedMessage)[];
 }
 
 export interface IParticipant {
@@ -77,21 +84,31 @@ export interface IUserTyping {
     updatedAt: string;
 }
 
-export interface IMessage extends IInnerMessage {
-    replyToMessage: IInnerMessage | IInnerForwardedMessage | undefined | null;
-}
+// export interface IStandardMessage extends IInnerStandardMessage {
+//     replyToMessage:
+//         | IInnerStandardMessage
+//         | IInnerForwardedMessage
+//         | undefined
+//         | null;
+// }
+//
+// export interface IForwardedMessage extends IInnerForwardedMessage {
+//     forwardedMessage: IInnerStandardMessage | IInnerForwardedMessage;
+// }
 
-export interface IForwardedMessage extends IInnerForwardedMessage {
-    forwardedMessage: IInnerMessage | IInnerForwardedMessage;
-}
-
-export interface IInnerMessage extends IOriginalMessage {
+export interface IInnerStandardMessage extends IOriginalMessage {
     files: IFile[];
-    replyToMessageId: TValueOf<Pick<IMessage, "id">> | undefined | null;
+    replyToMessage: {
+        id: TValueOf<Pick<IOriginalMessage, "id">>;
+        date: string;
+    } | null;
 }
 
 export interface IInnerForwardedMessage extends IOriginalMessage {
-    forwardedMessageId: TValueOf<Pick<IMessage, "id">>;
+    forwardedMessage: {
+        id: TValueOf<Pick<IOriginalMessage, "id">>;
+        date: string;
+    };
 }
 
 export interface IOriginalMessage {
@@ -129,12 +146,13 @@ export type TPreviewExistingRoomWithFlag = TPreviewExistingRoom & {
 };
 
 export interface IGetStandardMessage {
-    message: IMessage;
+    message: IInnerStandardMessage;
     date: keyof IMessagesByDays;
 }
 
 export interface IGetForwardedMessage {
-    message: IForwardedMessage;
+    message: IInnerForwardedMessage;
+    forwardedMessage: IOriginalMessage;
     date: keyof IMessagesByDays;
 }
 
@@ -152,7 +170,7 @@ export interface IEditedMessageSocket {
         id: string;
         text: string;
         date: keyof IMessagesByDays;
-        updatedAt: TValueOf<Pick<IMessage, "updatedAt">>;
+        updatedAt: TValueOf<Pick<IInnerStandardMessage, "updatedAt">>;
     };
     dependentMessages: [
         {
@@ -183,12 +201,13 @@ export interface IDeletedMessageSocket {
 }
 
 export interface IStandardMessageSocket {
-    message: IMessage;
+    message: IInnerStandardMessage;
     date: keyof IMessagesByDays;
 }
 
 export interface IForwardedMessageSocket {
-    message: IForwardedMessage;
+    message: IInnerForwardedMessage;
+    forwardedMessage: IOriginalMessage;
     date: keyof IMessagesByDays;
 }
 
@@ -213,13 +232,16 @@ export type TSendUserTyping = Omit<IUserTyping, "updatedAt" | "userId">;
 
 export type TSendMessage = {
     roomId: TValueOf<Pick<IRoom, "id">>;
-    text: TValueOf<Pick<IMessage, "text">>;
-    replyToMessageId: TValueOf<Pick<IMessage, "id">> | undefined | null;
+    text: TValueOf<Pick<IInnerStandardMessage, "text">>;
+    replyToMessageId:
+        | TValueOf<Pick<IInnerStandardMessage, "id">>
+        | undefined
+        | null;
 } & ISendAttachments;
 
 export interface IForwardMessage {
     roomId: TValueOf<Pick<IRoom, "id">>;
-    forwardedMessageId: TValueOf<Pick<IMessage, "id">>;
+    forwardedMessageId: TValueOf<Pick<IInnerStandardMessage, "id">>;
 }
 
 export interface ISendAttachments {
@@ -250,17 +272,20 @@ export interface IPinMessage {
 }
 
 // check methods
-export function checkIsMessage(
-    obj: IMessage | IForwardedMessage,
-): obj is IMessage {
-    const message = obj as IMessage;
-    return message.files !== undefined;
+export function checkIsOriginalMessage(
+    obj: IOriginalMessage | IInnerStandardMessage | IInnerForwardedMessage,
+): obj is IOriginalMessage {
+    const message = obj;
+    return (
+        (message as IInnerStandardMessage).files == undefined &&
+        (message as IInnerForwardedMessage).forwardedMessage == undefined
+    );
 }
 
-export function checkIsInnerMessage(
-    obj: IInnerMessage | IInnerForwardedMessage,
-): obj is IInnerMessage {
-    const message = obj as IInnerMessage;
+export function checkIsStandardMessage(
+    obj: IInnerStandardMessage | IInnerForwardedMessage | IOriginalMessage,
+): obj is IInnerStandardMessage {
+    const message = obj as IInnerStandardMessage;
     return message.files !== undefined;
 }
 

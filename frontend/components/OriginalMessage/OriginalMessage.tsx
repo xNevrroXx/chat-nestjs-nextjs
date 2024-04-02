@@ -8,10 +8,10 @@ import { theme } from "antd";
 import Time from "@/components/Time/Time";
 import LinkPreviewer from "@/components/LinkPreviewer/LinkPreviewer";
 import {
-    checkIsMessage,
+    checkIsStandardMessage,
     FileType,
-    IForwardedMessage,
-    IMessage,
+    IInnerForwardedMessage,
+    IInnerStandardMessage,
 } from "@/models/room/IRoom.store";
 import { transform } from "@/utils/inrterweaveTransform";
 // styles
@@ -19,7 +19,9 @@ import "./atelier-lakeside-light.scss";
 
 const { useToken } = theme;
 
-const OriginalMessage: FC<IMessage | IForwardedMessage> = (message) => {
+const OriginalMessage: FC<IInnerStandardMessage | IInnerForwardedMessage> = (
+    message,
+) => {
     const { token } = useToken();
     const messageElRef = useRef<HTMLDivElement | null>(null);
 
@@ -61,7 +63,7 @@ const OriginalMessage: FC<IMessage | IForwardedMessage> = (message) => {
 
     return useMemo(() => {
         const { hasRead, updatedAt, createdAt } = message;
-        if (!checkIsMessage(message)) {
+        if (!checkIsStandardMessage(message)) {
             return;
         }
 

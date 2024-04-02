@@ -7,6 +7,13 @@ import { TNormalizedParticipant } from "./IParticipant";
 export class ParticipantService {
     constructor(private readonly prisma: DatabaseService) {}
 
+    async findOne<T extends Prisma.ParticipantInclude>(params: {
+        where: Prisma.ParticipantWhereUniqueInput;
+        include?: T;
+    }): Promise<Prisma.ParticipantGetPayload<{ include: T }> | Participant> {
+        return this.prisma.participant.findUnique(params);
+    }
+
     async findMany<T extends Prisma.ParticipantInclude>(params: {
         skip?: number;
         take?: number;

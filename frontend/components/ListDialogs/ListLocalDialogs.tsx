@@ -3,10 +3,10 @@ import { FC, useCallback, useMemo } from "react";
 import DialogCard from "@/components/DialogCard/DialogCard";
 // types
 import {
-    checkIsMessage,
-    IForwardedMessage,
-    IMessage,
     IRoom,
+    checkIsStandardMessage,
+    IInnerStandardMessage,
+    IInnerForwardedMessage,
 } from "@/models/room/IRoom.store";
 import { TValueOf } from "@/models/TUtils";
 import { IUserDto } from "@/models/auth/IAuth.store";
@@ -32,8 +32,10 @@ const ListLocalDialogs: FC<IDialogsProps> = ({
     const findLastMessageInfo = useCallback(
         (room: IRoom): ILastMessageInfo | null => {
             // find the last non-deleted message in the room
-            let lastMessage: IMessage | IForwardedMessage | undefined =
-                undefined;
+            let lastMessage:
+                | IInnerStandardMessage
+                | IInnerForwardedMessage
+                | undefined = undefined;
             let sender: string | undefined = undefined;
             let text: string | undefined = undefined;
             let hasUnreadMessage: boolean = false;
@@ -66,7 +68,7 @@ const ListLocalDialogs: FC<IDialogsProps> = ({
                               )!.nickname;
 
                     if (!lastMessage.text) {
-                        if (checkIsMessage(lastMessage)) {
+                        if (checkIsStandardMessage(lastMessage)) {
                             text =
                                 "вложения - " +
                                 lastMessage.files.length.toString();

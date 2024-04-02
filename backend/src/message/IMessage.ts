@@ -1,6 +1,6 @@
 import { TUserDto } from "../user/IUser";
 import { TValueOf } from "../models/TUtils";
-import { FileType, Prisma, User } from "@prisma/client";
+import { FileType, Message, Prisma, User } from "@prisma/client";
 import { TFileToClient } from "../file/IFile";
 import { IRoom } from "../room/IRooms";
 import { ILinkPreviewInfo } from "../link-preview/ILinkPreview";
@@ -10,7 +10,7 @@ export interface IChat {
     rooms: IRoom[];
 }
 
-export type TMessage = IStandardMessage | IForwardedMessage;
+export type TMessage = IInnerStandardMessage | IInnerForwardedMessage;
 
 export type TMessageWithoutFileBlobs = Prisma.MessageGetPayload<{
     include: {
@@ -81,6 +81,12 @@ export type TNormalizeMessageArgument =
                       userDeletedThisMessage: true;
                   };
               };
+              replyToMessage: {
+                  include: {
+                      files: true;
+                      userDeletedThisMessage: true;
+                  };
+              };
               userDeletedThisMessage: true;
           };
       }>
@@ -95,27 +101,57 @@ export type TNormalizeMessageArgument =
               };
               userDeletedThisMessage: true;
           };
+      }>
+    | Prisma.MessageGetPayload<{
+          include: {
+              files: true;
+              forwardedMessage: {
+                  include: {
+                      files: true;
+                      userDeletedThisMessage: true;
+                  };
+              };
+              userDeletedThisMessage: true;
+          };
+      }>
+    | Prisma.MessageGetPayload<{
+          include: {
+              files: true;
+              userDeletedThisMessage: true;
+          };
       }>;
 
-export interface IStandardMessage extends IInnerStandardMessage {
+// export interface IStandardMessage extends IInnerStandardMessage {
+//     replyToMessage:
+//         | IInnerStandardMessage
+//         | IInnerForwardedMessage
+//         | undefined
+//         | null;
+// }
+//
+// export interface IForwardedMessage extends IInnerForwardedMessage {
+//     forwardedMessage: IInnerStandardMessage | IInnerForwardedMessage;
+// }
+
+export interface IInnerStandardMessage extends IOriginalMessage {
+    files: TFileToClient[];
     replyToMessage:
-        | IInnerStandardMessage
-        | IInnerForwardedMessage
+        | {
+              id: TValueOf<Pick<IOriginalMessage, "id">>;
+              date: string;
+          }
         | undefined
         | null;
 }
 
-export interface IForwardedMessage extends IInnerForwardedMessage {
-    forwardedMessage: IInnerStandardMessage | IInnerForwardedMessage;
-}
-
-export interface IInnerStandardMessage extends IOriginalMessage {
-    files: TFileToClient[];
-    replyToMessageId: TValueOf<Pick<IStandardMessage, "id">> | undefined | null;
-}
-
 export interface IInnerForwardedMessage extends IOriginalMessage {
-    forwardedMessageId: TValueOf<Pick<IStandardMessage, "id">>;
+    forwardedMessage:
+        | {
+              id: TValueOf<Pick<IOriginalMessage, "id">>;
+              date: string;
+          }
+        | undefined
+        | null;
 }
 
 export interface IOriginalMessage {
@@ -177,19 +213,19 @@ export function isForwardedMessagePrisma2(
     );
 }
 
-export function isForwardedMessage(
-    obj: IStandardMessage | IForwardedMessage
-): obj is IForwardedMessage {
-    return (
-        !!(obj as IForwardedMessage).forwardedMessage &&
-        (obj as IForwardedMessage).forwardedMessage !== null
-    );
-}
+// export function isForwardedMessage(
+//     obj: IStandardMessage | IForwardedMessage
+// ): obj is IForwardedMessage {
+//     return (
+//         !!(obj as IForwardedMessage).forwardedMessage &&
+//         (obj as IForwardedMessage).forwardedMessage !== null
+//     );
+// }
 
 export function isInnerForwardedMessage(
     obj: IInnerStandardMessage | IInnerForwardedMessage
 ): obj is IInnerForwardedMessage {
-    return !!(obj as IInnerForwardedMessage).forwardedMessageId;
+    return !!(obj as IInnerForwardedMessage).forwardedMessage;
 }
 
 // reply types check
