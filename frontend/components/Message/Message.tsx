@@ -202,7 +202,6 @@ const Message = forwardRef<HTMLDivElement, IMessageProps>(
                                     url={files.known[0].url}
                                     width={200}
                                     height={27}
-                                    alignCenter={true}
                                     createdAt={message.createdAt}
                                     size={files.known[0].size}
                                 >
@@ -254,7 +253,6 @@ const Message = forwardRef<HTMLDivElement, IMessageProps>(
             );
         }, [
             message,
-            isMine,
             isVoice,
             files.known,
             knownAttachments,

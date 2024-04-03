@@ -11,7 +11,6 @@ import {
     IInnerStandardMessage,
     checkIsStandardMessage,
     checkIsOriginalMessage,
-    IOriginalMessage,
 } from "@/models/room/IRoom.store";
 // styles
 import "./message-reply.scss";
@@ -20,7 +19,6 @@ import { TValueOf } from "@/models/TUtils";
 import emojiParser from "universal-emoji-parser";
 import { transform } from "@/utils/inrterweaveTransform";
 import { UrlMatcher } from "interweave-autolink";
-import { useFetch } from "@/hooks/useFetch.hook";
 import { getMessageById } from "@/store/thunks/room";
 
 const { useToken } = theme;
@@ -38,7 +36,6 @@ const SubMessage: FC<TSubMessageProps> = ({
     messageBriefInfo,
     isInput,
     roomId,
-    type = "answer",
 }) => {
     const { token } = useToken();
     const dispatch = useAppDispatch();

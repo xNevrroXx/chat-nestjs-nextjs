@@ -42,7 +42,7 @@ const findMessageSelector = createSelector(
             | IInnerStandardMessage
             | IInnerForwardedMessage
             | IOriginalMessage
-            | undefined = localRoom.days[messageBriefInfo.date].find(
+            | undefined = (localRoom.days[messageBriefInfo.date] || []).find(
             (msg) => msg.id === messageBriefInfo.id,
         );
 

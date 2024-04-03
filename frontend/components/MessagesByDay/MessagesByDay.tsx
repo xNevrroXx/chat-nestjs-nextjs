@@ -1,11 +1,10 @@
 import React, { FC, MutableRefObject, useMemo } from "react";
 import { Typography } from "antd";
 import { normalizeDate } from "@/utils/normalizeDate";
-import Message, { TPaddings } from "@/HOC/Message";
 import {
-    IForwardedMessage,
     IForwardMessage,
-    IStandardMessage,
+    IInnerForwardedMessage,
+    IInnerStandardMessage,
     RoomType,
 } from "@/models/room/IRoom.store";
 import { TValueOf } from "@/models/TUtils";
@@ -18,7 +17,7 @@ const { Text } = Typography;
 
 type TProps = {
     date: string;
-    messages: (IStandardMessage | IForwardedMessage)[];
+    messages: (IInnerStandardMessage | IInnerForwardedMessage)[];
     userId: TValueOf<Pick<IUserDto, "id">>;
     onChooseMessageForAction: (messageForAction: TMessageForAction) => void;
     onOpenUsersListForForwardMessage: (
@@ -43,8 +42,10 @@ const MessagesByDay: FC<TProps> = ({
         const resultElems: JSX.Element[] = [];
 
         let currentUserId = null;
-        let messagesByCurrentUser: (IStandardMessage | IForwardedMessage)[] =
-            [];
+        let messagesByCurrentUser: (
+            | IInnerStandardMessage
+            | IInnerForwardedMessage
+        )[] = [];
 
         for (let i = 0, length = messages.length; i < length; i++) {
             const message = messages[i];

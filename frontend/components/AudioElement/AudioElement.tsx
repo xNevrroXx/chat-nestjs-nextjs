@@ -22,7 +22,6 @@ interface IVoiceRecording {
     width?: number;
     // default: 50px
     height?: number;
-    alignCenter?: boolean;
     createdAt?: string;
     children?: JSX.Element;
 }
@@ -33,7 +32,6 @@ const AudioElement: FC<IVoiceRecording> = ({
     size,
     height = 30,
     width = 950,
-    alignCenter,
     children,
 }) => {
     const { token } = useToken();
@@ -141,13 +139,7 @@ const AudioElement: FC<IVoiceRecording> = ({
 
 const AudioElementWithWrapper: FC<IVoiceRecording> = (props) => {
     return (
-        <Flex
-            gap={"middle"}
-            className={classNames(
-                "audio-element",
-                props.alignCenter && "audio-element_align-center",
-            )}
-        >
+        <Flex gap={"middle"} className={classNames("audio-element")}>
             <AudioElement {...props} />
         </Flex>
     );
