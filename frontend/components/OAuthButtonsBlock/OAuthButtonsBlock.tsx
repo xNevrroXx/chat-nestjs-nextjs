@@ -34,7 +34,7 @@ const OAuthButtonsBlock = () => {
                 target="_blank"
                 onClick={() => {
                     createPopupWin(
-                        "http://localhost:3001/api/auth/yandex",
+                        process.env.NEXT_PUBLIC_BASE_URL + "/auth/yandex",
                         "Yandex ID OAuth",
                         500,
                         600,
@@ -46,11 +46,10 @@ const OAuthButtonsBlock = () => {
                 styles={{ icon: { verticalAlign: "middle" } }}
             />
             <Button
-                // href="http://localhost:3001/api/auth/google"
                 target="_blank"
                 onClick={() => {
                     createPopupWin(
-                        "http://localhost:3001/api/auth/google",
+                        process.env.NEXT_PUBLIC_BASE_URL + "/api/auth/google",
                         "Google OAuth",
                         500,
                         600,

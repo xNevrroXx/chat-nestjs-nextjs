@@ -33,7 +33,10 @@ const PinnedMessage: FC<IPinnedMessageProps> = ({ pinnedMessage, index }) => {
             {pinnedMessage.text && (
                 <Interweave
                     tagName="p"
-                    content={emojiParser.parse(pinnedMessage.text)}
+                    content={emojiParser.parse(pinnedMessage.text, {
+                        emojiCDN:
+                            "https://cdnjs.cloudflare.com/ajax/libs/twemoji/",
+                    })}
                 />
             )}
         </Flex>

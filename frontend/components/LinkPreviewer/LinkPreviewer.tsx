@@ -76,7 +76,7 @@ const LinkPreviewer: FC<ILinkPreviewerProps> = ({ data, className }) => {
 
                     <Text style={{ lineHeight: "17px" }}>
                         {truncateTheText({
-                            text: data.description,
+                            text: data.description || "",
                             maxLength: 150,
                         })}
                     </Text>

@@ -108,6 +108,7 @@ model Folder {
     user         User           @relation("user_to_folder", fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
     @@unique([userId, name])
+    @@map("folder")
 }
 
 model Room {

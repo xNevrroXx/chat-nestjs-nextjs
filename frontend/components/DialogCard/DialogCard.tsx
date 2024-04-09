@@ -73,13 +73,16 @@ const DialogCard: FC<IDialogCardProps> = ({
                             </Text>
                         )}
                         <Markup
-                            noHtml
                             noWrap
                             disableLineBreaks
                             content={emojiParser.parse(
                                 clip(lastMessageInfo.text, 50, {
                                     html: true,
                                 }),
+                                {
+                                    emojiCDN:
+                                        "https://cdnjs.cloudflare.com/ajax/libs/twemoji/",
+                                },
                             )}
                         />
                     </Paragraph>

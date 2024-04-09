@@ -129,6 +129,7 @@ const Dialogs: FC<IDialogsProps> = ({
 
         content.push(
             <ListRemoteDialogs
+                key={"list remote dialogs" + dialogQueryString}
                 user={user}
                 rooms={filteredRemoteDialogs.rooms}
                 activeRoomId={activeRoomId}

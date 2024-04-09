@@ -80,7 +80,10 @@ const OriginalMessage: FC<IInnerStandardMessage | IInnerForwardedMessage> = (
                 >
                     <Interweave
                         noWrap={true}
-                        content={emojiParser.parse(text)}
+                        content={emojiParser.parse(text, {
+                            emojiCDN:
+                                "https://cdnjs.cloudflare.com/ajax/libs/twemoji/",
+                        })}
                         transform={transform}
                         matchers={[
                             new UrlMatcher("url", { validateTLD: false }),
@@ -108,7 +111,10 @@ const OriginalMessage: FC<IInnerStandardMessage | IInnerForwardedMessage> = (
                     <Interweave
                         noWrap={true}
                         transform={transform}
-                        content={emojiParser.parse(text)}
+                        content={emojiParser.parse(text, {
+                            emojiCDN:
+                                "https://cdnjs.cloudflare.com/ajax/libs/twemoji/",
+                        })}
                     />
                     <Time
                         hasRead={hasRead}

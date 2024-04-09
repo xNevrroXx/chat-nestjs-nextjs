@@ -14,18 +14,18 @@
       margin: 0;
       padding: 0;
     }
-    .react-input-emoji--button {
-      align-self: flex-end;
-      &:focus-visible {
-        outline: 4px solid #91caff;
-        outline-offset: 1px;
-        transition: outline-offset 0s,outline 0s;
-      }
-      svg {
-        fill: rgb(22, 119, 255);
-      }
-    }
   }
+    .react-input-emoji--button {
+        align-self: flex-end;
+        &:focus-visible {
+            outline: 4px solid #91caff;
+            outline-offset: 1px;
+            transition: outline-offset 0s,outline 0s;
+        }
+        svg {
+            //fill: rgb(22, 119, 255) !important;
+        }
+    }
   &__textbox {
     max-width: 100%;
     word-break: break-word;

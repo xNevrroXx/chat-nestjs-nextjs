@@ -1,20 +1,18 @@
 .active-room {
-    //padding: 10px 15px 25px 15px;
   height: 100%;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  //background-color: #fdfdfd;
   gap: 15px;
   flex-grow: 1;
     &__return-btn {
-        display: none;
+        display: none !important;
     }
   &__not-exist {
     height: 100%;
   }
   &__header {
-      padding: 0 15px;
+      padding: 0 15px !important;
     display: flex;
     align-items: center;
     min-height: 40px;
@@ -64,7 +62,7 @@
            padding: 0 20px 0 10px !important;
         }
         &__return-btn {
-            display: block;
+            display: block !important;
         }
     }
 }

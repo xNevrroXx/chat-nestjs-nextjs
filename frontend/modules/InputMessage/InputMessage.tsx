@@ -15,7 +15,6 @@ import {
 } from "@/models/room/IRoom.store";
 import { TValueOf } from "@/models/TUtils";
 // styles
-import "./input-message.scss";
 import { useAppDispatch, useAppSelector } from "@/hooks/store.hook";
 import { activeRoomInputDataSelector } from "@/store/selectors/activeRoomInputData.selector";
 import { updateRecentRoomData } from "@/store/actions/recentRooms";
@@ -28,6 +27,7 @@ import {
 } from "@/models/room/IRoom.general";
 import { DATE_FORMATTER_SHORT } from "@/utils/normalizeDate";
 import SubMessage from "@/components/SubMessage/SubMessage";
+import "./input-message.scss";
 
 interface IInputMessage {
     onSendMessage: (

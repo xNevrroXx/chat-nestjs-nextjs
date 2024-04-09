@@ -86,7 +86,10 @@ const SubMessage: FC<TSubMessageProps> = ({
                             matchers={[
                                 new UrlMatcher("url", { validateTLD: false }),
                             ]}
-                            content={emojiParser.parse(message.text)}
+                            content={emojiParser.parse(message.text, {
+                                emojiCDN:
+                                    "https://cdnjs.cloudflare.com/ajax/libs/twemoji/",
+                            })}
                         />
                     )}
                 </Fragment>
@@ -103,7 +106,10 @@ const SubMessage: FC<TSubMessageProps> = ({
                             matchers={[
                                 new UrlMatcher("url", { validateTLD: false }),
                             ]}
-                            content={emojiParser.parse(message.text)}
+                            content={emojiParser.parse(message.text, {
+                                emojiCDN:
+                                    "https://cdnjs.cloudflare.com/ajax/libs/twemoji/",
+                            })}
                         />
                     )}
                 </Fragment>

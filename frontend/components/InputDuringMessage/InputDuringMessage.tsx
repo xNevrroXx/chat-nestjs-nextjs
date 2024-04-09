@@ -96,7 +96,7 @@ const InputDuringMessage = forwardRef<HTMLDivElement, IInputDuringMessageProps>(
                         <InputEmoji
                             ref={ref}
                             value={message}
-                            set="twitter"
+                            set="google"
                             theme="dark"
                             placeholder={"Введите сообщение..."}
                             buttonRef={emojiButtonRef}
