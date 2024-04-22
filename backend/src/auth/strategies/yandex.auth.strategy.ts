@@ -15,7 +15,7 @@ export class YandexAuthStrategy extends PassportStrategy(Strategy, "yandex") {
         super({
             clientID: appConstantsService.YANDEX_CLIENT_ID,
             clientSecret: appConstantsService.YANDEX_CLIENT_SECRET,
-            callbackURL: `${appConstantsService.CLIENT_URL}:3001/api/auth/redirect-yandex`,
+            callbackURL: `${appConstantsService.BACKEND_URL}/api/auth/redirect-yandex`,
         });
     }
     async validate(

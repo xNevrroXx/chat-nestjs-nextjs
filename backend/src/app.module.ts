@@ -17,7 +17,12 @@ import { RoomsOnFoldersModule } from "./rooms-on-folders/rooms-on-folders.module
 @Global()
 @Module({
     imports: [
-        ConfigModule.forRoot(),
+        ConfigModule.forRoot({
+            envFilePath: ".env",
+            // process.env.NODE_ENV === "development"
+            //     ? ".env"
+            //     : ".env.production",`
+        }),
         PassportModule.register({
             session: true,
             defaultStrategy: "local",

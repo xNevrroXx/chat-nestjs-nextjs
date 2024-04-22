@@ -1,8 +1,8 @@
-FROM node
+FROM node:20.11.0
 
-WORKDIR /app
+WORKDIR /usr/src/app
 
-COPY package.json .
+COPY package*.json ./
 
 RUN npm install
 
@@ -10,7 +10,7 @@ COPY . .
 
 RUN npm run build
 
-ENV PORT 3000
+ENV PORT 8080
 
 EXPOSE $PORT
 

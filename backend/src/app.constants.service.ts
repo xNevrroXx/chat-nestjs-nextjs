@@ -4,6 +4,7 @@ import * as path from "path";
 @Injectable()
 export class AppConstantsService {
     readonly CLIENT_URL = process.env.CLIENT_URL;
+    readonly BACKEND_URL = process.env.BACKEND_URL;
 
     readonly PORT = process.env.PORT;
     readonly SMTP_HOST = process.env.SMTP_HOST;

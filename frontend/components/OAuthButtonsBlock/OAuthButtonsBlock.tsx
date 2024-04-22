@@ -49,7 +49,7 @@ const OAuthButtonsBlock = () => {
                 target="_blank"
                 onClick={() => {
                     createPopupWin(
-                        process.env.NEXT_PUBLIC_BASE_URL + "/api/auth/google",
+                        process.env.NEXT_PUBLIC_BASE_URL + "/auth/google",
                         "Google OAuth",
                         500,
                         600,

@@ -1,13 +1,67 @@
-version: "1"
+version: "3"
 
 services:
 
     backend:
-        image: chat:back
-        ports:
-            - 3001:3001
+        build:
+            context: ./backend
+            dockerfile: Dockerfile
+        image: backend
+        container_name: backend
+        restart: unless-stopped
+        networks:
+            - app-network
 
     frontend:
-        image: chat:front
+        build:
+            context: ./frontend
+            dockerfile: Dockerfile
+        image: frontend
+        container_name: frontend
+        restart: unless-stopped
+        networks:
+            - app-network
+
+    nginx:
+        image: nginx:latest
+        container_name: nginx
+        restart: unless-stopped
         ports:
-            - 3000:3000
+            - "80:80"
+            - "443:443"
+            - "3001:3001"
+        volumes:
+            - web-root:/var/www/html
+            - ./nginx:/etc/nginx/conf.d
+            - certbot-etc:/etc/letsencrypt
+            - certbot-var:/var/lib/letsencrypt
+        depends_on:
+            - frontend
+            - backend
+        networks:
+            - app-network
+
+    certbot:
+        image: certbot/certbot
+        container_name: certbot
+        volumes:
+            - certbot-etc:/etc/letsencrypt
+            - certbot-var:/var/lib/letsencrypt
+            - web-root:/var/www/html
+        depends_on:
+            - frontend
+        command: certonly --webroot --webroot-path=/var/www/html --email govorov.2001gv@yandex.ru --agree-tos --no-eff-email --staging -d molva-space.ru
+
+volumes:
+    certbot-etc:
+    certbot-var:
+    web-root:
+        driver: local
+        driver_opts:
+            type: none
+            device: /root/app
+            o: bind
+
+networks:
+    app-network:
+        driver: bridge
