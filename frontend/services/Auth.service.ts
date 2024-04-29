@@ -24,7 +24,7 @@ class AuthService {
     }
 
     static async logout(): Promise<AxiosResponse<null>> {
-        return $api.post<null>(this.base + "/logout");
+        return $api.get<null>(this.base + "/logout");
     }
 
     static async recoveryPasswordGetLink(

@@ -129,7 +129,7 @@ export class RoomsOnFoldersController {
             throw new BadRequestException();
         }
         const isRoomAlreadyOnFolder = targetFolder.roomOnFolder.find(
-            (roomOnFolder) => roomOnFolder.roomId
+            (roomOnFolder) => roomOnFolder.roomId === roomId
         );
         if (isRoomAlreadyOnFolder) {
             throw new BadRequestException(

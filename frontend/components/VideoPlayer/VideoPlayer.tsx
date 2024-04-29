@@ -15,7 +15,9 @@ const VideoPlayer = (fileInfo: IFile) => {
             playing={false}
             url={
                 process.env.NEXT_PUBLIC_BASE_URL +
-                "/file/by-chunks?name=" +
+                "/s3/file/" +
+                fileInfo.originalName +
+                "?path=" +
                 fileInfo.url
             }
         />

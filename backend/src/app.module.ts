@@ -13,19 +13,29 @@ import { LinkPreviewModule } from "./link-preview/link-preview.module";
 import { PassportModule } from "@nestjs/passport";
 import { SessionModule } from "./session/session.module";
 import { RoomsOnFoldersModule } from "./rooms-on-folders/rooms-on-folders.module";
+import { S3Module } from "./s3/s3.module";
+import { S3Module as S3ModulePackage } from "nestjs-s3";
 
 @Global()
 @Module({
     imports: [
         ConfigModule.forRoot({
-            envFilePath: ".env",
-            // process.env.NODE_ENV === "development"
-            //     ? ".env"
-            //     : ".env.production",`
+            envFilePath: ".env.production",
         }),
         PassportModule.register({
             session: true,
             defaultStrategy: "local",
+        }),
+        S3ModulePackage.forRoot({
+            config: {
+                credentials: {
+                    accessKeyId: process.env.VK_STORAGE_ACCESS_KEY,
+                    secretAccessKey: process.env.VK_STORAGE_SECRET_KEY,
+                },
+                endpoint: process.env.VK_STORAGE_ENDPOINT,
+                region: process.env.VK_STORAGE_REGION,
+                forcePathStyle: true,
+            },
         }),
         DatabaseModule,
         AuthModule,
@@ -38,6 +48,7 @@ import { RoomsOnFoldersModule } from "./rooms-on-folders/rooms-on-folders.module
         LinkPreviewModule,
         SessionModule,
         RoomsOnFoldersModule,
+        S3Module,
     ],
     providers: [AppConstantsService],
     exports: [AppConstantsService],

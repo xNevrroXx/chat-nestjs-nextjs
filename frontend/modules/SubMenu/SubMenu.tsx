@@ -7,44 +7,50 @@ import {
     Flex,
     Typography,
 } from "antd";
-import { PlusCircleOutlined, CloseOutlined } from "@ant-design/icons";
+import {
+    PlusCircleOutlined,
+    CloseOutlined,
+    CloseCircleOutlined,
+} from "@ant-design/icons";
 import { Header } from "antd/lib/layout/layout";
-import { ButtonProps, Drawer } from "antd/lib";
+import { Drawer } from "antd/lib";
 import { useAppSelector } from "@/hooks/store.hook";
 import { FlexButton } from "@/components/Button/FlexButton";
 import { getNameInitials } from "@/utils/getNameInitials";
 
 const { Text } = Typography;
 
-const CustomButton: FC<ButtonProps> = ({ children, ...props }) => {
-    return (
-        <Button
-            type={"text"}
-            block
-            {...props}
-            style={{
-                display: "flex",
-                alignItems: "center",
-                textAlign: "left",
-                minWidth: "min-content",
-                wordBreak: "normal",
-                ...props.style,
-            }}
-        >
-            {children}
-        </Button>
-    );
-};
+// const CustomButton: FC<ButtonProps> = ({ children, ...props }) => {
+//     return (
+//         <Button
+//             type={"text"}
+//             block
+//             {...props}
+//             style={{
+//                 display: "flex",
+//                 alignItems: "center",
+//                 textAlign: "left",
+//                 minWidth: "min-content",
+//                 wordBreak: "normal",
+//                 ...props.style,
+//             }}
+//         >
+//             {children}
+//         </Button>
+//     );
+// };
 
 interface ISubMenuProps {
     isOpen: boolean;
     onClose: () => void;
+    openModalToLogout: () => void;
     openModalToCreateGroup: () => void;
 }
 
 const SubMenu: FC<ISubMenuProps> = ({
     isOpen,
     onClose,
+    openModalToLogout,
     openModalToCreateGroup,
 }) => {
     const user = useAppSelector((state) => state.authentication.user);
@@ -117,13 +123,24 @@ const SubMenu: FC<ISubMenuProps> = ({
                     >
                         Новая группа
                     </FlexButton>
-                    <CustomButton
+                    {/*<CustomButton*/}
+                    {/*    style={{*/}
+                    {/*        padding: "0 25px",*/}
+                    {/*    }}*/}
+                    {/*>*/}
+                    {/*    Ночной режим*/}
+                    {/*</CustomButton>*/}
+                    <FlexButton
                         style={{
                             padding: "0 25px",
                         }}
+                        icon={
+                            <CloseCircleOutlined style={{ fontSize: "20px" }} />
+                        }
+                        onClick={openModalToLogout}
                     >
-                        Ночной режим
-                    </CustomButton>
+                        Выйти
+                    </FlexButton>
                 </Flex>
             </Drawer>
         </ConfigProvider>

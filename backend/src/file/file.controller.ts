@@ -16,7 +16,7 @@ import * as mime from "mime-types";
 export class FileController {
     constructor(private constants: AppConstantsService) {}
 
-    @Get()
+    @Get("download")
     async getAttachment(
         @Req() request: Request,
         @Res() response: Response,

@@ -17,6 +17,7 @@ const { Text } = Typography;
 interface IVoiceRecording {
     blob?: Blob;
     url: string;
+    originalName?: string;
     size?: TValueOf<Pick<IFile, "size">>;
     // default: 600px
     width?: number;
@@ -33,6 +34,7 @@ const AudioElement: FC<IVoiceRecording> = ({
     height = 30,
     width = 950,
     children,
+    originalName,
 }) => {
     const { token } = useToken();
     const [blob, setBlob] = useState<Blob | undefined>(inputBlob);
@@ -45,12 +47,17 @@ const AudioElement: FC<IVoiceRecording> = ({
 
     useEffect(() => {
         if (inputBlob) {
+            // if the voice record is the local record
             return;
         }
 
         async function getBlobInfo() {
             const blob = await fetch(
-                process.env.NEXT_PUBLIC_BASE_URL + "/file?name=" + url,
+                process.env.NEXT_PUBLIC_BASE_URL +
+                    "/s3/file/" +
+                    originalName +
+                    "?path=" +
+                    url,
             ).then((r) => r.blob());
             setBlob(blob);
             setBlobUrl(URL.createObjectURL(blob));

@@ -45,7 +45,7 @@ const InputDuringMessage = forwardRef<HTMLDivElement, IInputDuringMessageProps>(
         },
         ref,
     ) => {
-        const emojiButtonRef = useRef<HTMLDivElement | null>(null);
+        const emojiButtonRef = useRef<HTMLButtonElement | null>(null);
         const inputFilesRef = useRef<HTMLInputElement | null>(null);
         const buttonAddFilesRef = useRef<HTMLButtonElement | null>(null);
 
@@ -78,6 +78,7 @@ const InputDuringMessage = forwardRef<HTMLDivElement, IInputDuringMessageProps>(
                             multiple
                             style={{ display: "none" }}
                             onChange={(e) => {
+                                // @ts-ignore
                                 setFiles(e as never as Event, "a");
                                 if (
                                     !inputFilesRef.current ||
@@ -137,13 +138,13 @@ const InputDuringMessage = forwardRef<HTMLDivElement, IInputDuringMessageProps>(
                         )}
                     </div>
                 </Flex>
-                {files.length > 0 && (
-                    <UploadFiles
-                        buttonRef={buttonAddFilesRef}
-                        attachments={files}
-                        removeAttachment={removeFile}
-                    />
-                )}
+                {/*// {files.length > 0 && (*/}
+                <UploadFiles
+                    buttonRef={buttonAddFilesRef}
+                    attachments={files}
+                    removeAttachment={removeFile}
+                />
+                {/*// )}*/}
             </Fragment>
         );
     },

@@ -21,6 +21,8 @@ async function bootstrap() {
     app.setGlobalPrefix("api");
     app.use(cookieParser());
     app.useGlobalPipes(new ValidationPipe());
+
+    // passport auth configuration
     app.use(
         session({
             secret: process.env.SESSION_SECRET,

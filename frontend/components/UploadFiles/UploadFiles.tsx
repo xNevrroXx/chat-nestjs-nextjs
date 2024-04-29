@@ -33,14 +33,23 @@ const UploadFiles: FC<IUploadFilesProps> = ({
 
         async function addUrlToFiles() {
             const filePromises = attachments.map<Promise<UploadFile>>(
-                (file, index) => {
+                (file) => {
+                    const uid = file.name + file.size;
+
                     return new Promise((resolve, reject) => {
+                        if (!file.size || (file.size && file.size > 1e6)) {
+                            resolve({
+                                name: file.name,
+                                uid: uid,
+                            });
+                        }
+
                         getBase64(file)
                             .then((url) => {
                                 resolve({
                                     name: file.name,
-                                    url: url || "fake",
-                                    uid: index,
+                                    url: url,
+                                    uid: uid,
                                 } as never as UploadFile); // get an uid automatically
                             })
                             .catch((error) => {
@@ -62,7 +71,7 @@ const UploadFiles: FC<IUploadFilesProps> = ({
             file.preview = (await getBase64(file as RcFile)) || undefined;
         }
 
-        setPreviewImage(file.url || file.preview!);
+        setPreviewImage(file.url || file.preview || "");
         setPreviewTitle(
             file.name || file.url!.substring(file.url!.lastIndexOf("/") + 1),
         );
@@ -80,6 +89,10 @@ const UploadFiles: FC<IUploadFilesProps> = ({
                 fileList={fileList}
                 onPreview={handlePreview}
                 onChange={handleChange}
+                multiple
+                onDownload={(info) => {
+                    console.log(info);
+                }}
                 onRemove={(file) => removeAttachment(file.name)}
             />
             <Modal

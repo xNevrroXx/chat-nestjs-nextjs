@@ -40,6 +40,7 @@ import { checkIsPreviewExistingRoomWithFlag } from "@/models/room/IRoom.store";
 import "./main.scss";
 import { updateScreenInfo } from "@/store/slices/device";
 import Call from "@/modules/Call/Call";
+import { logout } from "@/store/thunks/authentication";
 
 const { Content } = Layout;
 
@@ -55,6 +56,8 @@ const Main = () => {
     const [isOpenModalToForwardMessage, setIsOpenModalToForwardMessage] =
         useState<boolean>(false);
     const [isOpenModalToCreateGroup, setIsOpenModalToCreateGroup] =
+        useState<boolean>(false);
+    const [isOpenModalToLogout, setIsOpenModalToLogout] =
         useState<boolean>(false);
     const [forwardedMessageId, setForwardedMessageId] = useState<TValueOf<
         Pick<IForwardMessage, "forwardedMessageId">
@@ -88,6 +91,14 @@ const Main = () => {
 
     const closeModalToCreateGroup = useCallback(() => {
         setIsOpenModalToCreateGroup(false);
+    }, []);
+
+    const openModalToLogout = useCallback(() => {
+        setIsOpenModalToLogout(true);
+    }, []);
+
+    const closeModalToLogout = useCallback(() => {
+        setIsOpenModalToLogout(false);
     }, []);
 
     const onChangeActiveDialog = useCallback(
@@ -148,6 +159,12 @@ const Main = () => {
         [],
     );
 
+    const onLogout = useCallback(() => {
+        void dispatch(logout()).then(() => {
+            router.push(createRoute({ path: ROUTES.AUTH }));
+        });
+    }, [dispatch, router]);
+
     const onCloseForwardModal = useCallback(() => {
         setIsOpenModalToForwardMessage(false);
     }, []);
@@ -199,6 +216,10 @@ const Main = () => {
         [dispatch],
     );
 
+    if (!user) {
+        return;
+    }
+
     const content = () => {
         if (windowDimensions.width >= 768) {
             return (
@@ -207,6 +228,7 @@ const Main = () => {
                     <SubMenu
                         isOpen={isDrawerOpen}
                         onClose={onCloseSubmenu}
+                        openModalToLogout={openModalToLogout}
                         openModalToCreateGroup={openModalToCreateGroup}
                     />
                     <Dialogs
@@ -245,6 +267,7 @@ const Main = () => {
                     <SubMenu
                         isOpen={isDrawerOpen}
                         onClose={onCloseSubmenu}
+                        openModalToLogout={openModalToLogout}
                         openModalToCreateGroup={openModalToCreateGroup}
                     />
                     <Dialogs
@@ -286,6 +309,12 @@ const Main = () => {
                         onClickRoom={onClickRoomToForwardMessage}
                     />
                 </Modal>
+                <Modal
+                    title="Выйти"
+                    open={isOpenModalToLogout}
+                    onOk={onLogout}
+                    onCancel={closeModalToLogout}
+                ></Modal>
                 <CreateGroupModal
                     onOk={(roomInfo: TCreateGroupRoom) =>
                         onCreateRoom(roomInfo)

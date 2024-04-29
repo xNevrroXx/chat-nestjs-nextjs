@@ -17,6 +17,19 @@ CREATE TABLE `user` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
+CREATE TABLE `photo_profile` (
+    `id` VARCHAR(191) NOT NULL,
+    `user_id` VARCHAR(191) NOT NULL,
+    `file_name` VARCHAR(191) NOT NULL,
+    `mime_type` VARCHAR(191) NOT NULL,
+    `file_type` ENUM('VOICE_RECORD', 'VIDEO_RECORD', 'ATTACHMENT') NOT NULL DEFAULT 'ATTACHMENT',
+    `extension` VARCHAR(191) NULL,
+    `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
 CREATE TABLE `user_typing` (
     `id` VARCHAR(191) NOT NULL,
     `user_id` VARCHAR(191) NOT NULL,
@@ -60,14 +73,14 @@ CREATE TABLE `refresh_token` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `Folder` (
+CREATE TABLE `folder` (
     `id` VARCHAR(191) NOT NULL,
     `name` VARCHAR(191) NOT NULL,
     `userId` VARCHAR(191) NOT NULL,
     `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updated_at` DATETIME(3) NULL,
 
-    UNIQUE INDEX `Folder_userId_name_key`(`userId`, `name`),
+    UNIQUE INDEX `folder_userId_name_key`(`userId`, `name`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -103,6 +116,28 @@ CREATE TABLE `participant` (
     `updated_at` DATETIME(3) NULL,
 
     PRIMARY KEY (`user_id`, `room_id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `call_participant` (
+    `user_id` VARCHAR(191) NOT NULL,
+    `call_id` VARCHAR(191) NOT NULL,
+    `has_participated` BOOLEAN NOT NULL DEFAULT false,
+    `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updated_at` DATETIME(3) NULL,
+
+    PRIMARY KEY (`user_id`, `call_id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `call` (
+    `id` VARCHAR(191) NOT NULL,
+    `initializer_id` VARCHAR(191) NOT NULL,
+    `room_id` VARCHAR(191) NOT NULL,
+    `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `ended_at` DATETIME(3) NULL,
+
+    PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -145,11 +180,12 @@ CREATE TABLE `pinned_message` (
 CREATE TABLE `file` (
     `id` VARCHAR(191) NOT NULL,
     `message_id` VARCHAR(191) NOT NULL,
-    `file_name` VARCHAR(191) NOT NULL,
+    `path` TEXT NOT NULL,
     `original_name` VARCHAR(191) NULL,
     `mime_type` VARCHAR(191) NOT NULL,
     `file_type` ENUM('VOICE_RECORD', 'VIDEO_RECORD', 'ATTACHMENT') NOT NULL DEFAULT 'ATTACHMENT',
     `extension` VARCHAR(191) NULL,
+    `size` VARCHAR(191) NOT NULL,
     `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
 
     PRIMARY KEY (`id`)
@@ -165,6 +201,9 @@ CREATE TABLE `session` (
     UNIQUE INDEX `session_sid_key`(`sid`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- AddForeignKey
+ALTER TABLE `photo_profile` ADD CONSTRAINT `photo_profile_user_id_fkey` FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `user_typing` ADD CONSTRAINT `user_typing_user_id_fkey` FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
@@ -185,13 +224,13 @@ ALTER TABLE `friendship` ADD CONSTRAINT `friendship_user_id_2_fkey` FOREIGN KEY 
 ALTER TABLE `refresh_token` ADD CONSTRAINT `refresh_token_user_id_fkey` FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `Folder` ADD CONSTRAINT `Folder_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `folder` ADD CONSTRAINT `folder_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `room` ADD CONSTRAINT `room_user_id_fkey` FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `rooms_on_folders` ADD CONSTRAINT `rooms_on_folders_folderId_fkey` FOREIGN KEY (`folderId`) REFERENCES `Folder`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `rooms_on_folders` ADD CONSTRAINT `rooms_on_folders_folderId_fkey` FOREIGN KEY (`folderId`) REFERENCES `folder`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `rooms_on_folders` ADD CONSTRAINT `rooms_on_folders_roomId_fkey` FOREIGN KEY (`roomId`) REFERENCES `room`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
@@ -201,6 +240,18 @@ ALTER TABLE `participant` ADD CONSTRAINT `participant_user_id_fkey` FOREIGN KEY 
 
 -- AddForeignKey
 ALTER TABLE `participant` ADD CONSTRAINT `participant_room_id_fkey` FOREIGN KEY (`room_id`) REFERENCES `room`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `call_participant` ADD CONSTRAINT `call_participant_user_id_fkey` FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `call_participant` ADD CONSTRAINT `call_participant_call_id_fkey` FOREIGN KEY (`call_id`) REFERENCES `call`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `call` ADD CONSTRAINT `call_initializer_id_fkey` FOREIGN KEY (`initializer_id`) REFERENCES `user`(`id`) ON DELETE NO ACTION ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `call` ADD CONSTRAINT `call_room_id_fkey` FOREIGN KEY (`room_id`) REFERENCES `room`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `message` ADD CONSTRAINT `message_sender_id_fkey` FOREIGN KEY (`sender_id`) REFERENCES `user`(`id`) ON DELETE NO ACTION ON UPDATE CASCADE;
@@ -228,3 +279,4 @@ ALTER TABLE `pinned_message` ADD CONSTRAINT `pinned_message_room_id_fkey` FOREIG
 
 -- AddForeignKey
 ALTER TABLE `file` ADD CONSTRAINT `file_message_id_fkey` FOREIGN KEY (`message_id`) REFERENCES `message`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+

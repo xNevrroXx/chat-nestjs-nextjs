@@ -42,6 +42,7 @@ import { DATE_FORMATTER_DATE } from "../utils/normalizeDate";
 import { RoomsOnFoldersService } from "../rooms-on-folders/rooms-on-folders.service";
 import { WsExceptionFilter } from "../exceptions/ws-exception.filter";
 import { IInitCall, ILeaveCall, IRelayIce, IRelaySdp } from "./webrtc.models";
+import { S3Service } from "../s3/s3.service";
 
 @WebSocketGateway({
     namespace: "api/chat",
@@ -55,6 +56,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     socketRoomsInfo: SocketRoomsInfo;
 
     constructor(
+        private readonly s3Service: S3Service,
         private readonly roomService: RoomService,
         private readonly userService: UserService,
         private readonly authService: AuthService,
@@ -734,7 +736,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
         const attachmentPromises = message.attachments.map<
             Promise<Omit<File, "id" | "messageId" | "createdAt">>
-        >(async (value, index) => {
+        >(async (value) => {
             let extension: string;
             if (value.extension.length > 0) {
                 extension = value.extension;
@@ -743,20 +745,23 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
                     mime.extension(value.mimeType) ||
                     value.mimeType.concat("/")[1];
             }
-            const fileName = generateFileName(
-                sender.id,
-                value.fileType,
-                extension,
-                index
-            );
+            const timestamp = new Date().toISOString();
+            const originalName = value.originalName
+                ? value.originalName
+                : "random-name-" +
+                  (Math.random() * 1000).toFixed() +
+                  "." +
+                  extension;
+            const pathToFile = sender.id + "/" + timestamp + "/" + originalName;
 
             return new Promise(async (resolve, reject) => {
-                this.fileService
-                    .write(value.buffer, fileName)
+                this.s3Service
+                    .upload(pathToFile, Buffer.from(value.buffer))
                     .then(() => {
                         resolve({
-                            fileName: fileName,
-                            originalName: value.originalName,
+                            size: value.buffer.byteLength.toString(),
+                            path: pathToFile,
+                            originalName: originalName,
                             fileType: value.fileType,
                             mimeType: value.mimeType,
                             extension: extension,

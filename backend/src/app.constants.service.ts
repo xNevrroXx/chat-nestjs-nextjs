@@ -19,6 +19,12 @@ export class AppConstantsService {
     readonly YANDEX_CLIENT_ID = process.env.YANDEX_CLIENT_ID;
     readonly YANDEX_CLIENT_SECRET = process.env.YANDEX_CLIENT_SECRET;
 
-    readonly DIRNAME = __dirname;
     readonly USERS_DATA_FOLDER_PATH = path.resolve(__dirname, "users-data");
+
+    readonly VK_BUCKET_NAME = process.env.VK_BUCKET_NAME;
+    readonly VK_STORAGE_URL = process.env.VK_STORAGE_URL;
+    readonly VK_STORAGE_REGION = process.env.VK_STORAGE_REGION;
+    readonly VK_STORAGE_ENDPOINT = process.env.VK_STORAGE_ENDPOINT;
+    readonly VK_STORAGE_ACCESS_KEY = process.env.VK_STORAGE_ACCESS_KEY;
+    readonly VK_STORAGE_SECRET_KEY = process.env.VK_STORAGE_SECRET_KEY;
 }

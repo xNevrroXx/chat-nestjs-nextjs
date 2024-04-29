@@ -78,7 +78,11 @@ const Message = forwardRef<HTMLDivElement, IMessageProps>(
         const handleDownload = useCallback((fileInfo: IFile) => {
             const anchor = document.createElement("a");
             anchor.href =
-                process.env.NEXT_PUBLIC_BASE_URL + "/file?name=" + fileInfo.url;
+                process.env.NEXT_PUBLIC_BASE_URL +
+                "/s3/file/" +
+                fileInfo.originalName +
+                "?path=" +
+                fileInfo.url;
             anchor.title = fileInfo.originalName;
             anchor.download = fileInfo.originalName;
             anchor.click();
@@ -90,7 +94,9 @@ const Message = forwardRef<HTMLDivElement, IMessageProps>(
                     alt={`attachment ${fileInfo.id}`}
                     src={
                         process.env.NEXT_PUBLIC_BASE_URL +
-                        "/file?name=" +
+                        "/s3/file/" +
+                        fileInfo.originalName +
+                        "?path=" +
                         fileInfo.url
                     }
                 />

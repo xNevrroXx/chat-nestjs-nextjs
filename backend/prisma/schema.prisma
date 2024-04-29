@@ -248,11 +248,12 @@ model PinnedMessage {
 model File {
     id           String   @id @default(uuid())
     messageId    String   @map("message_id")
-    fileName     String   @map("file_name")
+    path         String   @map("path") @db.Text
     originalName String?  @map("original_name")
     mimeType     String   @map("mime_type")
     fileType     FileType @default(ATTACHMENT) @map("file_type")
     extension    String?
+    size         String
 
     createdAt DateTime @default(now()) @map("created_at")
 

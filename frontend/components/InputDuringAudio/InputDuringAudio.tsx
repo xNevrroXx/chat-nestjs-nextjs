@@ -74,15 +74,6 @@ const InputDuringAudio: FC<IInputDuringAudioProps> = ({
                     />
                 </div>
             )}
-            {/*// <div className="input-message__field">*/}
-            {/*//      : (*/}
-            {/*//         <LiveAudioVisualizer*/}
-            {/*//             width={"900px"}*/}
-            {/*//             height={"30px"}*/}
-            {/*//             mediaRecorder={mediaRecorder}*/}
-            {/*//         />*/}
-            {/*//     )}*/}
-            {/*// </div>*/}
 
             <div className="input-message__btn-wrapper">
                 <Button

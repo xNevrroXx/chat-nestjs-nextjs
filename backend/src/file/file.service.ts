@@ -19,23 +19,6 @@ export class FileService {
         }
     }
 
-    async findOnDisk(filename: string): Promise<ArrayBuffer> {
-        const pathToFile = path.join(
-            this.constants.USERS_DATA_FOLDER_PATH,
-            filename
-        );
-
-        return new Promise<ArrayBuffer>((resolve, reject) => {
-            fs.readFile(pathToFile, (error, buffer) => {
-                if (error) {
-                    reject(error);
-                }
-
-                resolve(buffer);
-            });
-        });
-    }
-
     async write(arrayBuffer: ArrayBuffer, filename: string): Promise<void> {
         const buffer = Buffer.from(arrayBuffer);
         const pathToFile = path.join(
@@ -84,16 +67,19 @@ export class FileService {
 
     normalizeFiles(files: File[]): TFileToClient[] {
         return files.map<TFileToClient>((file) => {
-            const filePath = path.join(
-                this.constants.USERS_DATA_FOLDER_PATH,
-                file.fileName
-            );
+            // const filePath = path.join(
+            //     this.constants.USERS_DATA_FOLDER_PATH,
+            //     file.fileName
+            // );
             const f = excludeSensitiveFields(file, [
-                "fileName",
+                "path",
+                "size",
             ]) as TFileToClient;
 
-            f.url = file.fileName;
-            f.size = byteSize({ sizeInBytes: fs.statSync(filePath).size });
+            f.url = file.path;
+            f.size = byteSize({
+                sizeInBytes: Number(file.size) /*fs.statSync(filePath).size*/,
+            });
             return f;
         });
     }

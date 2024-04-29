@@ -40,6 +40,13 @@ declare global {
             GOOGLE_CLIENT_SECRET: string;
             YANDEX_CLIENT_ID: string;
             YANDEX_CLIENT_SECRET: string;
+
+            VK_BUCKET_NAME: string;
+            VK_STORAGE_URL: string;
+            VK_STORAGE_REGION: string;
+            VK_STORAGE_ENDPOINT: string;
+            VK_STORAGE_ACCESS_KEY: string;
+            VK_STORAGE_SECRET_KEY: string;
         }
     }
 }
