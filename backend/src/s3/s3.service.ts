@@ -10,6 +10,17 @@ export class S3Service {
         private readonly appConstantsService: AppConstantsService
     ) {}
 
+    generateFilePath({
+        senderId,
+        originalName,
+    }: {
+        senderId: string;
+        originalName: string;
+    }): string {
+        const timestamp = new Date().toISOString();
+        return senderId + "/" + timestamp + "/" + originalName;
+    }
+
     async upload(key: string, buffer: Buffer) {
         return this.s3.send(
             new PutObjectCommand({
@@ -19,5 +30,12 @@ export class S3Service {
                 ACL: "public-read",
             })
         );
+    }
+
+    async delete(key: string) {
+        return this.s3.deleteObject({
+            Bucket: this.appConstantsService.VK_BUCKET_NAME,
+            Key: key,
+        });
     }
 }

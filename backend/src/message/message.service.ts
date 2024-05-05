@@ -1,6 +1,12 @@
 import { Injectable } from "@nestjs/common";
 import { DatabaseService } from "../database/database.service";
-import { type Message, Prisma, PrismaPromise, User } from "@prisma/client";
+import {
+    type Message,
+    MessageBeingProcessed,
+    Prisma,
+    PrismaPromise,
+    User,
+} from "@prisma/client";
 import {
     IInnerForwardedMessage,
     IInnerStandardMessage,
@@ -33,6 +39,24 @@ export class MessageService {
         const { where, include } = params;
 
         return this.prisma.message.findUnique({
+            where,
+            include,
+        });
+    }
+
+    async findOneProcessed<
+        T extends Prisma.MessageBeingProcessedInclude
+    >(params: {
+        where: Prisma.MessageBeingProcessedWhereUniqueInput;
+        include?: T;
+    }): Promise<
+        | MessageBeingProcessed
+        | Prisma.MessageBeingProcessedGetPayload<{ include: T }>
+        | null
+    > {
+        const { where, include } = params;
+
+        return this.prisma.messageBeingProcessed.findUnique({
             where,
             include,
         });
@@ -97,6 +121,14 @@ export class MessageService {
         });
     }
 
+    async deleteProcessedMessage(
+        where: Prisma.MessageBeingProcessedWhereUniqueInput
+    ): Promise<MessageBeingProcessed> {
+        return this.prisma.messageBeingProcessed.delete({
+            where,
+        });
+    }
+
     async normalize(
         recipientId: TValueOf<Pick<User, "id">>,
         inputMessagePrisma: TNormalizeMessageArgument
@@ -130,19 +162,7 @@ export class MessageService {
             createdAt: message.createdAt,
             updatedAt: message.updatedAt,
         };
-        //
-        // console.log("message id: ", inputMessagePrisma.id);
-        // console.log("recipient: ", recipientId);
-        // console.log(
-        //     "inputMessagePrisma.userDeletedThisMessage: ",
-        //     inputMessagePrisma.userDeletedThisMessage
-        // );
-        // console.log(
-        //     "isDeleted: ",
-        //     inputMessagePrisma.userDeletedThisMessage.some(
-        //         ({ userId }) => userId === recipientId
-        //     )
-        // );
+
         if (normalizedOriginalMessage.links.length > 0) {
             const firstLink = normalizedOriginalMessage.links[0];
             try {
@@ -213,36 +233,4 @@ export class MessageService {
 
         return normalizedInnerMessage;
     }
-
-    // async normalize(
-    //     recipientId: TValueOf<Pick<User, "id">>,
-    //     inputMessagePrisma: TNormalizeMessageArgument
-    // ): Promise<IStandardMessage | IForwardedMessage> {
-    //     const mainMessage = await this.normalizeOriginalMessage(
-    //         recipientId,
-    //         inputMessagePrisma
-    //     );
-    //
-    //     if (isForwardedMessagePrisma2(inputMessagePrisma)) {
-    //         const innerForwardedMessage = (await this.normalizeOriginalMessage(
-    //             recipientId,
-    //             inputMessagePrisma.forwardedMessage
-    //         )) as IInnerForwardedMessage;
-    //
-    //         return {
-    //             ...(mainMessage as IInnerForwardedMessage),
-    //             forwardedMessage: innerForwardedMessage,
-    //         };
-    //     } else {
-    //         const innerStandardMessage = (await this.normalizeOriginalMessage(
-    //             recipientId,
-    //             inputMessagePrisma.replyToMessage
-    //         )) as IInnerStandardMessage;
-    //
-    //         return {
-    //             ...(mainMessage as IInnerStandardMessage),
-    //             replyToMessage: innerStandardMessage,
-    //         };
-    //     }
-    // }
 }

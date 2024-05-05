@@ -84,18 +84,6 @@ export interface IUserTyping {
     updatedAt: string;
 }
 
-// export interface IStandardMessage extends IInnerStandardMessage {
-//     replyToMessage:
-//         | IInnerStandardMessage
-//         | IInnerForwardedMessage
-//         | undefined
-//         | null;
-// }
-//
-// export interface IForwardedMessage extends IInnerForwardedMessage {
-//     forwardedMessage: IInnerStandardMessage | IInnerForwardedMessage;
-// }
-
 export interface IInnerStandardMessage extends IOriginalMessage {
     files: IFile[];
     replyToMessage: {
@@ -245,7 +233,7 @@ export interface IForwardMessage {
 }
 
 export interface ISendAttachments {
-    attachments: IAttachment[];
+    attachmentIds: string[];
 }
 
 export interface IAttachment {

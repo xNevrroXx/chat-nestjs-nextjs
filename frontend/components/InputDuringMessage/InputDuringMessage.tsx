@@ -1,13 +1,12 @@
-import React, { forwardRef, Fragment, useRef } from "react";
+import React, { forwardRef, Fragment, useCallback, useRef } from "react";
 import {
     PlusCircleOutlined,
     SendOutlined,
     SmileOutlined,
 } from "@ant-design/icons";
-import { Button, Flex } from "antd";
+import { Button, Flex, UploadFile } from "antd";
 import classNames from "classnames";
 import InputEmoji from "react-input-emoji";
-import { useFileUploadHook } from "react-use-file-upload/dist/lib/types";
 // own modules
 import AudioRecorderButton from "@/components/AudioRecorderButton/AudioRecorderButton";
 import UploadFiles from "@/components/UploadFiles/UploadFiles";
@@ -24,9 +23,8 @@ interface IInputDuringMessageProps {
         Pick<TUseAudioRecorderReturnType, "startRecording">
     >;
     stopRecording: TValueOf<Pick<TUseAudioRecorderReturnType, "stopRecording">>;
-    files: TValueOf<Pick<useFileUploadHook, "files">>;
-    setFiles: TValueOf<Pick<useFileUploadHook, "setFiles">>;
-    removeFile: TValueOf<Pick<useFileUploadHook, "removeFile">>;
+    updateFileList: (files: UploadFile[]) => void;
+    fileList: UploadFile[];
 }
 
 const InputDuringMessage = forwardRef<HTMLDivElement, IInputDuringMessageProps>(
@@ -38,23 +36,22 @@ const InputDuringMessage = forwardRef<HTMLDivElement, IInputDuringMessageProps>(
             isRecording,
             startRecording,
             stopRecording,
-            files,
-            setFiles,
-            removeFile,
+            updateFileList,
+            fileList,
             onChange,
         },
         ref,
     ) => {
         const emojiButtonRef = useRef<HTMLButtonElement | null>(null);
-        const inputFilesRef = useRef<HTMLInputElement | null>(null);
         const buttonAddFilesRef = useRef<HTMLButtonElement | null>(null);
 
-        const onClickButtonFiles = () => {
-            if (!inputFilesRef.current) {
+        const onClickButtonFiles = useCallback(() => {
+            if (!buttonAddFilesRef.current) {
                 return;
             }
-            inputFilesRef.current.click();
-        };
+
+            buttonAddFilesRef.current.click();
+        }, [buttonAddFilesRef]);
 
         return (
             <Fragment>
@@ -66,28 +63,10 @@ const InputDuringMessage = forwardRef<HTMLDivElement, IInputDuringMessageProps>(
                 >
                     <div className="input-message__btn-wrapper">
                         <Button
-                            ref={buttonAddFilesRef}
                             type="text"
                             icon={<PlusCircleOutlined className="custom" />}
                             onClick={onClickButtonFiles}
                             size="large"
-                        />
-                        <input
-                            ref={inputFilesRef}
-                            type="file"
-                            multiple
-                            style={{ display: "none" }}
-                            onChange={(e) => {
-                                // @ts-ignore
-                                setFiles(e as never as Event, "a");
-                                if (
-                                    !inputFilesRef.current ||
-                                    inputFilesRef.current.type !== "file"
-                                ) {
-                                    return;
-                                }
-                                inputFilesRef.current.value = "";
-                            }}
                         />
                     </div>
                     <div
@@ -97,20 +76,20 @@ const InputDuringMessage = forwardRef<HTMLDivElement, IInputDuringMessageProps>(
                         <InputEmoji
                             ref={ref}
                             value={message}
-                            set="google"
                             theme="dark"
                             placeholder={"Введите сообщение..."}
                             buttonRef={emojiButtonRef}
                             disableRecent={true}
                             onChange={onChange}
                             onKeyDown={onKeyDown}
-                            cleanOnEnter={true}
+                            cleanOnEnter={false}
                             shouldReturn={true}
                             keepOpened={true}
                             tabIndex={0}
                             inputClass={classNames("input-message__textbox")}
                             borderRadius={5}
                             fontFamily={"Roboto, sans-serif"}
+                            shouldConvertEmojiToImage={false}
                         />
                     </div>
                     <div className="input-message__btn-wrapper">
@@ -122,7 +101,7 @@ const InputDuringMessage = forwardRef<HTMLDivElement, IInputDuringMessageProps>(
                         />
                     </div>
                     <div className="input-message__btn-wrapper">
-                        {message || files.length > 0 ? (
+                        {message || fileList.length > 0 ? (
                             <Button
                                 type="text"
                                 icon={<SendOutlined className="custom" />}
@@ -138,13 +117,11 @@ const InputDuringMessage = forwardRef<HTMLDivElement, IInputDuringMessageProps>(
                         )}
                     </div>
                 </Flex>
-                {/*// {files.length > 0 && (*/}
                 <UploadFiles
-                    buttonRef={buttonAddFilesRef}
-                    attachments={files}
-                    removeAttachment={removeFile}
+                    ref={buttonAddFilesRef}
+                    updateFileList={updateFileList}
+                    fileList={fileList}
                 />
-                {/*// )}*/}
             </Fragment>
         );
     },

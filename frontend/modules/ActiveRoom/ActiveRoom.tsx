@@ -51,6 +51,7 @@ import {
 } from "@/store/thunks/room";
 // styles
 import "./active-room.scss";
+import $api from "@/http";
 
 const { Header, Footer } = Layout;
 const { Text, Title } = Typography;
@@ -216,7 +217,7 @@ const ActiveRoom: FC<IActiveChatProps> = ({
     const onSendMessage = useCallback(
         async (
             text: TValueOf<Pick<TSendMessage, "text">>,
-            attachments: IAttachment[],
+            attachmentIds: string[],
         ) => {
             if (!room) return;
 
@@ -227,7 +228,7 @@ const ActiveRoom: FC<IActiveChatProps> = ({
 
             const messageWithoutRoomId: Omit<TSendMessage, "roomId"> = {
                 text,
-                attachments,
+                attachmentIds,
                 replyToMessageId:
                     messageForAction &&
                     messageForAction.action === MessageAction.REPLY
@@ -263,16 +264,34 @@ const ActiveRoom: FC<IActiveChatProps> = ({
     );
 
     const sendVoiceMessage = async (record: Blob) => {
-        const buffer = await record.arrayBuffer();
-        const attachment: IAttachment = {
-            originalName: "",
-            fileType: FileType.VOICE_RECORD,
-            mimeType: "audio/webm",
-            extension: "webm",
-            buffer: buffer,
-        };
+        if (!room) {
+            return;
+        }
 
-        void onSendMessage(null, [attachment]);
+        const file = new File([record], "", {
+            type: "audio/webm",
+        });
+
+        const formData = new FormData();
+        formData.set("file", file, "set-random");
+        formData.set("roomId", room.id);
+        formData.set("fileType", FileType.VOICE_RECORD);
+
+        const response = await $api.post<{ id: string }>(
+            process.env.NEXT_PUBLIC_BASE_URL + "/file/upload",
+            formData,
+        );
+        console.log("response: ", response);
+        // const buffer = await record.arrayBuffer();
+        // const attachment: IAttachment = {
+        //     originalName: "",
+        //     fileType: FileType.VOICE_RECORD,
+        //     mimeType: "audio/webm",
+        //     extension: "webm",
+        //     buffer: buffer,
+        // };
+
+        void onSendMessage(null, [response.data.id]);
     };
 
     const userStatuses: string = useMemo(() => {

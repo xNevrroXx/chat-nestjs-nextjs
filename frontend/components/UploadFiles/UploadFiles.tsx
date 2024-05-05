@@ -1,8 +1,11 @@
-import React, { useState, useEffect, FC, RefObject } from "react";
+import React, { useState, forwardRef } from "react";
 import { Upload, Modal, UploadFile } from "antd";
-import { RcFile } from "antd/lib/upload";
 // styles
 import "./upload-files.scss";
+import { useAppSelector } from "@/hooks/store.hook";
+import { activeRoomSelector } from "@/store/selectors/activeRoom.selector";
+import $api from "@/http";
+import { FileType } from "@/models/room/IRoom.store";
 
 function getBase64(file: File): Promise<string | null> {
     return new Promise((resolve, reject) => {
@@ -14,103 +17,107 @@ function getBase64(file: File): Promise<string | null> {
 }
 
 interface IUploadFilesProps {
-    attachments: File[];
-    removeAttachment: (fileId: string | number) => void;
-    buttonRef: RefObject<HTMLButtonElement>;
+    updateFileList: (files: UploadFile[]) => void;
+    fileList: UploadFile[];
 }
 
-const UploadFiles: FC<IUploadFilesProps> = ({
-    attachments,
-    removeAttachment,
-}) => {
-    const [isPreviewOpen, setIsPreviewOpen] = useState<boolean>(false);
-    const [previewTitle, setPreviewTitle] = useState<string>("");
-    const [previewImage, setPreviewImage] = useState<string>("");
-    const [fileList, setFileList] = useState<UploadFile[]>();
+const UploadFiles = forwardRef<HTMLButtonElement, IUploadFilesProps>(
+    ({ updateFileList, fileList }, ref) => {
+        const room = useAppSelector(activeRoomSelector);
+        const [isPreviewOpen, setIsPreviewOpen] = useState<boolean>(false);
+        const [previewTitle, setPreviewTitle] = useState<string>("");
+        const [previewImage, setPreviewImage] = useState<string>("");
 
-    useEffect(() => {
-        void addUrlToFiles();
+        const handleCancel = () => setIsPreviewOpen(false);
 
-        async function addUrlToFiles() {
-            const filePromises = attachments.map<Promise<UploadFile>>(
-                (file) => {
-                    const uid = file.name + file.size;
+        const handlePreview = async (file: UploadFile) => {
+            if (!file.url && !file.preview) {
+                file.preview =
+                    (await getBase64(file.originFileObj as File)) || undefined;
+            }
 
-                    return new Promise((resolve, reject) => {
-                        if (!file.size || (file.size && file.size > 1e6)) {
-                            resolve({
-                                name: file.name,
-                                uid: uid,
-                            });
-                        }
-
-                        getBase64(file)
-                            .then((url) => {
-                                resolve({
-                                    name: file.name,
-                                    url: url,
-                                    uid: uid,
-                                } as never as UploadFile); // get an uid automatically
-                            })
-                            .catch((error) => {
-                                reject(error);
-                            });
-                    });
-                },
+            setPreviewImage(file.url || file.preview || "");
+            setPreviewTitle(
+                file.name ||
+                    file.url!.substring(file.url!.lastIndexOf("/") + 1),
             );
-            const files = await Promise.all(filePromises);
+            setIsPreviewOpen(true);
+        };
 
-            setFileList(files);
+        const handleChange = ({ fileList }: { fileList: UploadFile[] }) => {
+            console.log("fileList: ", fileList);
+            const tempFileList = fileList.map((file) => {
+                if (file.status === "error") {
+                    return {
+                        ...file,
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment
+                        error: file.response.message,
+                    };
+                }
+
+                return file;
+            });
+
+            updateFileList(tempFileList);
+        };
+
+        if (!room || !room.id) {
+            return;
         }
-    }, [attachments]);
 
-    const handleCancel = () => setIsPreviewOpen(false);
-
-    const handlePreview = async (file: UploadFile) => {
-        if (!file.url && !file.preview) {
-            file.preview = (await getBase64(file as RcFile)) || undefined;
-        }
-
-        setPreviewImage(file.url || file.preview || "");
-        setPreviewTitle(
-            file.name || file.url!.substring(file.url!.lastIndexOf("/") + 1),
+        return (
+            <div className="attachments">
+                <Upload
+                    listType="picture-card"
+                    action={process.env.NEXT_PUBLIC_BASE_URL + "/file/upload"}
+                    data={(file) => {
+                        return {
+                            ...file,
+                            roomId: room.id,
+                            fileType: FileType.ATTACHMENT,
+                        };
+                    }}
+                    fileList={fileList}
+                    onPreview={handlePreview}
+                    onChange={handleChange}
+                    onRemove={(file) => {
+                        void $api.delete(
+                            process.env.NEXT_PUBLIC_BASE_URL + "/file/waited",
+                            {
+                                data: {
+                                    roomId: room.id,
+                                    fileId: (file.response as { id: string })
+                                        .id,
+                                },
+                            },
+                        );
+                    }}
+                    withCredentials
+                    multiple
+                    onDownload={(file) => {
+                        console.log("onDownload : ", file);
+                    }}
+                >
+                    <button style={{ display: "none" }} ref={ref}></button>
+                </Upload>
+                <Modal
+                    className="file-input__preview-wrapper"
+                    title={previewTitle}
+                    open={isPreviewOpen}
+                    footer={null}
+                    onCancel={handleCancel}
+                >
+                    <img
+                        className="file-input__preview"
+                        alt="preview image"
+                        style={{ width: "100%" }}
+                        src={previewImage}
+                    />
+                </Modal>
+            </div>
         );
-        setIsPreviewOpen(true);
-    };
-
-    const handleChange = ({ fileList }: { fileList: UploadFile[] }) => {
-        setFileList(fileList);
-    };
-
-    return (
-        <div className="attachments">
-            <Upload
-                listType="picture-card"
-                fileList={fileList}
-                onPreview={handlePreview}
-                onChange={handleChange}
-                multiple
-                onDownload={(info) => {
-                    console.log(info);
-                }}
-                onRemove={(file) => removeAttachment(file.name)}
-            />
-            <Modal
-                className="file-input__preview-wrapper"
-                title={previewTitle}
-                open={isPreviewOpen}
-                footer={null}
-                onCancel={handleCancel}
-            >
-                <img
-                    className="file-input__preview"
-                    alt="preview image"
-                    style={{ width: "100%" }}
-                    src={previewImage}
-                />
-            </Modal>
-        </div>
-    );
-};
+    },
+);
+UploadFiles.displayName = "UploadFiles";
 
 export default UploadFiles;

@@ -10,7 +10,6 @@ import {
 } from "@nestjs/websockets";
 import { UseFilters, UseGuards } from "@nestjs/common";
 import { Server, Socket } from "socket.io";
-import * as mime from "mime-types";
 // own modules
 import { WsAuthGuard } from "../auth/ws-auth.guard";
 import { UserService } from "../user/user.service";
@@ -20,9 +19,7 @@ import { RoomService } from "../room/room.service";
 import { ParticipantService } from "../participant/participant.service";
 import { FileService } from "../file/file.service";
 import { SocketRoomsInfo } from "./SocketRoomsInfo.class";
-import { generateFileName } from "../utils/generateFileName";
 import { brToNewLineChars } from "../utils/brToNewLineChars ";
-import { checkIsFulfilledPromise } from "../utils/checkIsFulfilledPromise";
 import { codeBlocksToHTML } from "../utils/codeBlocksToHTML";
 // types
 import { IUserSessionPayload } from "../user/IUser";
@@ -35,7 +32,7 @@ import {
     TReadMessage,
     TPinMessage,
 } from "./chat.models";
-import { Prisma, File } from "@prisma/client";
+import { FileProcessedMessages, Prisma } from "@prisma/client";
 import { PrismaIncludeFullRoomInfo } from "../room/IRooms";
 import { ForwardedMessagePrisma } from "../message/IMessage";
 import { DATE_FORMATTER_DATE } from "../utils/normalizeDate";
@@ -43,6 +40,7 @@ import { RoomsOnFoldersService } from "../rooms-on-folders/rooms-on-folders.serv
 import { WsExceptionFilter } from "../exceptions/ws-exception.filter";
 import { IInitCall, ILeaveCall, IRelayIce, IRelaySdp } from "./webrtc.models";
 import { S3Service } from "../s3/s3.service";
+import { excludeSensitiveFields } from "../utils/excludeSensitiveFields";
 
 @WebSocketGateway({
     namespace: "api/chat",
@@ -734,55 +732,43 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
             isTyping: false,
         });
 
-        const attachmentPromises = message.attachments.map<
-            Promise<Omit<File, "id" | "messageId" | "createdAt">>
-        >(async (value) => {
-            let extension: string;
-            if (value.extension.length > 0) {
-                extension = value.extension;
-            } else {
-                extension =
-                    mime.extension(value.mimeType) ||
-                    value.mimeType.concat("/")[1];
-            }
-            const timestamp = new Date().toISOString();
-            const originalName = value.originalName
-                ? value.originalName
-                : "random-name-" +
-                  (Math.random() * 1000).toFixed() +
-                  "." +
-                  extension;
-            const pathToFile = sender.id + "/" + timestamp + "/" + originalName;
+        const messageBeingProcessedInfo =
+            (await this.messageService.findOneProcessed({
+                where: {
+                    senderId_roomId: {
+                        senderId: sender.id,
+                        roomId: room.id,
+                    },
+                },
+                include: {
+                    files: true,
+                },
+            })) as Prisma.MessageBeingProcessedGetPayload<{
+                include: {
+                    files: true;
+                };
+            }>;
 
-            return new Promise(async (resolve, reject) => {
-                this.s3Service
-                    .upload(pathToFile, Buffer.from(value.buffer))
-                    .then(() => {
-                        resolve({
-                            size: value.buffer.byteLength.toString(),
-                            path: pathToFile,
-                            originalName: originalName,
-                            fileType: value.fileType,
-                            mimeType: value.mimeType,
-                            extension: extension,
-                        });
-                    })
-                    .catch((error) => {
-                        reject(error);
-                    });
+        const infoAttachments: Array<
+            Omit<FileProcessedMessages, "id" | "messageBeingProcessedId">
+        > = [];
+        if (messageBeingProcessedInfo) {
+            messageBeingProcessedInfo.files.forEach((fileInfo) => {
+                const redactedFileInfo = excludeSensitiveFields(fileInfo, [
+                    "id",
+                    "messageBeingProcessedId",
+                ]);
+
+                infoAttachments.push(redactedFileInfo);
             });
-        });
-        const attachmentPromisesResults = await Promise.allSettled(
-            attachmentPromises
-        );
-        const successfullyRecordedAttachments = attachmentPromisesResults
-            .filter((promiseResult) => checkIsFulfilledPromise(promiseResult)) // ???
-            .map((succeededPromise) => {
-                if (checkIsFulfilledPromise(succeededPromise)) {
-                    // add one more check
-                    return succeededPromise.value; // todo: repair the narrowing type in the filter.
-                }
+
+            void this.messageService.deleteProcessedMessage({
+                senderId_roomId: {
+                    senderId: sender.id,
+                    roomId: room.id,
+                },
             });
+        }
 
         const replyConnect: Pick<
             Prisma.MessageCreateInput,
@@ -797,6 +783,17 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
               }
             : null;
 
+        const filesCreateMany: Pick<Prisma.MessageCreateInput, "files"> | null =
+            infoAttachments.length > 0
+                ? {
+                      files: {
+                          createMany: {
+                              data: infoAttachments,
+                          },
+                      },
+                  }
+                : null;
+
         const newMessage = (await this.messageService.create({
             data: {
                 sender: {
@@ -809,11 +806,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
                         id: room.id,
                     },
                 },
-                ...replyConnect,
                 text: message.text,
-                files: {
-                    create: successfullyRecordedAttachments,
-                },
+                ...replyConnect,
+                ...filesCreateMany,
             },
             include: {
                 room: true,

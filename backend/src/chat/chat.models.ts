@@ -38,7 +38,7 @@ export type TReadMessage = {
 };
 
 export interface IGetAttachments {
-    attachments: IAttachment[];
+    attachmentIds: string[];
 }
 
 export interface IAttachment

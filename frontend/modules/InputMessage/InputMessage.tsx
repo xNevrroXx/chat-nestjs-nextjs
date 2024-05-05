@@ -1,18 +1,12 @@
 import { FC, useEffect, useRef, useState } from "react";
-import { Button, Flex } from "antd";
+import { Button, Flex, UploadFile } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
-import useFileUpload from "react-use-file-upload";
 // own modules
 import InputDuringMessage from "@/components/InputDuringMessage/InputDuringMessage";
 import InputDuringAudio from "@/components/InputDuringAudio/InputDuringAudio";
 import { useAudioRecorder } from "@/hooks/useAudioRecorder.hook";
 import { isSpecialKey } from "@/utils/checkIsNotSpecialKey";
-import {
-    FileType,
-    IAttachment,
-    IEditMessage,
-    TSendMessage,
-} from "@/models/room/IRoom.store";
+import { IEditMessage, TSendMessage } from "@/models/room/IRoom.store";
 import { TValueOf } from "@/models/TUtils";
 // styles
 import { useAppDispatch, useAppSelector } from "@/hooks/store.hook";
@@ -32,7 +26,7 @@ import "./input-message.scss";
 interface IInputMessage {
     onSendMessage: (
         text: TValueOf<Pick<TSendMessage, "text">>,
-        attachments: IAttachment[],
+        attachmentIds: string[],
     ) => void;
     onSendVoiceMessage: (record: Blob) => void;
     onSendEditedMessage: (text: TValueOf<Pick<IEditMessage, "text">>) => void;
@@ -61,7 +55,7 @@ const InputMessage: FC<IInputMessage> = ({
     const initialInputInfo = useAppSelector(activeRoomInputDataSelector);
     const inputRef = useRef<HTMLDivElement | null>(null);
     const [message, setMessage] = useState<string>("");
-    const { files, clearAllFiles, setFiles, removeFile } = useFileUpload();
+    const [fileList, setFileList] = useState<UploadFile[]>([]);
     const {
         mediaRecorder,
         isRecording,
@@ -92,7 +86,7 @@ const InputMessage: FC<IInputMessage> = ({
             inputData = {
                 isAudioRecord: false,
                 text: message,
-                files: files,
+                files: fileList,
                 messageForAction: messageForAction,
             };
         }
@@ -108,7 +102,7 @@ const InputMessage: FC<IInputMessage> = ({
         audioURL,
         currentRoomId,
         dispatch,
-        files,
+        fileList,
         message,
         messageForAction,
         previousRoomId,
@@ -164,6 +158,10 @@ const InputMessage: FC<IInputMessage> = ({
         setMessage(messageForAction.message.text || "");
     }, [messageForAction]);
 
+    const updateFiles = (files: UploadFile[]) => {
+        setFileList(files);
+    };
+
     const onChangeMessage = (str: string) => {
         setMessage(str);
     };
@@ -182,43 +180,52 @@ const InputMessage: FC<IInputMessage> = ({
         }
 
         void sendMessage();
-        setMessage("");
     };
 
-    const sendMessage = async () => {
+    const sendMessage = () => {
         if (
             messageForAction &&
             messageForAction.action === MessageAction.EDIT
         ) {
             onSendEditedMessage(message);
+            console.log("here");
             setMessage("");
             return;
         }
 
-        const trimmedMessage = message ? message.trim() : null;
-        const attachments = await files.reduce<Promise<IAttachment[]>>(
-            async (previousValue, currentValue) => {
-                const prev = await previousValue;
-                const extensionInfo =
-                    currentValue.name.match(/(?<=\.)\D+$/) || [];
-                const extension =
-                    extensionInfo.length === 1 ? extensionInfo[0] : "";
+        if (fileList.some((file) => file.status === "uploading")) {
+            return;
+        }
 
-                prev.push({
-                    originalName: currentValue.name,
-                    fileType: FileType.ATTACHMENT,
-                    mimeType: currentValue.type,
-                    extension: extension,
-                    buffer: await currentValue.arrayBuffer(),
-                });
-                return prev;
-            },
-            Promise.all([]),
+        console.log("here");
+        const trimmedMessage = message ? message.trim() : null;
+        // const attachments = await fileList.reduce<Promise<IAttachment[]>>(
+        //     async (previousValue, currentValue) => {
+        //         const prev = await previousValue;
+        //         const extensionInfo =
+        //             currentValue.name.match(/(?<=\.)\D+$/) || [];
+        //         const extension =
+        //             extensionInfo.length === 1 ? extensionInfo[0] : "";
+        //
+        //         prev.push({
+        //             originalName: currentValue.name,
+        //             fileType: FileType.ATTACHMENT,
+        //             mimeType: currentValue.originFileObj!.type,
+        //             extension: extension,
+        //             buffer: await currentValue.originFileObj!.arrayBuffer(),
+        //         });
+        //         return prev;
+        //     },
+        //     Promise.all([]),
+        // );
+
+        const attachmentIds = fileList.map<string>(
+            (file) => (file.response as { id: string }).id,
         );
 
-        onSendMessage(trimmedMessage, attachments);
+        onSendMessage(trimmedMessage, attachmentIds);
         setMessage("");
-        clearAllFiles();
+        updateFiles([]);
     };
 
     return (
@@ -271,9 +278,8 @@ const InputMessage: FC<IInputMessage> = ({
                         isRecording={isRecording}
                         startRecording={startRecording}
                         stopRecording={stopRecording}
-                        files={files}
-                        setFiles={setFiles}
-                        removeFile={removeFile}
+                        updateFileList={updateFiles}
+                        fileList={fileList}
                         onChange={onChangeMessage}
                     />
                 )}

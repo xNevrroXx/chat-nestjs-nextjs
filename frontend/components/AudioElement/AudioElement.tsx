@@ -64,7 +64,7 @@ const AudioElement: FC<IVoiceRecording> = ({
         }
 
         void getBlobInfo();
-    }, [inputBlob, url]);
+    }, [inputBlob, originalName, url]);
 
     const playAudio = () => {
         if (!audioRef.current) {

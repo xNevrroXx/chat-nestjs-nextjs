@@ -25,18 +25,19 @@ model User {
     createdAt DateTime  @default(now()) @map("created_at")
     updatedAt DateTime? @map("updated_at")
 
-    userOnline      UserOnline?            @relation("user_online")
-    userTyping      UserTyping?            @relation("user_typing")
-    refreshToken    RefreshToken?          @relation("refresh_token")
-    room            Room[]                 @relation("room")
-    messages        Message[]              @relation("messages")
-    deletedMessages UserOnDeletedMessage[] @relation("deleted_messages")
-    friendshipUser1 Friendship[]           @relation("user1")
-    friendshipUser2 Friendship[]           @relation("user2")
-    participant     Participant[]          @relation("participant")
-    folders         Folder[]               @relation("user_to_folder")
-    calls           Call[]                 @relation("calls")
-    CallParticipant CallParticipant[]      @relation("call_participants")
+    userOnline            UserOnline?             @relation("user_online")
+    userTyping            UserTyping?             @relation("user_typing")
+    refreshToken          RefreshToken?           @relation("refresh_token")
+    room                  Room[]                  @relation("room")
+    messages              Message[]               @relation("messages")
+    deletedMessages       UserOnDeletedMessage[]  @relation("deleted_messages")
+    friendshipUser1       Friendship[]            @relation("user1")
+    friendshipUser2       Friendship[]            @relation("user2")
+    participant           Participant[]           @relation("participant")
+    folders               Folder[]                @relation("user_to_folder")
+    calls                 Call[]                  @relation("calls")
+    CallParticipant       CallParticipant[]       @relation("call_participants")
+    MessageBeingProcessed MessageBeingProcessed[] @relation("messages_being_processed")
 
     @@unique([email])
     @@map("user")
@@ -121,13 +122,14 @@ model Room {
     createdAt DateTime  @default(now()) @map("created_at")
     updatedAt DateTime? @map("updated_at")
 
-    creatorUser    User?           @relation("room", fields: [creatorUserId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-    messages       Message[]       @relation("room")
-    calls          Call[]          @relation("calls")
-    usersTyping    UserTyping[]    @relation("users_typing")
-    participants   Participant[]   @relation("participant")
-    pinnedMessages PinnedMessage[] @relation("room:pinned_messages")
-    roomOnFolder   RoomOnFolder[]  @relation("room_to_folder")
+    creatorUser           User?                   @relation("room", fields: [creatorUserId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    messages              Message[]               @relation("messages")
+    messageBeingProcessed MessageBeingProcessed[] @relation("messages_being_processed")
+    calls                 Call[]                  @relation("calls")
+    usersTyping           UserTyping[]            @relation("users_typing")
+    participants          Participant[]           @relation("participant")
+    pinnedMessages        PinnedMessage[]         @relation("room:pinned_messages")
+    roomOnFolder          RoomOnFolder[]          @relation("room_to_folder")
 
     @@map("room")
 }
@@ -206,7 +208,7 @@ model Message {
     updatedAt DateTime? @map("updated_at")
 
     sender                 User                   @relation("messages", fields: [senderId], references: [id], onDelete: NoAction, onUpdate: Cascade)
-    room                   Room                   @relation("room", fields: [roomId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    room                   Room                   @relation("messages", fields: [roomId], references: [id], onDelete: Cascade, onUpdate: Cascade)
     replyToMessage         Message?               @relation("reply_to_message", fields: [replyToMessageId], references: [id], onDelete: SetNull, onUpdate: Cascade)
     repliesThisMessage     Message[]              @relation("reply_to_message")
     forwardedMessage       Message?               @relation("forwarded_message", fields: [forwardedMessageId], references: [id], onDelete: SetNull, onUpdate: Cascade)
@@ -216,6 +218,23 @@ model Message {
     pinnedMessages         PinnedMessage[]        @relation("message:pinned_messages")
 
     @@map("message")
+}
+
+model MessageBeingProcessed {
+    id       String  @id @default(uuid())
+    senderId String  @map("sender_id")
+    roomId   String  @map("room_id")
+    text     String? @db.Text()
+
+    createdAt DateTime  @default(now()) @map("created_at")
+    updatedAt DateTime? @map("updated_at")
+
+    sender User                    @relation("messages_being_processed", fields: [senderId], references: [id], onDelete: NoAction, onUpdate: Cascade)
+    room   Room                    @relation("messages_being_processed", fields: [roomId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    files  FileProcessedMessages[] @relation("files_message_being_processed")
+
+    @@unique([senderId, roomId])
+    @@map("message_being_processed")
 }
 
 model UserOnDeletedMessage {
@@ -249,17 +268,34 @@ model File {
     id           String   @id @default(uuid())
     messageId    String   @map("message_id")
     path         String   @map("path") @db.Text
-    originalName String?  @map("original_name")
+    originalName String   @map("original_name")
     mimeType     String   @map("mime_type")
     fileType     FileType @default(ATTACHMENT) @map("file_type")
     extension    String?
-    size         String
+    size         Int
 
     createdAt DateTime @default(now()) @map("created_at")
 
     message Message @relation("files", fields: [messageId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
     @@map("file")
+}
+
+model FileProcessedMessages {
+    id                      String   @id @default(uuid())
+    messageBeingProcessedId String   @map("message_id")
+    path                    String   @map("path") @db.Text
+    originalName            String   @map("original_name")
+    mimeType                String   @map("mime_type")
+    fileType                FileType @default(ATTACHMENT) @map("file_type")
+    extension               String?
+    size                    Int
+
+    createdAt DateTime @default(now()) @map("created_at")
+
+    messageBeingProcessed MessageBeingProcessed @relation("files_message_being_processed", fields: [messageBeingProcessedId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+    @@map("file_processed_messages")
 }
 
 model Session {

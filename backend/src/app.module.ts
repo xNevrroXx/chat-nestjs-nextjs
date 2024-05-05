@@ -20,7 +20,7 @@ import { S3Module as S3ModulePackage } from "nestjs-s3";
 @Module({
     imports: [
         ConfigModule.forRoot({
-            envFilePath: ".env.production",
+            envFilePath: ".env.development",
         }),
         PassportModule.register({
             session: true,

@@ -1,7 +1,7 @@
 import { TValueOf } from "@/models/TUtils";
 import { IRoom } from "@/models/room/IRoom.store";
-import { useFileUploadHook } from "react-use-file-upload/dist/lib/types";
 import { TMessageForActionEditOrReply } from "@/models/room/IRoom.general";
+import { UploadFile } from "antd";
 
 export interface IRecentRoom {
     id: TValueOf<Pick<IRoom, "id">>;
@@ -17,7 +17,7 @@ export interface IRecentRoom {
         | {
               isAudioRecord: false;
               text: string;
-              files: TValueOf<Pick<useFileUploadHook, "files">>;
+              files: UploadFile[];
           }
     );
 }
