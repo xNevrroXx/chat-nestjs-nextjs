@@ -58,18 +58,21 @@ const useAudioRecorder = () => {
         setAudioChunks(localAudioChunks);
     };
 
-    const stopRecording = () => {
-        if (!mediaRecorder.current) {
-            return;
-        }
-        setIsRecording(false);
-        //stops the recording instance
-        mediaRecorder.current.onstop = () => {
-            //creates a blob file from the audiochunks data
-            const audioBlob = new Blob(audioChunks, { type: mimeType });
-            setAudioData(audioBlob);
-        };
-        mediaRecorder.current.stop();
+    const stopRecording = async (): Promise<Blob> => {
+        return new Promise((resolve) => {
+            if (!mediaRecorder.current) {
+                return;
+            }
+            setIsRecording(false);
+            //stops the recording instance
+            mediaRecorder.current.onstop = () => {
+                //creates a blob file from the audiochunks data
+                const audioBlob = new Blob(audioChunks, { type: mimeType });
+                setAudioData(audioBlob);
+                resolve(audioBlob);
+            };
+            mediaRecorder.current.stop();
+        });
     };
 
     const cleanAudio = () => {

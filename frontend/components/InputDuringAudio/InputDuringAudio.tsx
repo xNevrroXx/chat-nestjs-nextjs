@@ -28,8 +28,14 @@ const InputDuringAudio: FC<IInputDuringAudioProps> = ({
     isRecording,
     sendVoiceMessage: onSendVoiceMessage,
 }) => {
-    const sendVoiceMessage = () => {
-        if (!audio) {
+    const sendVoiceMessage = async () => {
+        if (!audio && isRecording) {
+            const audio = await stopRecording();
+            onSendVoiceMessage(audio);
+            cleanAudio();
+            return;
+        }
+        else if (!audio) {
             return;
         }
 
