@@ -1,9 +1,5 @@
 import React, { forwardRef, Fragment, useCallback, useRef } from "react";
-import {
-    PlusCircleOutlined,
-    SendOutlined,
-    SmileOutlined,
-} from "@ant-design/icons";
+import { PlusCircleOutlined, SendOutlined } from "@ant-design/icons";
 import { Button, Flex, UploadFile } from "antd";
 import classNames from "classnames";
 import InputEmoji from "react-input-emoji";
@@ -42,7 +38,6 @@ const InputDuringMessage = forwardRef<HTMLDivElement, IInputDuringMessageProps>(
         },
         ref,
     ) => {
-        const emojiButtonRef = useRef<HTMLButtonElement | null>(null);
         const buttonAddFilesRef = useRef<HTMLButtonElement | null>(null);
 
         const onClickButtonFiles = useCallback(() => {
@@ -69,37 +64,28 @@ const InputDuringMessage = forwardRef<HTMLDivElement, IInputDuringMessageProps>(
                             size="large"
                         />
                     </div>
-                    <div
-                        className="input-message__field"
-                        style={{ flexGrow: 1 }}
-                    >
-                        <InputEmoji
-                            ref={ref}
-                            value={message}
-                            theme="dark"
-                            placeholder={"Введите сообщение..."}
-                            buttonRef={emojiButtonRef}
-                            disableRecent={true}
-                            onChange={onChange}
-                            onKeyDown={onKeyDown}
-                            cleanOnEnter={false}
-                            shouldReturn={true}
-                            keepOpened={true}
-                            tabIndex={0}
-                            inputClass={classNames("input-message__textbox")}
-                            borderRadius={5}
-                            fontFamily={"Roboto, sans-serif"}
-                            shouldConvertEmojiToImage={false}
-                        />
-                    </div>
-                    <div className="input-message__btn-wrapper">
-                        <Button
-                            ref={emojiButtonRef}
-                            type="text"
-                            icon={<SmileOutlined className="custom" />}
-                            size="large"
-                        />
-                    </div>
+                    {/*<div*/}
+                    {/*    className="input-message__field"*/}
+                    {/*    style={{ flexGrow: 1 }}*/}
+                    {/*>*/}
+                    <InputEmoji
+                        ref={ref}
+                        value={message}
+                        theme="dark"
+                        placeholder={"Введите сообщение..."}
+                        disableRecent={true}
+                        onChange={onChange}
+                        onKeyDown={onKeyDown}
+                        cleanOnEnter={false}
+                        shouldReturn={true}
+                        keepOpened={true}
+                        tabIndex={0}
+                        inputClass={classNames("input-message__textbox")}
+                        borderRadius={5}
+                        fontFamily={"Roboto, sans-serif"}
+                        shouldConvertEmojiToImage={false}
+                    />
+                    {/*</div>*/}
                     <div className="input-message__btn-wrapper">
                         {message || fileList.length > 0 ? (
                             <Button

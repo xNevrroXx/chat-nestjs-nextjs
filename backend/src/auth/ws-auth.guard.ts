@@ -1,7 +1,5 @@
 import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
 import { AuthService } from "./auth.service";
-import { AuthGuard as PassportAuthGuard } from "@nestjs/passport/dist/auth.guard";
-import { Request } from "express";
 
 @Injectable()
 export class WsAuthGuard implements CanActivate {

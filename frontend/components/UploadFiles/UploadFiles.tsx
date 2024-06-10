@@ -45,7 +45,6 @@ const UploadFiles = forwardRef<HTMLButtonElement, IUploadFilesProps>(
         };
 
         const handleChange = ({ fileList }: { fileList: UploadFile[] }) => {
-            console.log("fileList: ", fileList);
             const tempFileList = fileList.map((file) => {
                 if (file.status === "error") {
                     return {
@@ -94,9 +93,6 @@ const UploadFiles = forwardRef<HTMLButtonElement, IUploadFilesProps>(
                     }}
                     withCredentials
                     multiple
-                    onDownload={(file) => {
-                        console.log("onDownload : ", file);
-                    }}
                 >
                     <button style={{ display: "none" }} ref={ref}></button>
                 </Upload>

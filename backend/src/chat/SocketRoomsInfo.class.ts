@@ -124,7 +124,7 @@ class SocketRoomsInfo {
     getSocketIdsByUserId(
         userId: string
     ): Readonly<TSocketsIOClientID[] | undefined> {
-        return this._userIDsToSocketIDs[userId];
+        return this._userIDsToSocketIDs[userId] || [];
     }
 
     isUserInRoom(userId: string, roomId: string): boolean {

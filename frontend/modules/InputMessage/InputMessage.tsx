@@ -21,6 +21,7 @@ import {
 } from "@/models/room/IRoom.general";
 import { DATE_FORMATTER_SHORT } from "@/utils/normalizeDate";
 import SubMessage from "@/components/SubMessage/SubMessage";
+// styles
 import "./input-message.scss";
 
 interface IInputMessage {
@@ -143,7 +144,7 @@ const InputMessage: FC<IInputMessage> = ({
     useEffect(() => {
         if (!inputRef.current) return;
 
-        inputRef.current?.focus();
+        inputRef.current.focus();
     }, [messageForAction]);
 
     useEffect(() => {
@@ -188,7 +189,6 @@ const InputMessage: FC<IInputMessage> = ({
             messageForAction.action === MessageAction.EDIT
         ) {
             onSendEditedMessage(message);
-            console.log("here");
             setMessage("");
             return;
         }
@@ -197,27 +197,7 @@ const InputMessage: FC<IInputMessage> = ({
             return;
         }
 
-        console.log("here");
         const trimmedMessage = message ? message.trim() : null;
-        // const attachments = await fileList.reduce<Promise<IAttachment[]>>(
-        //     async (previousValue, currentValue) => {
-        //         const prev = await previousValue;
-        //         const extensionInfo =
-        //             currentValue.name.match(/(?<=\.)\D+$/) || [];
-        //         const extension =
-        //             extensionInfo.length === 1 ? extensionInfo[0] : "";
-        //
-        //         prev.push({
-        //             originalName: currentValue.name,
-        //             fileType: FileType.ATTACHMENT,
-        //             mimeType: currentValue.originFileObj!.type,
-        //             extension: extension,
-        //             buffer: await currentValue.originFileObj!.arrayBuffer(),
-        //         });
-        //         return prev;
-        //     },
-        //     Promise.all([]),
-        // );
 
         const attachmentIds = fileList.map<string>(
             (file) => (file.response as { id: string }).id,

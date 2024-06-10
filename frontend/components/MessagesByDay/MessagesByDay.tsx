@@ -9,9 +9,9 @@ import {
 } from "@/models/room/IRoom.store";
 import { TValueOf } from "@/models/TUtils";
 import { IUserDto } from "@/models/auth/IAuth.store";
-import "./messages-by-day.scss";
 import { TMessageForAction } from "@/models/room/IRoom.general";
 import MessagesByUser from "@/components/MessagesByUser/MessagesByUser";
+import "./messages-by-day.scss";
 
 const { Text } = Typography;
 

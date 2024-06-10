@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useRef } from "react";
 // @ts-ignore
-import freeice from "freeice";
 import { useAppSelector } from "@/hooks/store.hook";
 import { roomParticipantsSelector } from "@/store/selectors/roomParticipants.selector";
 import { useStateWithCallback } from "@/hooks/useStateWithCallback.hook";
+import publicStunList from "@/const/public-stun-list.json";
 
 type TPeerMediaElements = {
     [peerId: string]: HTMLMediaElement | undefined;
@@ -114,7 +114,8 @@ const useWebRTC = (roomId: string) => {
             }
 
             const configuration: RTCConfiguration = {
-                iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+                // @ts-ignore
+                iceServers: [{ urls: publicStunList["stun-list"] as string[] }],
             };
             peerConnections.current[peerId] = new RTCPeerConnection(
                 configuration,
@@ -250,8 +251,8 @@ const useWebRTC = (roomId: string) => {
                 `peerConnections.current[${peerId}]`,
                 peerConnections.current[peerId],
             );
-            if (!peerConnections.current[peerId]!.remoteDescription) {
-                await peerConnections.current[peerId]!.setRemoteDescription(
+            if (!peerConnections.current[peerId].remoteDescription) {
+                await peerConnections.current[peerId].setRemoteDescription(
                     new RTCSessionDescription(remoteDescription),
                 );
             }
@@ -332,7 +333,7 @@ const useWebRTC = (roomId: string) => {
         return () => {
             socket.socket.off("webrtc:remove-peer");
         };
-    }, [socket]);
+    }, [socket, updateClients]);
 
     return { myId, clients, provideMediaRef };
 };

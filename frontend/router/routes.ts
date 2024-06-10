@@ -1,7 +1,7 @@
 enum ROUTES {
     AUTH = "/auth",
     REGISTER = "/sign-up",
-    MAIN = "/main"
+    MAIN = "/main",
 }
 
-export {ROUTES};
+export { ROUTES };

@@ -1,4 +1,4 @@
-import {type TRouteArgs, TRouteWithParams} from "@/router/TRouteArgs";
+import { type TRouteArgs, TRouteWithParams } from "@/router/TRouteArgs";
 
 function isRouteWithParams(a: TRouteArgs): a is TRouteWithParams {
     return Object.prototype.hasOwnProperty.call(a, "params");
@@ -14,11 +14,10 @@ function isRouteWithParams(a: TRouteArgs): a is TRouteWithParams {
 function createRoute(args: TRouteArgs) {
     if (!isRouteWithParams(args)) return args.path;
 
-    return Object.entries(args)
-        .reduce<string>((accum, [param, value]) =>
-                accum.replace(`:${param}`, String(value)),
-            args.path
-        );
+    return Object.entries(args).reduce<string>(
+        (accum, [param, value]) => accum.replace(`:${param}`, String(value)),
+        args.path,
+    );
 }
 
-export {createRoute};
+export { createRoute };

@@ -21,15 +21,19 @@ export class UserService implements BeforeApplicationShutdown {
     constructor(private prisma: DatabaseService) {}
 
     async beforeApplicationShutdown(signal?: string) {
+        const updatedAt = new Date();
+
         await this.prisma.userOnline.updateMany({
             data: {
                 isOnline: false,
+                updatedAt: updatedAt,
             },
         });
 
         await this.prisma.userTyping.updateMany({
             data: {
                 isTyping: false,
+                updatedAt: updatedAt,
             },
         });
     }
@@ -116,6 +120,7 @@ export class UserService implements BeforeApplicationShutdown {
             },
             update: {
                 isOnline,
+                updatedAt: new Date(),
             },
             create: {
                 userId,
@@ -137,6 +142,7 @@ export class UserService implements BeforeApplicationShutdown {
             },
             update: {
                 isTyping,
+                updatedAt: new Date(),
             },
             create: {
                 isTyping,

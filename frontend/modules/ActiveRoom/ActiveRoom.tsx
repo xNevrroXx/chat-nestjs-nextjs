@@ -24,7 +24,6 @@ import type { TValueOf } from "@/models/TUtils";
 import {
     checkIsPreviewExistingRoomWithFlag,
     FileType,
-    IAttachment,
     IEditMessage,
     IForwardMessage,
     IRoom,
@@ -281,15 +280,6 @@ const ActiveRoom: FC<IActiveChatProps> = ({
             process.env.NEXT_PUBLIC_BASE_URL + "/file/upload",
             formData,
         );
-        console.log("response: ", response);
-        // const buffer = await record.arrayBuffer();
-        // const attachment: IAttachment = {
-        //     originalName: "",
-        //     fileType: FileType.VOICE_RECORD,
-        //     mimeType: "audio/webm",
-        //     extension: "webm",
-        //     buffer: buffer,
-        // };
 
         void onSendMessage(null, [response.data.id]);
     };
@@ -360,7 +350,7 @@ const ActiveRoom: FC<IActiveChatProps> = ({
                 },
             }}
         >
-            <Layout>
+            <Layout className={"active-room"}>
                 <Header className="active-room__header">
                     <Button
                         onClick={onCloseRoom}
