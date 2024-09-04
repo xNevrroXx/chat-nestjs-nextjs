@@ -6,6 +6,7 @@ import {
     type File,
     FileProcessedMessages,
     FileType,
+    MessageBeingProcessed,
     Prisma,
 } from "@prisma/client";
 import { TFileToClient } from "./IFile";
@@ -151,13 +152,13 @@ export class FileService {
     async findManyWaited(params: {
         skip?: number;
         take?: number;
-        cursor?: Prisma.FileProcessedMessagesWhereUniqueInput;
-        where?: Prisma.FileProcessedMessagesWhereInput;
-        orderBy?: Prisma.FileProcessedMessagesOrderByWithRelationInput;
-    }): Promise<FileProcessedMessages[]> {
+        cursor?: Prisma.MessageBeingProcessedWhereUniqueInput;
+        where?: Prisma.MessageBeingProcessedWhereInput;
+        orderBy?: Prisma.MessageBeingProcessedOrderByWithRelationInput;
+    }): Promise<MessageBeingProcessed[]> {
         const { skip, take, cursor, where, orderBy } = params;
 
-        return this.prisma.fileProcessedMessages.findMany({
+        return this.prisma.messageBeingProcessed.findMany({
             skip,
             take,
             cursor,

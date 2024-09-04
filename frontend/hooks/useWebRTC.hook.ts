@@ -34,12 +34,33 @@ const useWebRTC = (roomId: string) => {
     const localMediaStream = useRef<MediaStream | null>(null);
     const peerMediaElements = useRef<TPeerMediaElements>({});
 
+    const hangUp = useCallback(() => {
+        console.log("click: ", peerConnections.current);
+        for (const [peerId, peerConnection] of Object.entries(
+            peerConnections.current,
+        )) {
+            console.log("peerId: ", peerId);
+            peerConnection.close();
+            delete peerConnections.current[peerId];
+        }
+        if (localMediaStream.current) {
+            const userTracks = localMediaStream.current.getTracks();
+            userTracks.forEach((track) => {
+                track.stop();
+            });
+        }
+        updateClients([], () => {});
+        peerConnections.current = {};
+        peerMediaElements.current = {};
+        onceRefStage1.current = false;
+    }, [updateClients]);
+
     useEffect(() => {
         console.log("clients: ", clients);
     }, [clients]);
 
     // 1 stage
-    useEffect(() => {
+    const startCall = useCallback(() => {
         if (!socket) {
             return;
         }
@@ -87,6 +108,54 @@ const useWebRTC = (roomId: string) => {
             socket.emit("webrtc:leave", [{ roomId }]);
         };
     }, [addNewClient, myId, roomId, socket]);
+    // useEffect(() => {
+    //     if (!socket) {
+    //         return;
+    //     }
+    //     if (onceRefStage1.current) {
+    //         return;
+    //     }
+    //     onceRefStage1.current = true;
+    //
+    //     console.log("stage 1: capture");
+    //     async function startCapture() {
+    //         try {
+    //             const myMedia = await navigator.mediaDevices.getUserMedia({
+    //                 audio: true,
+    //                 video: true,
+    //             });
+    //
+    //             localMediaStream.current = myMedia;
+    //         }
+    //         catch (error) {
+    //             console.log("error get mine user media: ", error);
+    //         }
+    //
+    //         addNewClient(myId, () => {
+    //             const localVideoElement = peerMediaElements.current[myId];
+    //
+    //             if (localVideoElement) {
+    //                 localVideoElement.volume = 0;
+    //                 localVideoElement.srcObject = localMediaStream.current;
+    //             }
+    //         });
+    //     }
+    //
+    //     startCapture()
+    //         .then(() => {
+    //             socket.emit("webrtc:join", [{ roomId }]);
+    //         })
+    //         .catch((error) => {
+    //             console.log("error: ", error);
+    //         });
+    //
+    //     return () => {
+    //         localMediaStream.current
+    //             ?.getTracks()
+    //             .forEach((track) => track.stop());
+    //         socket.emit("webrtc:leave", [{ roomId }]);
+    //     };
+    // }, [addNewClient, myId, roomId, socket, isCalling]);
 
     // Stage 2: add peer
     useEffect(() => {
@@ -115,7 +184,7 @@ const useWebRTC = (roomId: string) => {
 
             const configuration: RTCConfiguration = {
                 // @ts-ignore
-                iceServers: [{ urls: publicStunList["stun-list"] as string[] }],
+                iceServers: [{ urls: publicStunList["stun-list"] }],
             };
             peerConnections.current[peerId] = new RTCPeerConnection(
                 configuration,
@@ -335,7 +404,7 @@ const useWebRTC = (roomId: string) => {
         };
     }, [socket, updateClients]);
 
-    return { myId, clients, provideMediaRef };
+    return { myId, clients, provideMediaRef, hangUp, startCall };
 };
 
 export { useWebRTC };

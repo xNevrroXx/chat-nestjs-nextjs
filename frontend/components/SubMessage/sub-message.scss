@@ -27,4 +27,12 @@
   &__text {
     color: inherit;
   }
+  .emoji {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      margin-left: 1px;
+      margin-right: 1px;
+      vertical-align: bottom;
+  }
 }

@@ -77,6 +77,10 @@ const Main = () => {
         setIsCalling(true);
     }, []);
 
+    const onCloseCall = useCallback(() => {
+        setIsCalling(false);
+    }, []);
+
     const onOpenSubmenu = useCallback(() => {
         setIsDrawerOpen(true);
     }, []);
@@ -296,7 +300,16 @@ const Main = () => {
             <Content className="messenger">
                 {content()}
                 {/*todo: add calling room id to the recent rooms info to achieve an calling during chatting with other users*/}
-                {activeRoom && isCalling && <Call roomId={activeRoom.id} />}
+
+                {activeRoom && (
+                    <Call
+                        roomId={activeRoom.id}
+                        onHangUp={onCloseCall}
+                        isCalling={isCalling}
+                        onInitCall={onInitCall}
+                    />
+                )}
+
                 <Modal
                     title="Переслать сообщение"
                     open={isOpenModalToForwardMessage}

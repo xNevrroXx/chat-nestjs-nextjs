@@ -2,8 +2,10 @@
 
 import React, { FC, Fragment, useEffect, useMemo } from "react";
 import { Flex, Typography, theme } from "antd";
-import classNames from "classnames";
 import { Interweave } from "interweave";
+import { UrlMatcher } from "interweave-autolink";
+import classNames from "classnames";
+import emojiParser from "universal-emoji-parser";
 // own modules
 import { useAppDispatch, useAppSelector } from "@/hooks/store.hook";
 import { messageOwnerSelector } from "@/store/selectors/messageOwner.selector";
@@ -12,14 +14,12 @@ import {
     checkIsStandardMessage,
     checkIsOriginalMessage,
 } from "@/models/room/IRoom.store";
-// styles
-import "./message-reply.scss";
 import { findMessageSelector } from "@/store/selectors/findMessageSelector";
 import { TValueOf } from "@/models/TUtils";
-import emojiParser from "universal-emoji-parser";
 import { transform } from "@/utils/inrterweaveTransform";
-import { UrlMatcher } from "interweave-autolink";
 import { getMessageById } from "@/store/thunks/room";
+// styles
+import "./sub-message.scss";
 
 const { useToken } = theme;
 const { Text } = Typography;

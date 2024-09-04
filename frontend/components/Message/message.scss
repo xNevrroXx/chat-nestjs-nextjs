@@ -1,221 +1,231 @@
 .message {
     padding: 1px 50px;
-  min-width: min-content;
-  //max-width: 100%;
-  white-space: pre-wrap;
-  display: flex;
+    min-width: min-content;
+    //max-width: 100%;
+    white-space: pre-wrap;
+    display: flex;
     overflow: hidden;
+
     &_padding-bottom-large {
         padding-bottom: 8px;
     }
-  &_with-code {
-    min-width: -moz-available;
-    min-width: -webkit-fill-available;
-  }
 
-  &:target {
-    //.message__content {
-      animation: fadeInOut 1.5s ease-in-out;
-      animation-iteration-count: 1;
-      animation-fill-mode: forwards;
-    //}
-  }
-
-  &:hover {
-    .message__actions {
-      visibility: visible;
+    &_with-code {
+        min-width: -moz-available;
+        min-width: -webkit-fill-available;
     }
-  }
+
+    &:target {
+        //.message__content {
+        animation: fadeInOut 1.5s ease-in-out;
+        animation-iteration-count: 1;
+        animation-fill-mode: forwards;
+        //}
+    }
+
+    &:hover {
+        .message__actions {
+            visibility: visible;
+        }
+    }
 
     &__header {
         padding: 5px 8px 0;
+
         span {
             font-weight: 400;
         }
     }
 
-  &__wrapper-inner-content {
-    position: relative;
-    gap: 10px;
-    justify-content: space-between;
-    padding: 5px 8px 6px;
-    white-space: pre-wrap;
-    line-break: normal;
+    &__wrapper-inner-content {
+        position: relative;
+        gap: 10px;
+        justify-content: space-between;
+        padding: 5px 8px 6px;
+        white-space: pre-wrap;
+        line-break: normal;
+        word-break: break-word;
 
-    img {
-      display: inline-block;
-      width: 18px;
-      height: 18px;
-      margin-left: 1px;
-      margin-right: 1px;
-      vertical-align: bottom;
-    }
-    &_empty {
-      position: absolute;
-      //background-color: rgba(black, .2);
-      //border-radius: 6px;
-      bottom: 2px;
-      right: 0;
-      padding: 5px 15px;
-    }
-  }
+        .emoji {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            margin-left: 1px;
+            margin-right: 1px;
+            vertical-align: bottom;
+        }
 
-  &__wrapper-inner-content_with-links {
-    flex-direction: column;
-  }
-
-  &__content {
-    display: flex;
-    flex-direction: column;
-    align-self: flex-end;
-    overflow: hidden;
-    border-radius: 15px 15px 15px 3px;
-    transition: fadeInOut 125ms;
-
-      word-break: break-all;
-      max-width: 480px;
-      min-width: min-content;
-      position: relative;
-      background-color: rgb(24, 37, 51);
-  }
-
-  &__actions {
-    visibility: hidden;
-    display: flex;
-    height: max-content;
-    gap: 2px;
-    flex: 0 1 20px;
-  }
-
-  &__audio-element-wrapper {
-    padding: 7px 12px 2px 8px;
-  }
-
-  &__attachments-wrapper {
-    position: relative;
-    display: flex;
-    max-width: 100%;
-    flex-wrap: wrap;
-    gap: 4px;
-    &:hover {
-      .message__time_on-attachments {
-        visibility: visible;
-      }
-    }
-  }
-
-  &__attachments-unknown-wrapper {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    position: relative;
-  }
-
-  &__attachments-unknown-wrapper_with-line {
-    &::after {
-      content: "";
-      position: absolute;
-      bottom: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      display: block;
-      width: 70%;
-      height: 1px;
-      box-shadow: 0 0 1px 0 white inset;
-      transition: 125ms;
-    }
-  }
-
-  &__attachment-unknown {
-    flex: 1 50%;
-    cursor: pointer;
-    div {
-      //display: flex;
-      //flex-direction: column;
-    }
-    &:hover {
-      background: rgba(0, 0, 0, .1);
-    }
-  }
-
-  &__attachment {
-    cursor: pointer;
-    list-style-type: none;
-    flex: 1 0 130px;
-
-    &:hover {
-      * {
-        opacity: 0.8;
-      }
+        &_empty {
+            position: absolute;
+            //background-color: rgba(black, .2);
+            //border-radius: 6px;
+            bottom: 2px;
+            right: 0;
+            padding: 5px 15px;
+        }
     }
 
-      .ant-image {
-          max-height: 400px;
-          width: 100%;
-          height: 100%;
-          img {
-              max-height: 400px;
-              width: 100%;
-              height: 100%;
-              aspect-ratio: auto;
-              object-fit: cover;
-          }
-      }
-
-    img {
-        max-height: 400px;
-      width: 100%;
-      height: 100%;
-      aspect-ratio: auto;
-      object-fit: cover;
+    &__wrapper-inner-content_with-links {
+        flex-direction: column;
     }
 
-    video {
-      height: 100%;
-      width: 100%;
-      object-fit: cover;
-    }
-  }
+    &__content {
+        display: flex;
+        flex-direction: column;
+        align-self: flex-end;
+        overflow: hidden;
+        border-radius: 15px 15px 15px 3px;
+        transition: fadeInOut 125ms;
 
-  &__attachment-unknown {
-    display: flex;
-    gap: 5px;
-    align-items: center;
-    font-weight: 500;
-    padding: 7px 12px;
-  }
-
-  &__time {
-    padding-top: 5px;
-    align-self: flex-end;
-    user-select: none;
-    &_on-attachments {
-      //color: rgba(white, .8);
-      visibility: hidden;
-      position: absolute;
-      bottom: 2px;
-      right: 10px;
-      padding: 2px 20px;
-      background-color: rgba(black, .2);
-      border-radius: 20px;
+        word-break: break-all;
+        max-width: 480px;
+        min-width: min-content;
+        position: relative;
+        background-color: rgb(24, 37, 51);
     }
-  }
 
-  &_mine {
-    .message__content {
-      background-color: rgb(43, 82, 119);
+    &__actions {
+        visibility: hidden;
+        display: flex;
+        height: max-content;
+        gap: 2px;
+        flex: 0 1 20px;
     }
-  }
+
+    &__audio-element-wrapper {
+        padding: 7px 12px 2px 8px;
+    }
+
+    &__attachments-wrapper {
+        position: relative;
+        display: flex;
+        max-width: 100%;
+        flex-wrap: wrap;
+        gap: 4px;
+
+        &:hover {
+            .message__time_on-attachments {
+                visibility: visible;
+            }
+        }
+    }
+
+    &__attachments-unknown-wrapper {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        position: relative;
+    }
+
+    &__attachments-unknown-wrapper_with-line {
+        &::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            display: block;
+            width: 70%;
+            height: 1px;
+            box-shadow: 0 0 1px 0 white inset;
+            transition: 125ms;
+        }
+    }
+
+    &__attachment-unknown {
+        flex: 1 50%;
+        cursor: pointer;
+
+        div {
+            //display: flex;
+            //flex-direction: column;
+        }
+
+        &:hover {
+            background: rgba(0, 0, 0, .1);
+        }
+    }
+
+    &__attachment {
+        cursor: pointer;
+        list-style-type: none;
+        flex: 1 0 130px;
+
+        &:hover {
+            * {
+                opacity: 0.8;
+            }
+        }
+
+        .ant-image {
+            max-height: 400px;
+            width: 100%;
+            height: 100%;
+
+            img {
+                max-height: 400px;
+                width: 100%;
+                height: 100%;
+                aspect-ratio: auto;
+                object-fit: cover;
+            }
+        }
+
+        img {
+            max-height: 400px;
+            width: 100%;
+            height: 100%;
+            aspect-ratio: auto;
+            object-fit: cover;
+        }
+
+        video {
+            height: 100%;
+            width: 100%;
+            object-fit: cover;
+        }
+    }
+
+    &__attachment-unknown {
+        display: flex;
+        gap: 5px;
+        align-items: center;
+        font-weight: 500;
+        padding: 7px 12px;
+    }
+
+    &__time {
+        padding-top: 5px;
+        align-self: flex-end;
+        user-select: none;
+
+        &_on-attachments {
+            //color: rgba(white, .8);
+            visibility: hidden;
+            position: absolute;
+            bottom: 2px;
+            right: 10px;
+            padding: 2px 20px;
+            background-color: rgba(black, .2);
+            border-radius: 20px;
+        }
+    }
+
+    &_mine {
+        .message__content {
+            background-color: rgb(43, 82, 119);
+        }
+    }
 }
 
 @keyframes fadeInOut {
-  0% {
-  }
-  50% {
-      background: rgb(43, 82, 119, .18);
-  }
-  100% {
-  }
+    0% {
+    }
+    50% {
+        background: rgb(43, 82, 119, .18);
+    }
+    100% {
+    }
 }
 
 
@@ -223,6 +233,7 @@
     .message {
         width: 100%;
         padding: 1px 10px 1px 50px;
+
         &_padding-bottom-large {
             padding-bottom: 6px;
         }

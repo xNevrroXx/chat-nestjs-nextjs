@@ -2,8 +2,6 @@ import {
     BadRequestException,
     BeforeApplicationShutdown,
     Injectable,
-    OnApplicationShutdown,
-    OnModuleDestroy,
 } from "@nestjs/common";
 import {
     Prisma,
@@ -18,7 +16,7 @@ import { IUserSessionPayload } from "./IUser";
 
 @Injectable()
 export class UserService implements BeforeApplicationShutdown {
-    constructor(private prisma: DatabaseService) {}
+    constructor(private readonly prisma: DatabaseService) {}
 
     async beforeApplicationShutdown(signal?: string) {
         const updatedAt = new Date();
@@ -78,6 +76,7 @@ export class UserService implements BeforeApplicationShutdown {
             );
         }
 
+        // todo send message from the main user about features and benefits of the application.////////
         return this.prisma.user.create({
             data,
         });

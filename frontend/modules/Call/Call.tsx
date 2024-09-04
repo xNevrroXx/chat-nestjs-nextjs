@@ -1,6 +1,6 @@
 "use client";
 
-import React, { FC } from "react";
+import React, { FC, useEffect } from "react";
 import {
     MinusOutlined,
     PhoneFilled,
@@ -15,17 +15,28 @@ const { useToken } = theme;
 
 interface ICallProps {
     roomId: string;
+    isCalling: boolean;
+    onHangUp: () => void;
+    onInitCall: () => void;
 }
-const Call: FC<ICallProps> = ({ roomId }) => {
-    const { clients, provideMediaRef } = useWebRTC(roomId);
+const Call: FC<ICallProps> = ({ roomId, onHangUp, isCalling, onInitCall }) => {
+    const { clients, provideMediaRef, hangUp, startCall } = useWebRTC(roomId);
     const { token } = useToken();
+
+    useEffect(() => {
+        if (!isCalling) {
+            return;
+        }
+
+        startCall();
+    }, [isCalling, startCall]);
 
     return (
         <Modal
             className={"call"}
             // title={"Звонок"}
             // closable={false}
-            open
+            open={isCalling}
             closeIcon={<MinusOutlined title={"Свернуть"} />}
             cancelButtonProps={{ style: { display: "none" } }}
             okButtonProps={{ style: { display: "none" } }}
@@ -37,11 +48,17 @@ const Call: FC<ICallProps> = ({ roomId }) => {
             footer={
                 <div className={"call__actions"}>
                     <div />
-                    <button className={"call__decline-btn"}>
+                    <button
+                        onClick={() => {
+                            hangUp();
+                            onHangUp();
+                        }}
+                        className={"call__decline-btn"}
+                    >
                         <PhoneFilled rotate={-135} />
                     </button>
 
-                    <button>
+                    <button onClick={() => {}}>
                         <VideoCameraFilled
                             style={{ color: token.colorTextSecondary }}
                         />

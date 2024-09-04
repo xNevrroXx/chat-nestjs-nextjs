@@ -21,6 +21,28 @@ export class S3Service {
         return senderId + "/" + timestamp + "/" + originalName;
     }
 
+    async getFileSize(Key: string) {
+        const { ContentLength } = await this.s3.headObject({
+            Bucket: this.appConstantsService.VK_BUCKET_NAME,
+            Key,
+        });
+        return ContentLength;
+    }
+
+    async *initiateObjectStream(Key: string, start: number, end: number) {
+        const streamRange = `bytes=${start}-${end}`;
+
+        const { Body: chunks } = await this.s3.getObject({
+            Bucket: this.appConstantsService.VK_BUCKET_NAME,
+            Key,
+            Range: streamRange,
+        });
+
+        for await (const chunk of chunks as any) {
+            yield chunk;
+        }
+    }
+
     async upload(key: string, buffer: Buffer) {
         return this.s3.send(
             new PutObjectCommand({
