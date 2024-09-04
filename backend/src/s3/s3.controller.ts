@@ -97,7 +97,6 @@ export class S3Controller {
                 "Content-Type": result.ContentType,
                 ETag: result.ETag,
             };
-            console.log("headers:  ", headers);
 
             // response.writeHead(206, headers);
 

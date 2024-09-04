@@ -301,7 +301,7 @@ const Main = () => {
                 {content()}
                 {/*todo: add calling room id to the recent rooms info to achieve an calling during chatting with other users*/}
 
-                {activeRoom && (
+                {activeRoom && !checkIsPreviewExistingRoomWithFlag(activeRoom) && (
                     <Call
                         roomId={activeRoom.id}
                         onHangUp={onCloseCall}

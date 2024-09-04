@@ -18,14 +18,13 @@ export class MessageController {
     constructor(
         private readonly participantService: ParticipantService,
         private readonly messageService: MessageService
-    ) {}
+    ) { }
 
     @Get("waited")
     @UseGuards(AuthGuard)
     async getWaitedInfo(@Req() request, @Query("roomId") roomId: string) {
         const userId = request.user.id;
 
-        console.log("roomId: ", roomId);
         try {
             const response = await this.messageService.findOneProcessed({
                 where: {
@@ -38,7 +37,7 @@ export class MessageController {
                     files: true,
                 },
             });
-            console.log("response : ", response);
+
             return response;
         } catch (error) {
             console.log(error);

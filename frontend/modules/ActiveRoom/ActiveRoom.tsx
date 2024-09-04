@@ -389,10 +389,12 @@ const ActiveRoom: FC<IActiveChatProps> = ({
                     </div>
                     <div className="active-room__space"></div>
                     <div className="active-room__options">
-                        <PhoneOutlined
-                            onClick={onInitCall}
-                            className="custom"
-                        />
+                        {
+                            !checkIsPreviewExistingRoomWithFlag(room) && <PhoneOutlined
+                                onClick={onInitCall}
+                                className="custom"
+                            />
+                        }
                         <MenuFoldOutlined className="custom" />
                     </div>
                 </Header>
