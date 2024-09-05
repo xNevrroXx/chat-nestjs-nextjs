@@ -10,7 +10,7 @@ import {
 import {
     changeCurrentFolder,
     excludeRoomFromFolders,
-} from "@/store/actions/roomsOnFolders";
+} from "@/store/actions/rooms-on-folders";
 
 const initialState: IRoomOnFoldersSlice = {
     folders: {

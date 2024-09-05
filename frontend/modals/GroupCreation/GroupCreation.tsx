@@ -3,9 +3,13 @@
 import React, { FC, useCallback, useState } from "react";
 import { RoomType, TCreateGroupRoom } from "@/models/room/IRoom.store";
 import { Form, Input, Mentions, Modal } from "antd";
-import { useAppSelector } from "@/hooks/store.hook";
+import { useAppDispatch, useAppSelector } from "@/hooks/store.hook";
 import { filteredUsersSelector } from "@/store/selectors/filteredUsers.selector";
 import { getMentionIds } from "@/utils/getMentionIds";
+import { modalInfoSelector } from "@/store/selectors/modalInfo.selector";
+import { closeModals } from "@/store/actions/modal-windows";
+import { createRoom } from "@/store/thunks/room";
+import { addRecentRoomData } from "@/store/actions/recent-rooms";
 
 interface IStages {
     0: "ENTER_GROUP_NAME";
@@ -19,17 +23,11 @@ const STAGES: IStages = {
 
 const COUNT_STAGES = Object.keys(STAGES).length;
 
-interface IProps {
-    onOk: (roomInfo: TCreateGroupRoom) => void;
-    onCloseModal: () => void;
-    isOpen: boolean;
-}
-
-const CreateGroupModal: FC<IProps> = ({
-    onCloseModal,
-    isOpen,
-    onOk: onSuccessAction,
-}) => {
+const GroupCreation = () => {
+    const dispatch = useAppDispatch();
+    const modalInfo = useAppSelector((state) =>
+        modalInfoSelector(state, "groupCreationMenu"),
+    );
     const users = useAppSelector((state) => filteredUsersSelector(state));
     const [roomNameInputMessage, setRoomNameInputMessage] = useState<
         string | null
@@ -37,6 +35,32 @@ const CreateGroupModal: FC<IProps> = ({
     const [stage, setStage] = useState<keyof IStages>(0);
     const [roomName, setRoomName] = useState<string>("");
     const [memberIds, setMemberIds] = useState<string[]>([]);
+
+    const onCreateRoom = useCallback(
+        async (remoteRoom: TCreateGroupRoom) => {
+            try {
+                const newRoom = await dispatch(createRoom(remoteRoom)).unwrap();
+
+                dispatch(
+                    addRecentRoomData({
+                        id: newRoom.id,
+                    }),
+                );
+                return newRoom;
+            }
+            catch (rejectedValueOrSerializedError) {
+                console.warn(
+                    "Error when creating a room!: ",
+                    rejectedValueOrSerializedError,
+                );
+            }
+        },
+        [dispatch],
+    );
+
+    const onCloseModal = useCallback(() => {
+        dispatch(closeModals());
+    }, [dispatch]);
 
     const onChangeMembers = useCallback((str: string) => {
         const ids = getMentionIds(str);
@@ -55,7 +79,7 @@ const CreateGroupModal: FC<IProps> = ({
         }
 
         // if the last stage is completed
-        onSuccessAction({
+        void onCreateRoom({
             name: roomName,
             memberIds: memberIds,
             type: RoomType.GROUP,
@@ -64,12 +88,12 @@ const CreateGroupModal: FC<IProps> = ({
         setRoomName("");
         setRoomNameInputMessage(null);
         setMemberIds([]);
-    }, [onSuccessAction, roomName, memberIds, stage]);
+    }, [onCreateRoom, roomName, memberIds, stage]);
 
     return (
         <Modal
             title="Новая группа"
-            open={isOpen}
+            open={modalInfo.isOpen}
             onCancel={onCloseModal}
             okText={stage === COUNT_STAGES - 1 ? "Создать" : "Далее"}
             onOk={onOk}
@@ -132,4 +156,4 @@ const CreateGroupModal: FC<IProps> = ({
     );
 };
 
-export default CreateGroupModal;
+export default GroupCreation;

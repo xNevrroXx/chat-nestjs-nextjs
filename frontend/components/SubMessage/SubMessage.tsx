@@ -14,7 +14,7 @@ import {
     checkIsStandardMessage,
     checkIsOriginalMessage,
 } from "@/models/room/IRoom.store";
-import { findMessageSelector } from "@/store/selectors/findMessageSelector";
+import { findMessageSelector } from "@/store/selectors/findMessage.selector";
 import { TValueOf } from "@/models/TUtils";
 import { transform } from "@/utils/inrterweaveTransform";
 import { getMessageById } from "@/store/thunks/room";

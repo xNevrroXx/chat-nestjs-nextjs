@@ -9,6 +9,7 @@ import {
     ILeaveRoom,
     IStandardMessageSocket,
     IForwardedMessageSocket,
+    IQueryString,
 } from "@/models/room/IRoom.store";
 import { TValueOf } from "@/models/TUtils";
 import { IUserDto } from "@/models/auth/IAuth.store";
@@ -24,6 +25,9 @@ const excludeFromFolder = createAction<TExcludeRoom>(
 const addOnFolder = createAction<TAddRoom>("room/add-on-folder");
 const setUserId =
     createAction<TValueOf<Pick<IUserDto, "id">>>("room/set-user-id");
+const changeQueryStringRooms = createAction<IQueryString>(
+    "room/change-query-string",
+);
 const clearPreviewRooms = createAction("room/clear-previews");
 const addOrUpdateRoomSocket = createAction<IRoom>("room/add-or-update");
 const handleMessageRead = createAction<IReadMessageSocket>(
@@ -55,6 +59,7 @@ export {
     handleMessageRead,
     handleMessageSocket,
     addOrUpdateRoomSocket,
+    changeQueryStringRooms,
     handlePinnedMessageSocket,
     handleEditedMessageSocket,
     handleDeletedMessageSocket,

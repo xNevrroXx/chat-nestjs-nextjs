@@ -18,7 +18,7 @@ export class MessageController {
     constructor(
         private readonly participantService: ParticipantService,
         private readonly messageService: MessageService
-    ) { }
+    ) {}
 
     @Get("waited")
     @UseGuards(AuthGuard)

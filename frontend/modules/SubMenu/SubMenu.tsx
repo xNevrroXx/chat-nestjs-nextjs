@@ -1,4 +1,4 @@
-import React, { FC } from "react";
+import React, { FC, useCallback } from "react";
 import {
     Avatar,
     Button,
@@ -14,9 +14,10 @@ import {
 } from "@ant-design/icons";
 import { Header } from "antd/lib/layout/layout";
 import { Drawer } from "antd/lib";
-import { useAppSelector } from "@/hooks/store.hook";
+import { useAppDispatch, useAppSelector } from "@/hooks/store.hook";
 import { FlexButton } from "@/components/Button/FlexButton";
 import { getNameInitials } from "@/utils/getNameInitials";
+import { openModal } from "@/store/actions/modal-windows";
 
 const { Text } = Typography;
 
@@ -43,17 +44,19 @@ const { Text } = Typography;
 interface ISubMenuProps {
     isOpen: boolean;
     onClose: () => void;
-    openModalToLogout: () => void;
-    openModalToCreateGroup: () => void;
 }
 
-const SubMenu: FC<ISubMenuProps> = ({
-    isOpen,
-    onClose,
-    openModalToLogout,
-    openModalToCreateGroup,
-}) => {
+const SubMenu: FC<ISubMenuProps> = ({ isOpen, onClose }) => {
+    const dispatch = useAppDispatch();
     const user = useAppSelector((state) => state.authentication.user);
+
+    const openModalToLogout = useCallback(() => {
+        dispatch(openModal({ modalName: "logout" }));
+    }, [dispatch]);
+
+    const openModalToCreateGroup = useCallback(() => {
+        dispatch(openModal({ modalName: "groupCreationMenu" }));
+    }, [dispatch]);
 
     if (!user) {
         return;

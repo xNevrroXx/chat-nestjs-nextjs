@@ -1,42 +1,45 @@
 "use client";
 
-import React, { FC, useEffect } from "react";
+import { FC, useCallback, useEffect } from "react";
+import { Avatar, Modal, theme } from "antd";
 import {
     MinusOutlined,
     PhoneFilled,
     VideoCameraFilled,
 } from "@ant-design/icons";
-import { Avatar, Modal, theme } from "antd";
 import { useWebRTC } from "@/hooks/useWebRTC.hook";
+import { useAppDispatch } from "@/hooks/store.hook";
+import { closeModals } from "@/store/actions/modal-windows";
+import { ICallModalOpened } from "@/models/modal-windows/modal-windows.store";
 // styles
 import "./call.scss";
 
 const { useToken } = theme;
 
-interface ICallProps {
-    roomId: string;
-    isCalling: boolean;
-    onHangUp: () => void;
-    onInitCall: () => void;
+interface IProps {
+    modalInfo: ICallModalOpened;
 }
-const Call: FC<ICallProps> = ({ roomId, onHangUp, isCalling, onInitCall }) => {
-    const { clients, provideMediaRef, hangUp, startCall } = useWebRTC(roomId);
+
+const Call: FC<IProps> = ({ modalInfo }) => {
+    const dispatch = useAppDispatch();
+    const { clients, provideMediaRef, hangUp, startCall } = useWebRTC(
+        modalInfo.roomId,
+    );
     const { token } = useToken();
 
     useEffect(() => {
-        if (!isCalling) {
-            return;
-        }
-
         startCall();
-    }, [isCalling, startCall]);
+    }, [startCall]);
+
+    const onHangUp = useCallback(() => {
+        hangUp();
+        dispatch(closeModals());
+    }, [dispatch, hangUp]);
 
     return (
         <Modal
             className={"call"}
-            // title={"Звонок"}
-            // closable={false}
-            open={isCalling}
+            open={modalInfo.isOpen}
             closeIcon={<MinusOutlined title={"Свернуть"} />}
             cancelButtonProps={{ style: { display: "none" } }}
             okButtonProps={{ style: { display: "none" } }}
@@ -48,13 +51,7 @@ const Call: FC<ICallProps> = ({ roomId, onHangUp, isCalling, onInitCall }) => {
             footer={
                 <div className={"call__actions"}>
                     <div />
-                    <button
-                        onClick={() => {
-                            hangUp();
-                            onHangUp();
-                        }}
-                        className={"call__decline-btn"}
-                    >
+                    <button onClick={onHangUp} className={"call__decline-btn"}>
                         <PhoneFilled rotate={-135} />
                     </button>
 

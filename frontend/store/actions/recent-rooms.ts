@@ -20,6 +20,6 @@ const add = createAction<TAddRecentRoomData>("recent-rooms/add");
 export {
     update as updateRecentRoomData,
     remove as removeRecentRoomData,
-    reset as resetRecentRoomData,
+    reset as resetCurrentRoomId,
     add as addRecentRoomData,
 };

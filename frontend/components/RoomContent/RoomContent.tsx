@@ -31,11 +31,6 @@ interface IChatContentProps {
     room: IRoom | TPreviewExistingRoom;
     isNeedScrollToLastMessage: RefObject<boolean>;
     onChooseMessageForAction: (messageForAction: TMessageForAction) => void;
-    onOpenUsersListForForwardMessage: (
-        forwardedMessageId: TValueOf<
-            Pick<IForwardMessage, "forwardedMessageId">
-        >,
-    ) => void;
 }
 
 const RoomContent = forwardRef<HTMLDivElement, IChatContentProps>(
@@ -46,7 +41,6 @@ const RoomContent = forwardRef<HTMLDivElement, IChatContentProps>(
             room,
             onChooseMessageForAction,
             isNeedScrollToLastMessage,
-            onOpenUsersListForForwardMessage,
         },
         outerRef,
     ) => {
@@ -92,22 +86,12 @@ const RoomContent = forwardRef<HTMLDivElement, IChatContentProps>(
                         messageRefs={messageRefs}
                         userId={user.id}
                         onChooseMessageForAction={onChooseMessageForAction}
-                        onOpenUsersListForForwardMessage={
-                            onOpenUsersListForForwardMessage
-                        }
                         roomType={room.type}
                     />,
                 );
             }
             return content;
-        }, [
-            room.days,
-            room.id,
-            room.type,
-            user.id,
-            onChooseMessageForAction,
-            onOpenUsersListForForwardMessage,
-        ]);
+        }, [room.days, room.id, room.type, user.id, onChooseMessageForAction]);
 
         const { rootRef: innerRef } = useIntersectionObserver<HTMLDivElement>(
             {

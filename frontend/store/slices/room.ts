@@ -15,6 +15,7 @@ import {
 import {
     addOrUpdateRoomSocket,
     addRoomOnFolder,
+    changeQueryStringRooms,
     clearPreviewRooms,
     excludeRoomFromFolder,
     handleChangeUserTypingSocket,
@@ -30,6 +31,7 @@ import {
 import { FetchingStatus } from "@/hooks/useFetch.hook";
 
 const initialState: IRoomSlice = {
+    queryString: "",
     userId: "",
     local: {
         rooms: {
@@ -81,6 +83,9 @@ const room = createSlice({
                     rooms: action.payload.values,
                     allIds: action.payload.allIds,
                 };
+            })
+            .addCase(changeQueryStringRooms, (state, action) => {
+                state.queryString = action.payload.queryString.trim();
             })
             .addCase(getPreviews.pending, (state) => {
                 state.previews = {

@@ -36,8 +36,8 @@ const ListLocalDialogs: FC<IDialogsProps> = ({
                 | IInnerStandardMessage
                 | IInnerForwardedMessage
                 | undefined = undefined;
-            let sender: string | undefined = undefined;
             let text: string | undefined = undefined;
+            let sender: string = "Unknown";
             let hasUnreadMessage: boolean = false;
 
             const dates = Object.keys(room.days);
@@ -58,14 +58,19 @@ const ListLocalDialogs: FC<IDialogsProps> = ({
                         hasUnreadMessage = true;
                     }
 
-                    sender =
-                        lastMessage.senderId === user.id
-                            ? "Вы"
-                            : room.participants.find(
-                                  (participant) =>
-                                      participant.userId ===
-                                      lastMessage!.senderId,
-                              )!.nickname;
+                    if (lastMessage.senderId === user.id) {
+                        sender = "Вы";
+                    }
+                    else {
+                        const thirdPartySender = room.participants.find(
+                            (participant) =>
+                                participant.userId === lastMessage!.senderId,
+                        );
+
+                        sender = thirdPartySender
+                            ? thirdPartySender.nickname
+                            : sender;
+                    }
 
                     if (!lastMessage.text) {
                         if (checkIsStandardMessage(lastMessage)) {
@@ -86,7 +91,7 @@ const ListLocalDialogs: FC<IDialogsProps> = ({
                 }
             }
 
-            if (!sender || !text || !lastMessage) {
+            if (!text || !lastMessage) {
                 return null;
             }
 

@@ -3,9 +3,9 @@ import { IRecentRooms } from "@/models/recent-rooms/IRecentRooms.store";
 import {
     addRecentRoomData,
     removeRecentRoomData,
-    resetRecentRoomData,
+    resetCurrentRoomId,
     updateRecentRoomData,
-} from "@/store/actions/recentRooms";
+} from "@/store/actions/recent-rooms";
 
 const initialState: IRecentRooms = {
     rooms: {
@@ -62,7 +62,7 @@ const recentRooms = createSlice({
                 state.allIds.splice(index, 1);
                 delete state.rooms.byId[action.payload];
             })
-            .addCase(resetRecentRoomData, (state) => {
+            .addCase(resetCurrentRoomId, (state) => {
                 state.currentRoomId = null;
             });
     },

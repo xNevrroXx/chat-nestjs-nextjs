@@ -18,6 +18,7 @@ export enum RoomType {
 
 // Store types
 export interface IRoomSlice {
+    queryString: string;
     userId: TValueOf<Pick<IUserDto, "id">>;
     local: {
         rooms: {
@@ -40,6 +41,10 @@ export interface IRoomSlice {
     };
     socket: SocketIOService | null;
 }
+export interface IQueryString {
+    queryString: string;
+}
+
 export interface IRoom {
     id: string;
     name: string;

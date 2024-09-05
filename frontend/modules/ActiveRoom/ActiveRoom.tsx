@@ -15,6 +15,7 @@ import {
 } from "antd";
 import React, { type FC, useCallback, useMemo, useRef, useState } from "react";
 // own modules
+import $api from "@/http";
 import { useScrollTrigger } from "@/hooks/useScrollTrigger.hook";
 import RoomContent from "@/components/RoomContent/RoomContent";
 import ScrollDownButton from "@/components/ScrollDownButton/ScrollDownButton";
@@ -25,7 +26,6 @@ import {
     checkIsPreviewExistingRoomWithFlag,
     FileType,
     IEditMessage,
-    IForwardMessage,
     IRoom,
     RoomType,
     TPreviewExistingRoomWithFlag,
@@ -48,9 +48,9 @@ import {
     sendMessageSocket,
     toggleUserTypingSocket,
 } from "@/store/thunks/room";
+import { openCallModal } from "@/store/actions/modal-windows";
 // styles
 import "./active-room.scss";
-import $api from "@/http";
 
 const { Header, Footer } = Layout;
 const { Text, Title } = Typography;
@@ -62,22 +62,14 @@ interface IActiveChatProps {
     user: IUserDto;
     room: IRoom | TPreviewExistingRoomWithFlag | null | undefined;
     onCloseRoom: () => void;
-    openModalToForwardMessage: (
-        forwardedMessageId: TValueOf<
-            Pick<IForwardMessage, "forwardedMessageId">
-        >,
-    ) => void;
     onJoinRoom: TJoinRoomFn;
-    onInitCall: () => void;
 }
 
 const ActiveRoom: FC<IActiveChatProps> = ({
     user,
     room,
     onCloseRoom,
-    openModalToForwardMessage,
     onJoinRoom,
-    onInitCall,
 }) => {
     const { token } = useToken();
     const dispatch = useAppDispatch();
@@ -107,6 +99,14 @@ const ActiveRoom: FC<IActiveChatProps> = ({
         breakpointPx: 350,
     });
 
+    const onInitCall = useCallback(() => {
+        if (!room || checkIsPreviewExistingRoomWithFlag(room)) {
+            return;
+        }
+
+        dispatch(openCallModal({ roomId: room?.id }));
+    }, [dispatch, room?.id]);
+
     const onClickScrollButton = () => {
         if (!refChatContent.current) return;
 
@@ -128,7 +128,9 @@ const ActiveRoom: FC<IActiveChatProps> = ({
     }, []);
 
     const onTyping = useCallback(() => {
-        if (!room || checkIsPreviewExistingRoomWithFlag(room)) return;
+        if (!room || checkIsPreviewExistingRoomWithFlag(room)) {
+            return;
+        }
 
         if (typingTimoutRef.current) {
             // if the user has recently typed
@@ -389,12 +391,12 @@ const ActiveRoom: FC<IActiveChatProps> = ({
                     </div>
                     <div className="active-room__space"></div>
                     <div className="active-room__options">
-                        {
-                            !checkIsPreviewExistingRoomWithFlag(room) && <PhoneOutlined
+                        {!checkIsPreviewExistingRoomWithFlag(room) && (
+                            <PhoneOutlined
                                 onClick={onInitCall}
                                 className="custom"
                             />
-                        }
+                        )}
                         <MenuFoldOutlined className="custom" />
                     </div>
                 </Header>
@@ -410,7 +412,6 @@ const ActiveRoom: FC<IActiveChatProps> = ({
                     room={room}
                     isNeedScrollToLastMessage={isNeedScrollToLastMessage}
                     onChooseMessageForAction={onChooseMessageForAction}
-                    onOpenUsersListForForwardMessage={openModalToForwardMessage}
                 />
 
                 <Footer className="active-room__footer">

@@ -2,7 +2,6 @@ import React, { FC, MutableRefObject, useMemo } from "react";
 import { Typography } from "antd";
 import { normalizeDate } from "@/utils/normalizeDate";
 import {
-    IForwardMessage,
     IInnerForwardedMessage,
     IInnerStandardMessage,
     RoomType,
@@ -20,11 +19,6 @@ type TProps = {
     messages: (IInnerStandardMessage | IInnerForwardedMessage)[];
     userId: TValueOf<Pick<IUserDto, "id">>;
     onChooseMessageForAction: (messageForAction: TMessageForAction) => void;
-    onOpenUsersListForForwardMessage: (
-        forwardedMessageId: TValueOf<
-            Pick<IForwardMessage, "forwardedMessageId">
-        >,
-    ) => void;
     roomType: RoomType;
     messageRefs: MutableRefObject<HTMLDivElement[]>;
 };
@@ -34,7 +28,6 @@ const MessagesByDay: FC<TProps> = ({
     date,
     messages,
     onChooseMessageForAction,
-    onOpenUsersListForForwardMessage,
     roomType,
     messageRefs,
 }) => {
@@ -67,9 +60,6 @@ const MessagesByDay: FC<TProps> = ({
                         userId={userId}
                         messagesByUserId={currentUserId}
                         onChooseMessageForAction={onChooseMessageForAction}
-                        onOpenUsersListForForwardMessage={
-                            onOpenUsersListForForwardMessage
-                        }
                         roomType={roomType}
                         messageRefs={messageRefs}
                     />,
@@ -97,9 +87,6 @@ const MessagesByDay: FC<TProps> = ({
                     messages={messagesByCurrentUser}
                     userId={userId}
                     onChooseMessageForAction={onChooseMessageForAction}
-                    onOpenUsersListForForwardMessage={
-                        onOpenUsersListForForwardMessage
-                    }
                     roomType={roomType}
                     messageRefs={messageRefs}
                 />,
@@ -111,7 +98,6 @@ const MessagesByDay: FC<TProps> = ({
         messageRefs,
         messages,
         onChooseMessageForAction,
-        onOpenUsersListForForwardMessage,
         roomType,
         userId,
     ]);

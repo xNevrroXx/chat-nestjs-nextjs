@@ -1,6 +1,5 @@
 import React, { FC, MutableRefObject, useMemo } from "react";
 import {
-    IForwardMessage,
     IInnerForwardedMessage,
     IInnerStandardMessage,
     RoomType,
@@ -21,11 +20,6 @@ type TProps = {
     messages: (IInnerStandardMessage | IInnerForwardedMessage)[];
     userId: TValueOf<Pick<IUserDto, "id">>;
     onChooseMessageForAction: (messageForAction: TMessageForAction) => void;
-    onOpenUsersListForForwardMessage: (
-        forwardedMessageId: TValueOf<
-            Pick<IForwardMessage, "forwardedMessageId">
-        >,
-    ) => void;
     roomType: RoomType;
     messageRefs: MutableRefObject<HTMLDivElement[]>;
     hasLastLargePadding: boolean;
@@ -36,7 +30,6 @@ const MessagesByUser: FC<TProps> = ({
     userId,
     messages,
     onChooseMessageForAction,
-    onOpenUsersListForForwardMessage,
     roomType,
     messageRefs,
     hasLastLargePadding = false,
@@ -102,9 +95,6 @@ const MessagesByUser: FC<TProps> = ({
                     userId={userId}
                     message={message}
                     onChooseMessageForAction={onChooseMessageForAction}
-                    onChooseMessageForForward={() =>
-                        onOpenUsersListForForwardMessage(message.id)
-                    }
                 />
             );
         });
@@ -113,7 +103,6 @@ const MessagesByUser: FC<TProps> = ({
         messageRefs,
         messages,
         onChooseMessageForAction,
-        onOpenUsersListForForwardMessage,
         roomType,
         user,
         userId,

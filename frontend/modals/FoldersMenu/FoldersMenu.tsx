@@ -1,35 +1,45 @@
-import React, { FC, useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { Flex, Modal, Typography, theme, Button, Tooltip, Divider } from "antd";
 import {
     FolderFilled,
     DeleteOutlined,
     PlusCircleFilled,
 } from "@ant-design/icons";
-import {
-    IFolder,
-    TRemoveFolder,
-} from "@/models/rooms-on-folders/IRoomOnFolders.store";
+import { TRemoveFolder } from "@/models/rooms-on-folders/IRoomOnFolders.store";
 import { FlexButton } from "@/components/Button/FlexButton";
+import { useAppDispatch, useAppSelector } from "@/hooks/store.hook";
+import { modalInfoSelector } from "@/store/selectors/modalInfo.selector";
+import { closeModals, openModal } from "@/store/actions/modal-windows";
+import { foldersSelector } from "@/store/selectors/folders.selector";
+import { removeFolder } from "@/store/thunks/roomsOnFolders";
 
 const { useToken } = theme;
 const { Text } = Typography;
 
-interface IFoldersModalProps {
-    isOpen: boolean;
-    onClose: () => void;
-    folders: IFolder[];
-    onRemoveFolder: (data: TRemoveFolder) => void;
-    onOpenCreateFolderModal: () => void;
-}
-
-const FoldersModal: FC<IFoldersModalProps> = ({
-    isOpen,
-    onClose,
-    folders,
-    onRemoveFolder,
-    onOpenCreateFolderModal,
-}) => {
+const FoldersMenu = () => {
+    const dispatch = useAppDispatch();
+    const modalInfo = useAppSelector((state) =>
+        modalInfoSelector(state, "foldersMenu"),
+    );
+    const folders = useAppSelector(foldersSelector);
     const { token } = useToken();
+
+    const onClose = useCallback(() => {
+        dispatch(closeModals());
+    }, [dispatch]);
+
+    const onOpenCreateFolderModal = useCallback(() => {
+        dispatch(
+            openModal({ modalName: "folderCreation", closeOthers: false }),
+        );
+    }, [dispatch]);
+
+    const onRemoveFolder = useCallback(
+        (data: TRemoveFolder) => {
+            void dispatch(removeFolder(data));
+        },
+        [dispatch],
+    );
 
     const folderItemsWithActions = useMemo(() => {
         return folders.map((folder) => {
@@ -69,7 +79,7 @@ const FoldersModal: FC<IFoldersModalProps> = ({
     return (
         <Modal
             title={"Папки"}
-            open={isOpen}
+            open={modalInfo.isOpen}
             onCancel={onClose}
             okButtonProps={{ style: { display: "none" } }}
             cancelButtonProps={{ style: { display: "none" } }}
@@ -106,4 +116,4 @@ const FoldersModal: FC<IFoldersModalProps> = ({
     );
 };
 
-export default FoldersModal;
+export default FoldersMenu;

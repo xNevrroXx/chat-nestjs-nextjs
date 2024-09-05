@@ -4,7 +4,6 @@ import React, {
     useCallback,
     useEffect,
     useMemo,
-    useState,
     useTransition,
 } from "react";
 import { Divider, Input, Layout, Typography } from "antd";
@@ -18,12 +17,14 @@ import { FetchingStatus } from "@/hooks/useFetch.hook";
 import { Spinner } from "@/components/Spinner/Spinner";
 import ListLocalDialogs from "@/components/ListDialogs/ListLocalDialogs";
 import ListRemoteDialogs from "@/components/ListDialogs/ListRemoteDialogs";
-import { clearPreviewRooms } from "@/store/actions/room";
+import {
+    changeQueryStringRooms,
+    clearPreviewRooms,
+} from "@/store/actions/room";
 import { getPreviews } from "@/store/thunks/room";
+import { resetCurrentRoomId } from "@/store/actions/recent-rooms";
 // styles
 import "./dialogs.scss";
-import { resetRecentRoomData } from "@/store/actions/recentRooms";
-import { usePrevious } from "@/hooks/usePrevious";
 
 const { Header, Content } = Layout;
 const { Title, Text } = Typography;
@@ -42,8 +43,7 @@ const Dialogs: FC<IDialogsProps> = ({
     onClickRemoteRoom,
 }) => {
     const dispatch = useAppDispatch();
-    const [dialogQueryString, setDialogQueryString] = useState<string>("");
-    const prevQueryString = usePrevious(dialogQueryString);
+    const dialogQueryString = useAppSelector((state) => state.room.queryString);
     const filteredLocalDialogs = useAppSelector((state) =>
         filteredRoomsSelector(state, dialogQueryString),
     );
@@ -54,25 +54,41 @@ const Dialogs: FC<IDialogsProps> = ({
     const [isPending, startTransition] = useTransition();
 
     useEffect(() => {
-        if (dialogQueryString.length === 0 && prevQueryString.length !== 0) {
-            dispatch(clearPreviewRooms());
-            if (
-                filteredLocalDialogs.every((room) => room.id !== activeRoomId)
-            ) {
-                dispatch(resetRecentRoomData());
-            }
-            return;
-        }
-        if (prevQueryString !== dialogQueryString) {
+        /*
+         * Баг был:
+         * 1) делается запрос на сервер
+         * 2) стираем букву, но запрос на сервер еще не выполнен
+         * 3) сбрасываются room previews
+         * 4) приходят данные с сервера, хотя они уже неактуальны
+         * */
+
+        // P.S: Debounce не помог.
+
+        // Сейчас AsyncThunk просто реджектится, если изменился queryString.
+
+        if (dialogQueryString.trim()) {
             void dispatch(getPreviews(dialogQueryString));
         }
-    }, [
-        activeRoomId,
-        dialogQueryString,
-        dispatch,
-        filteredLocalDialogs,
-        prevQueryString,
-    ]);
+        else {
+            dispatch(clearPreviewRooms());
+        }
+    }, [dialogQueryString, dispatch]);
+
+    useEffect(() => {
+        if (filteredLocalDialogs.some((room) => room.id === activeRoomId)) {
+            return;
+        }
+
+        // reset current room id to not highlight this one in the dialog list
+        dispatch(resetCurrentRoomId());
+    }, [activeRoomId, dispatch, filteredLocalDialogs]);
+
+    const setDialogQueryString = useCallback(
+        (str: string) => {
+            dispatch(changeQueryStringRooms({ queryString: str }));
+        },
+        [dispatch],
+    );
 
     const onChangeQuery: ChangeEventHandler<HTMLInputElement> = useCallback(
         (event) => {
@@ -80,7 +96,7 @@ const Dialogs: FC<IDialogsProps> = ({
                 setDialogQueryString(event.target.value);
             });
         },
-        [],
+        [setDialogQueryString],
     );
 
     const remoteContent = useMemo(() => {

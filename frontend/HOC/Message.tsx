@@ -25,6 +25,8 @@ import {
     TAttachmentType,
     TMessageForAction,
 } from "@/models/room/IRoom.general";
+import { useAppDispatch } from "@/hooks/store.hook";
+import { openMessageForwardingModal } from "@/store/actions/modal-windows";
 
 export type TPaddings = {
     bottom: "small" | "large";
@@ -34,7 +36,6 @@ type TMessageProps = {
     roomType: RoomType;
     userId: TValueOf<Pick<IUserDto, "id">>;
     message: IInnerStandardMessage | IInnerForwardedMessage;
-    onChooseMessageForForward: () => void;
     onChooseMessageForAction: (messageForAction: TMessageForAction) => void;
     paddings: TPaddings;
     shouldSpecifyAuthor?:
@@ -52,12 +53,12 @@ const Message = forwardRef<HTMLDivElement, TMessageProps>(
             roomType,
             message,
             onChooseMessageForAction,
-            onChooseMessageForForward,
             paddings,
             shouldSpecifyAuthor = false,
         },
         outerRef,
     ) => {
+        const dispatch = useAppDispatch();
         const innerRef = useRef<HTMLDivElement | null>(null);
         const [isVoice, setIsVoice] = useState<boolean>(false);
         const [filesWithBlobUrls, setFilesWithBlobUrls] =
@@ -131,6 +132,14 @@ const Message = forwardRef<HTMLDivElement, TMessageProps>(
                 setFilesWithBlobUrls(filesWithBlobUrl);
             }
         }, [message]);
+
+        const onChooseMessageForForward = useCallback(() => {
+            dispatch(
+                openMessageForwardingModal({
+                    forwardingMessageId: message.id,
+                }),
+            );
+        }, [dispatch, message.id]);
 
         const onClickMessageForPin = useCallback(() => {
             onChooseMessageForAction({

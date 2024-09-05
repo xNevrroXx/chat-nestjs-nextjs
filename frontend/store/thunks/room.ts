@@ -26,16 +26,14 @@ import {
     TSendMessage,
     TSendUserTyping,
     TPreviewExistingRoom,
-    IReadMessageSocket,
     IMessageRead,
-    IGetStandardMessage,
     IInnerStandardMessage,
     IInnerForwardedMessage,
 } from "@/models/room/IRoom.store";
 import { TRootState } from "@/store";
 import { TValueOf } from "@/models/TUtils";
-import { excludeRoomFromFolders } from "@/store/actions/roomsOnFolders";
-import { removeRecentRoomData } from "@/store/actions/recentRooms";
+import { excludeRoomFromFolders } from "@/store/actions/rooms-on-folders";
+import { removeRecentRoomData } from "@/store/actions/recent-rooms";
 import { MessageService } from "@/services/Message.service";
 
 const createSocketInstance = createAsyncThunk<
@@ -257,18 +255,26 @@ const getAll = createAsyncThunk("room/get-all", async (_, thunkAPI) => {
     }
 });
 
-const getPreviews = createAsyncThunk<TPreviewExistingRoom[], string>(
-    "room/get-previews",
-    async (query, thunkAPI) => {
-        try {
-            const response = await RoomService.getPreviewsByQuery(query);
-            return response.data;
+const getPreviews = createAsyncThunk<
+    TPreviewExistingRoom[],
+    string,
+    { state: TRootState }
+>("room/get-previews", async (inputQueryString, thunkAPI) => {
+    try {
+        const response = await RoomService.getPreviewsByQuery(inputQueryString);
+
+        const actualQueryString = thunkAPI.getState().room.queryString;
+
+        if (!actualQueryString || inputQueryString !== actualQueryString) {
+            return thunkAPI.rejectWithValue(null);
         }
-        catch (error) {
-            return thunkAPI.rejectWithValue(error);
-        }
-    },
-);
+
+        return response.data;
+    }
+    catch (error) {
+        return thunkAPI.rejectWithValue(error);
+    }
+});
 
 const createRoom = createAsyncThunk<
     IRoom,
@@ -317,7 +323,7 @@ const leaveRoom = createAsyncThunk<
     TValueOf<Pick<IRoom, "id">>,
     TValueOf<Pick<IRoom, "id">>,
     { state: TRootState }
->("room/leave", async (roomId, thunkAPI) => {
+>("room/leave", (roomId, thunkAPI) => {
     try {
         const socket = thunkAPI.getState().room.socket;
 
