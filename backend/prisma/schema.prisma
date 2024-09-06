@@ -122,14 +122,14 @@ model Room {
     createdAt DateTime  @default(now()) @map("created_at")
     updatedAt DateTime? @map("updated_at")
 
-    creatorUser           User?                   @relation("room", fields: [creatorUserId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-    messages              Message[]               @relation("messages")
-    messageBeingProcessed MessageBeingProcessed[] @relation("messages_being_processed")
-    calls                 Call[]                  @relation("calls")
-    usersTyping           UserTyping[]            @relation("users_typing")
-    participants          Participant[]           @relation("participant")
-    pinnedMessages        PinnedMessage[]         @relation("room:pinned_messages")
-    roomOnFolder          RoomOnFolder[]          @relation("room_to_folder")
+    creatorUser            User?                   @relation("room", fields: [creatorUserId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    messages               Message[]               @relation("messages")
+    messageBeingProcessed  MessageBeingProcessed[] @relation("messages_being_processed")
+    calls                  Call[]                  @relation("calls")
+    usersTyping            UserTyping[]            @relation("users_typing")
+    participants           Participant[]           @relation("participant")
+    pinnedMessagesSelector PinnedMessage[]         @relation("room:pinned_messages")
+    roomOnFolder           RoomOnFolder[]          @relation("room_to_folder")
 
     @@map("room")
 }
@@ -215,7 +215,7 @@ model Message {
     forwardThisMessage     Message[]              @relation("forwarded_message")
     userDeletedThisMessage UserOnDeletedMessage[] @relation("users_deleted_message")
     files                  File[]                 @relation("files")
-    pinnedMessages         PinnedMessage[]        @relation("message:pinned_messages")
+    pinnedMessagesSelector PinnedMessage[]        @relation("message:pinned_messages")
 
     @@map("message")
 }

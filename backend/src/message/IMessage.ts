@@ -1,6 +1,6 @@
 import { TUserDto } from "../user/IUser";
 import { TValueOf } from "../models/TUtils";
-import { FileType, Message, Prisma, User } from "@prisma/client";
+import { FileType, Message, Prisma, Room, User } from "@prisma/client";
 import { TFileToClient } from "../file/IFile";
 import { IRoom } from "../room/IRooms";
 import { ILinkPreviewInfo } from "../link-preview/ILinkPreview";
@@ -167,6 +167,19 @@ export interface IOriginalMessage {
     createdAt: Date | string;
     updatedAt: Date | string | undefined | null;
 }
+
+export type TPinnedMessagesByRoom = {
+    roomId: TValueOf<Pick<Room, "id">>;
+    messages: TPinnedMessage[];
+};
+export type TPinnedMessage = {
+    id: string;
+    pinDate: string;
+    message: {
+        id: TValueOf<Pick<Message, "id">>;
+        date: string;
+    };
+};
 
 export interface IFile {
     id: string;

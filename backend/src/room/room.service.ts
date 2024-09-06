@@ -69,13 +69,18 @@ export class RoomService {
                 (roomOnFolder) => roomOnFolder.folderId
             ),
             pinnedMessages: unnormalizedRoom.pinnedMessages.map(
-                (pinnedMessage) => {
-                    return {
-                        id: pinnedMessage.id,
-                        messageId: pinnedMessage.messageId,
-                        text: pinnedMessage.message.text,
-                    };
-                }
+                (pinnedMessage) => ({
+                    id: pinnedMessage.id,
+                    pinDate: DATE_FORMATTER_DATE.format(
+                        new Date(pinnedMessage.createdAt)
+                    ),
+                    message: {
+                        id: pinnedMessage.message.id,
+                        date: DATE_FORMATTER_DATE.format(
+                            new Date(pinnedMessage.message.createdAt)
+                        ),
+                    },
+                })
             ),
         };
         delete result.roomOnFolder;

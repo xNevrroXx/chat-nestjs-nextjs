@@ -25,6 +25,7 @@ import { getPreviews } from "@/store/thunks/room";
 import { resetCurrentRoomId } from "@/store/actions/recent-rooms";
 // styles
 import "./dialogs.scss";
+import { activeRoomSelector } from "@/store/selectors/activeRoom.selector";
 
 const { Header, Content } = Layout;
 const { Title, Text } = Typography;
@@ -43,6 +44,7 @@ const Dialogs: FC<IDialogsProps> = ({
     onClickRemoteRoom,
 }) => {
     const dispatch = useAppDispatch();
+    const currentActiveRoom = useAppSelector(activeRoomSelector);
     const dialogQueryString = useAppSelector((state) => state.room.queryString);
     const filteredLocalDialogs = useAppSelector((state) =>
         filteredRoomsSelector(state, dialogQueryString),
@@ -75,13 +77,13 @@ const Dialogs: FC<IDialogsProps> = ({
     }, [dialogQueryString, dispatch]);
 
     useEffect(() => {
-        if (filteredLocalDialogs.some((room) => room.id === activeRoomId)) {
+        if (currentActiveRoom) {
             return;
         }
 
-        // reset current room id to not highlight this one in the dialog list
+        // reset the current PREVIEW room if this one isn't in the store.
         dispatch(resetCurrentRoomId());
-    }, [activeRoomId, dispatch, filteredLocalDialogs]);
+    }, [currentActiveRoom, dispatch]);
 
     const setDialogQueryString = useCallback(
         (str: string) => {

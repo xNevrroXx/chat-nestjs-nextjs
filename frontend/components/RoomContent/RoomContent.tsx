@@ -15,12 +15,7 @@ import { useAppDispatch } from "@/hooks/store.hook";
 import { readMessageSocket } from "@/store/thunks/room";
 import { useIntersectionObserver } from "@/hooks/useIntersectionObserver.hook";
 import { IUserDto } from "@/models/auth/IAuth.store";
-import {
-    IForwardMessage,
-    IRoom,
-    TPreviewExistingRoom,
-} from "@/models/room/IRoom.store";
-import { TValueOf } from "@/models/TUtils";
+import { IRoom, TPreviewExistingRoom } from "@/models/room/IRoom.store";
 import { TMessageForAction } from "@/models/room/IRoom.general";
 // styles
 import "./room-content.scss";

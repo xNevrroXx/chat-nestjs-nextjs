@@ -10,12 +10,11 @@ import emojiParser from "universal-emoji-parser";
 import { useAppDispatch, useAppSelector } from "@/hooks/store.hook";
 import { messageOwnerSelector } from "@/store/selectors/messageOwner.selector";
 import {
-    IInnerStandardMessage,
     checkIsStandardMessage,
     checkIsOriginalMessage,
+    IMessageBriefInfo,
 } from "@/models/room/IRoom.store";
 import { findMessageSelector } from "@/store/selectors/findMessage.selector";
-import { TValueOf } from "@/models/TUtils";
 import { transform } from "@/utils/inrterweaveTransform";
 import { getMessageById } from "@/store/thunks/room";
 // styles
@@ -25,9 +24,7 @@ const { useToken } = theme;
 const { Text } = Typography;
 
 type TSubMessageProps = {
-    messageBriefInfo: NonNullable<
-        TValueOf<Pick<IInnerStandardMessage, "replyToMessage">>
-    >;
+    messageBriefInfo: IMessageBriefInfo;
     roomId: string;
     isInput?: boolean;
     type?: "answer" | "forwarded";

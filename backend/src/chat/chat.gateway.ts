@@ -31,10 +31,15 @@ import {
     TDeleteMessage,
     TReadMessage,
     TPinMessage,
+    TUnpinnedMessage,
+    TUnpinMessage,
 } from "./chat.models";
 import { FileProcessedMessages, Prisma } from "@prisma/client";
 import { PrismaIncludeFullRoomInfo } from "../room/IRooms";
-import { ForwardedMessagePrisma } from "../message/IMessage";
+import {
+    ForwardedMessagePrisma,
+    TPinnedMessagesByRoom,
+} from "../message/IMessage";
 import { DATE_FORMATTER_DATE } from "../utils/normalizeDate";
 import { RoomsOnFoldersService } from "../rooms-on-folders/rooms-on-folders.service";
 import { WsExceptionFilter } from "../exceptions/ws-exception.filter";
@@ -61,7 +66,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         private readonly fileService: FileService,
         private readonly messageService: MessageService,
         private readonly participantService: ParticipantService,
-        private readonly roomOnFoldersService: RoomsOnFoldersService
+        private readonly roomsOnFoldersService: RoomsOnFoldersService
     ) {
         this.socketRoomsInfo = new SocketRoomsInfo();
     }
@@ -213,7 +218,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         });
 
         const userFoldersWithLeavedRoom =
-            await this.roomOnFoldersService.findMany({
+            await this.roomsOnFoldersService.findMany({
                 where: {
                     userId,
                     roomOnFolder: {
@@ -225,7 +230,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
             });
 
         userFoldersWithLeavedRoom.forEach((folder) => {
-            void this.roomOnFoldersService.removeRoomFromFolder({
+            void this.roomsOnFoldersService.removeRoomFromFolder({
                 where: {
                     folderId_roomId: {
                         roomId: roomId,
@@ -373,6 +378,30 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         if (!sender) {
             throw new WsException("Не найден отправитель сообщения");
         }
+
+        const targetMessage = await this.messageService.findOne({
+            where: {
+                id: message.messageId,
+                AND: {
+                    room: {
+                        participants: {
+                            some: {
+                                userId: sender.id,
+                            },
+                        },
+                    },
+                    pinnedMessages: {
+                        none: {
+                            messageId: message.messageId,
+                        },
+                    },
+                },
+            },
+        });
+        if (!targetMessage) {
+            throw new WsException("Не найдено целевое сообщение");
+        }
+
         const pinnedMessage = (await this.messageService.update({
             where: {
                 id: message.messageId,
@@ -380,7 +409,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
             data: {
                 pinnedMessages: {
                     create: {
-                        roomId: message.roomId,
+                        roomId: targetMessage.roomId,
                     },
                 },
             },
@@ -409,13 +438,20 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
             };
         }>;
 
-        const responseInfo = {
+        const responseInfo: TPinnedMessagesByRoom = {
             roomId: pinnedMessage.roomId,
             messages: pinnedMessage.room.pinnedMessages.map((pinnedMessage) => {
                 return {
                     id: pinnedMessage.id,
-                    text: pinnedMessage.message.text,
-                    messageId: pinnedMessage.message.id,
+                    pinDate: DATE_FORMATTER_DATE.format(
+                        new Date(pinnedMessage.createdAt)
+                    ),
+                    message: {
+                        id: pinnedMessage.message.id,
+                        date: DATE_FORMATTER_DATE.format(
+                            new Date(pinnedMessage.message.createdAt)
+                        ),
+                    },
                 };
             }),
         };
@@ -423,6 +459,63 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         this.server
             .to(pinnedMessage.roomId)
             .emit("message:pinned", responseInfo);
+    }
+
+    @UseGuards(WsAuthGuard)
+    @SubscribeMessage("message:unpin")
+    async handleUnpinMessage(
+        @ConnectedSocket() client,
+        @MessageBody() message: TUnpinMessage
+    ) {
+        const senderPayloadJWT: IUserSessionPayload = client.user;
+
+        const sender = await this.userService.findOne({
+            id: senderPayloadJWT.id,
+        });
+        if (!sender) {
+            throw new WsException("Не найден отправитель сообщения");
+        }
+
+        const targetPinnedMessage = await this.messageService.findOnePinned({
+            where: {
+                id: message.pinnedMessageId,
+                AND: {
+                    room: {
+                        participants: {
+                            some: {
+                                userId: sender.id,
+                            },
+                        },
+                    },
+                },
+            },
+        });
+        if (!targetPinnedMessage) {
+            throw new WsException("Не найдено целевое сообщение");
+        }
+
+        await this.messageService.update({
+            where: {
+                id: targetPinnedMessage.messageId,
+            },
+            data: {
+                pinnedMessages: {
+                    delete: {
+                        id: targetPinnedMessage.id,
+                    },
+                },
+            },
+        });
+
+        const responseInfo: TUnpinnedMessage = {
+            id: targetPinnedMessage.id,
+            roomId: targetPinnedMessage.roomId,
+            messageId: targetPinnedMessage.messageId,
+        };
+
+        this.server
+            .to(targetPinnedMessage.roomId)
+            .emit("message:unpinned", responseInfo);
     }
 
     @UseGuards(WsAuthGuard)

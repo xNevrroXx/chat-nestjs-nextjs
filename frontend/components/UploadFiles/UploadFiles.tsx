@@ -103,6 +103,7 @@ const UploadFiles = forwardRef<HTMLButtonElement, IUploadFilesProps>(
                     footer={null}
                     onCancel={handleCancel}
                 >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                         className="file-input__preview"
                         alt="preview image"

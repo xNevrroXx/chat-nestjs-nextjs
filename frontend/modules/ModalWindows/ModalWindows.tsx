@@ -6,6 +6,7 @@ import Logout from "@/modals/Logout/Logout";
 import MessageForwarding from "@/modals/MessageForwarding/MessageForwarding";
 import Call from "@/modals/Call/Call";
 import { useAppSelector } from "@/hooks/store.hook";
+import PinningMessage from "@/modals/PinningMessage/PinningMessage";
 
 const ModalWindows = () => {
     const callModalInfo = useAppSelector((state) => state.modalWindows.call);
@@ -16,6 +17,7 @@ const ModalWindows = () => {
             <FoldersMenu />
             <GroupCreation />
             <FolderCreation />
+            <PinningMessage />
             <MessageForwarding />
             {callModalInfo.isOpen && <Call modalInfo={callModalInfo} />}
         </Fragment>

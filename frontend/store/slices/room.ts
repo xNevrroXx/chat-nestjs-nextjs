@@ -25,6 +25,7 @@ import {
     handleMessageRead,
     handleMessageSocket,
     handlePinnedMessageSocket,
+    handleUnpinnedMessageSocket,
     setUserId,
     userLeftRoom,
 } from "@/store/actions/room";
@@ -205,6 +206,14 @@ const room = createSlice({
             .addCase(handlePinnedMessageSocket, (state, action) => {
                 state.local.rooms.byId[action.payload.roomId].pinnedMessages =
                     action.payload.messages;
+            })
+            .addCase(handleUnpinnedMessageSocket, (state, action) => {
+                state.local.rooms.byId[action.payload.roomId].pinnedMessages =
+                    state.local.rooms.byId[
+                        action.payload.roomId
+                    ].pinnedMessages.filter(
+                        (pinMessage) => pinMessage.id !== action.payload.id,
+                    );
             })
             .addCase(handleEditedMessageSocket, (state, action) => {
                 const targetChat =

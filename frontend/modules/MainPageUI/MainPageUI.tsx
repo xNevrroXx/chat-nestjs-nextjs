@@ -6,7 +6,6 @@ import ActiveRoom from "@/modules/ActiveRoom/ActiveRoom";
 import { useWindowDimensions } from "@/hooks/useWindowDimensions.hook";
 import { IUserDto } from "@/models/auth/IAuth.store";
 import {
-    IForwardMessage,
     IRoom,
     TPreviewExistingRoom,
     TPreviewExistingRoomWithFlag,
@@ -20,7 +19,7 @@ interface IProps {
     isDrawerOpen: boolean;
     onChangeActiveDialog: (roomId: TValueOf<Pick<IRoom, "id">>) => void;
     onClickRemoteRoom: (remoteRoom: TPreviewExistingRoom) => void;
-    activeRoom: IRoom | TPreviewExistingRoomWithFlag | undefined;
+    activeRoom: IRoom | TPreviewExistingRoomWithFlag | null;
     closeCurrentRoom: () => void;
     onJoinRoom: () => Promise<IRoom | undefined>;
     onCloseSubmenu: () => void;

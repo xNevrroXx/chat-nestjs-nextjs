@@ -15,6 +15,8 @@ import {
     IStandardMessageSocket,
     IForwardedMessageSocket,
     ILeaveRoom,
+    TUnpinnedMessageSocket,
+    IUnpinMessage,
 } from "@/models/room/IRoom.store";
 import { TUserOnline } from "@/models/auth/IAuth.store";
 
@@ -28,6 +30,7 @@ export interface IServerToClientEvents {
     // message
     "message:read": (data: IReadMessageSocket) => void;
     "message:pinned": (data: TPinnedMessagesSocket) => void;
+    "message:unpinned": (data: TUnpinnedMessageSocket) => void;
     "message:edited": (data: IEditedMessageSocket) => void;
     "message:deleted": (data: IDeletedMessageSocket) => void;
     "message:standard": (data: IStandardMessageSocket) => void;
@@ -70,6 +73,7 @@ export interface IClientToServerEvents {
     // message
     "message:read": (data: IMessageRead) => void;
     "message:pin": (data: IPinMessage) => void;
+    "message:unpin": (data: IUnpinMessage) => void;
     "message:edit": (data: IEditMessage) => void;
     "message:delete": (data: IDeleteMessage) => void;
     "message:forward": (data: IForwardMessage) => void;

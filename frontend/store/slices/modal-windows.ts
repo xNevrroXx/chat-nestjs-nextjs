@@ -4,6 +4,7 @@ import {
     openCallModal,
     openMessageForwardingModal,
     openModal,
+    openPinningMessageModal,
 } from "@/store/actions/modal-windows";
 import { TModalWindowsStore } from "@/models/modal-windows/modal-windows.store";
 
@@ -20,6 +21,10 @@ const initialState: TModalWindowsStore = {
     },
     folderCreation: {
         isOpen: false,
+    },
+    pinningMessage: {
+        isOpen: false,
+        messageId: null,
     },
     messageForwarding: {
         isOpen: false,
@@ -62,6 +67,10 @@ const modalWindows = createSlice({
             .addCase(openCallModal, (state, action) => {
                 state.call.isOpen = true;
                 state.call.roomId = action.payload.roomId;
+            })
+            .addCase(openPinningMessageModal, (state, action) => {
+                state.pinningMessage.isOpen = true;
+                state.pinningMessage.messageId = action.payload.messageId;
             });
     },
 });

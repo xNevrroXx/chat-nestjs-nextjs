@@ -13,23 +13,26 @@ const MessageForwarding = () => {
     );
     const roomByIds = useAppSelector((state) => state.room.local.rooms.byId);
 
-    const onClickRoomToForwardMessage = (room: IRoom) => {
-        onClose();
-        if (!modalInfo.forwardingMessageId) {
-            return;
-        }
-
-        void dispatch(
-            forwardMessageSocket({
-                roomId: room.id,
-                forwardedMessageId: modalInfo.forwardingMessageId,
-            }),
-        );
-    };
-
     const onClose = useCallback(() => {
         dispatch(closeModals());
     }, [dispatch]);
+
+    const onOk = useCallback(
+        (room: IRoom) => {
+            onClose();
+            if (!modalInfo.forwardingMessageId) {
+                return;
+            }
+
+            void dispatch(
+                forwardMessageSocket({
+                    roomId: room.id,
+                    forwardedMessageId: modalInfo.forwardingMessageId,
+                }),
+            );
+        },
+        [dispatch, onClose, modalInfo],
+    );
 
     return (
         <Modal
@@ -39,10 +42,7 @@ const MessageForwarding = () => {
             okButtonProps={{ style: { display: "none" } }}
             cancelButtonProps={{ style: { display: "none" } }}
         >
-            <ListRooms
-                rooms={Object.values(roomByIds)}
-                onClickRoom={onClickRoomToForwardMessage}
-            />
+            <ListRooms rooms={Object.values(roomByIds)} onClickRoom={onOk} />
         </Modal>
     );
 };

@@ -1,6 +1,6 @@
 import { TUserDto } from "../user/IUser";
 import { TValueOf } from "../models/TUtils";
-import { Message, File, UserTyping, Room } from "@prisma/client";
+import { Message, File, UserTyping, Room, PinnedMessage } from "@prisma/client";
 
 export interface INewVoiceMessage {
     interlocutorId: TValueOf<Pick<TUserDto, "id">>;
@@ -30,7 +30,14 @@ export type TDeleteMessage = {
 
 export type TPinMessage = {
     messageId: TValueOf<Pick<Message, "id">>;
+};
+export type TUnpinMessage = {
+    pinnedMessageId: TValueOf<Pick<PinnedMessage, "id">>;
+};
+export type TUnpinnedMessage = {
+    id: TValueOf<Pick<PinnedMessage, "id">>;
     roomId: TValueOf<Pick<Room, "id">>;
+    messageId: TValueOf<Pick<Message, "id">>;
 };
 
 export type TReadMessage = {

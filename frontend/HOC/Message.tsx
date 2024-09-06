@@ -26,7 +26,10 @@ import {
     TMessageForAction,
 } from "@/models/room/IRoom.general";
 import { useAppDispatch } from "@/hooks/store.hook";
-import { openMessageForwardingModal } from "@/store/actions/modal-windows";
+import {
+    openMessageForwardingModal,
+    openPinningMessageModal,
+} from "@/store/actions/modal-windows";
 
 export type TPaddings = {
     bottom: "small" | "large";
@@ -141,12 +144,13 @@ const Message = forwardRef<HTMLDivElement, TMessageProps>(
             );
         }, [dispatch, message.id]);
 
-        const onClickMessageForPin = useCallback(() => {
-            onChooseMessageForAction({
-                message,
-                action: MessageAction.PIN,
-            });
-        }, [onChooseMessageForAction, message]);
+        const onPinMessage = useCallback(() => {
+            dispatch(
+                openPinningMessageModal({
+                    messageId: message.id,
+                }),
+            );
+        }, [dispatch, message.id]);
 
         const onClickMessageForReply = useCallback(() => {
             onChooseMessageForAction({
@@ -192,7 +196,7 @@ const Message = forwardRef<HTMLDivElement, TMessageProps>(
                 isMine={isMine}
                 isVoice={isVoice}
                 files={filesWithBlobUrls}
-                onChooseMessageForPin={onClickMessageForPin}
+                onChooseMessageForPin={onPinMessage}
                 onChooseMessageForEdit={onClickMessageForEdit}
                 onChooseMessageForDelete={onClickMessageForDelete}
                 onChooseMessageForReply={onClickMessageForReply}

@@ -10,7 +10,6 @@ const findMessageSelector = createSelector(
     [
         (state: TRootState) => state.room.local,
         (state: TRootState) => state.room.previews,
-        (state: TRootState) => state.room.forwardedMessages,
         (
             _,
             data: {
@@ -25,7 +24,6 @@ const findMessageSelector = createSelector(
     (
         localRooms,
         previewRooms,
-        forwardedMessages,
         { roomId, messageBriefInfo },
     ):
         | IInnerStandardMessage
@@ -33,27 +31,27 @@ const findMessageSelector = createSelector(
         | IOriginalMessage
         | null => {
         const localRoom = localRooms.rooms.byId[roomId];
+        if (localRoom) {
+            const message = localRoom.days[messageBriefInfo.date].find(
+                (msg) => msg.id === messageBriefInfo.id,
+            );
 
-        if (!localRoom || !messageBriefInfo.date || !messageBriefInfo.id) {
-            return null;
+            return message || null;
         }
 
-        let message:
-            | IInnerStandardMessage
-            | IInnerForwardedMessage
-            | IOriginalMessage
-            | undefined = (localRoom.days[messageBriefInfo.date] || []).find(
-            (msg) => msg.id === messageBriefInfo.id,
+        const previewRoom = previewRooms.rooms.find(
+            (room) => room.id === roomId,
         );
+        if (previewRoom) {
+            const message = previewRoom.days[messageBriefInfo.date].find(
+                (msg) => msg.id === messageBriefInfo.id,
+            );
 
-        if (
-            !message &&
-            forwardedMessages.allIds.includes(messageBriefInfo.id)
-        ) {
-            message = forwardedMessages.byId[messageBriefInfo.id];
+            return message || null;
         }
 
-        return message || null;
+        console.log("HERE 2");
+        return null;
     },
 );
 

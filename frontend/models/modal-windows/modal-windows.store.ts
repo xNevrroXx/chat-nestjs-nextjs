@@ -6,6 +6,7 @@ type TModalWindowsStore = {
     logout: TIsOpen;
     foldersMenu: TIsOpen;
     folderCreation: TIsOpen;
+    pinningMessage: TPinningMessageInfo;
     messageForwarding: TForwardingMessageInfo;
     groupCreationMenu: TIsOpen;
 };
@@ -26,8 +27,21 @@ interface IForwardingMessageClosed {
     forwardingMessageId: null;
 }
 
+type TPinningMessageInfo = IPinningMessageOpened | IPinningMessageClosed;
+interface IPinningMessageOpened {
+    isOpen: true;
+    messageId: string;
+}
+interface IPinningMessageClosed {
+    isOpen: false;
+    messageId: null;
+}
+
 interface IOpenModal {
-    modalName: Exclude<keyof TModalWindowsStore, "messageForwarding">;
+    modalName: Exclude<
+        keyof TModalWindowsStore,
+        "messageForwarding" | "call" | "pinningMessage"
+    >;
     closeOthers?: boolean;
 }
 
@@ -48,6 +62,10 @@ interface IOpenForwardingModal {
     forwardingMessageId: string;
 }
 
+interface IOpenPinningMessageModal {
+    messageId: string;
+}
+
 export type {
     TModalWindowsStore,
     IOpenModal,
@@ -57,4 +75,5 @@ export type {
     IOpenCallModal,
     ICallModalOpened,
     ICallModalClosed,
+    IOpenPinningMessageModal,
 };

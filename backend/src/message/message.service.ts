@@ -3,6 +3,7 @@ import { DatabaseService } from "../database/database.service";
 import {
     type Message,
     MessageBeingProcessed,
+    PinnedMessage,
     Prisma,
     PrismaPromise,
     User,
@@ -39,6 +40,20 @@ export class MessageService {
         const { where, include } = params;
 
         return this.prisma.message.findUnique({
+            where,
+            include,
+        });
+    }
+
+    async findOnePinned<T extends Prisma.PinnedMessageInclude>(params: {
+        where: Prisma.PinnedMessageWhereUniqueInput;
+        include?: T;
+    }): Promise<
+        PinnedMessage | Prisma.PinnedMessageGetPayload<{ include: T }> | null
+    > {
+        const { where, include } = params;
+
+        return this.prisma.pinnedMessage.findUnique({
             where,
             include,
         });

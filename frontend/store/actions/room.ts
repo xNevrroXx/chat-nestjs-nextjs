@@ -10,6 +10,7 @@ import {
     IStandardMessageSocket,
     IForwardedMessageSocket,
     IQueryString,
+    TUnpinnedMessageSocket,
 } from "@/models/room/IRoom.store";
 import { TValueOf } from "@/models/TUtils";
 import { IUserDto } from "@/models/auth/IAuth.store";
@@ -39,6 +40,9 @@ const handleMessageSocket = createAction<IStandardMessageSocket>(
 const handlePinnedMessageSocket = createAction<TPinnedMessagesSocket>(
     "room/socket:handle-pinned-message",
 );
+const handleUnpinnedMessageSocket = createAction<TUnpinnedMessageSocket>(
+    "room/socket:handle-unpinned-message",
+);
 const handleEditedMessageSocket = createAction<IEditedMessageSocket>(
     "room/socket:handle-edited-message",
 );
@@ -61,6 +65,7 @@ export {
     addOrUpdateRoomSocket,
     changeQueryStringRooms,
     handlePinnedMessageSocket,
+    handleUnpinnedMessageSocket,
     handleEditedMessageSocket,
     handleDeletedMessageSocket,
     handleForwardedMessageSocket,

@@ -1,38 +1,76 @@
-import {FC, useState} from "react";
-import {TValueOf} from "../../models/TUtils.ts";
-import {IRoom} from "../../models/room/IRoom.store.ts";
+import { TValueOf } from "@/models/TUtils";
+import { IRoom, TPinnedMessage } from "@/models/room/IRoom.store";
+import { FC, useCallback, useMemo, useState } from "react";
+import PinnedMessage from "@/components/PinnedMessage/PinnedMessage";
+import { unpinMessageSocket } from "@/store/thunks/room";
+import { useAppDispatch, useAppSelector } from "@/hooks/store.hook";
 // styles
 import "./pinned-messages.scss";
+import { pinnedMessagesSelector } from "@/store/selectors/pinnedMessages.selector";
 
-interface IPinnedMessagesListProps {
-    pinnedMessages: TValueOf<Pick<IRoom, "pinnedMessages">>
+interface IProps {
+    roomId: TValueOf<Pick<IRoom, "id">>;
 }
 
-const PinnedMessages: FC<IPinnedMessagesListProps> = ({pinnedMessages}) => {
-    const [currentIndex] = useState<number>(pinnedMessages.length - 1);
-
-    return (
-        <div className="pinned-messages">
-            <div className="pinned-messages__border">
-                <span>
-                    <svg height="0" width="0">
-                        <defs>
-                            <clipPath id="clipPath4">
-                                <path d="M0,1a1,1,0,0,1,
-                                      2,0v5.5a1,1,0,0,1,-2,0ZM0,10.5a1,1,0,0,1,
-                                      2,0v5.5a1,1,0,0,1,-2,0ZM0,20a1,1,0,0,1,
-                                      2,0v5.5a1,1,0,0,1,-2,0ZM0,29.5a1,1,0,0,1,
-                                      2,0v5.5a1,1,0,0,1,-2,0Z"
-                                />
-                            </clipPath>
-                        </defs>
-                    </svg>
-                </span>
-                <div className="pinned-messages__mark"></div>
-            </div>
-            {currentIndex}
-        </div>
+const PinnedMessages: FC<IProps> = ({ roomId }) => {
+    const dispatch = useAppDispatch();
+    const pinnedMessages = useAppSelector((state) =>
+        pinnedMessagesSelector(state, roomId),
     );
+    const [indexActivePinMessage, setIndexActivePinMessage] = useState<number>(
+        pinnedMessages.length - 1,
+    );
+
+    const onNextPinnedMessage = useCallback(() => {
+        if (indexActivePinMessage === 0) {
+            setIndexActivePinMessage(pinnedMessages.length - 1);
+            return;
+        }
+
+        setIndexActivePinMessage((prev) => prev - 1);
+    }, [indexActivePinMessage, pinnedMessages.length]);
+
+    const onUnpinMessage = useCallback(
+        (pinnedMessageId: TValueOf<Pick<TPinnedMessage, "id">>) => {
+            onNextPinnedMessage();
+            void dispatch(unpinMessageSocket({ pinnedMessageId }));
+        },
+        [dispatch, onNextPinnedMessage],
+    );
+
+    const activePinnedMessage = useMemo(() => {
+        const targetPinnedMessage = pinnedMessages[indexActivePinMessage];
+
+        if (!pinnedMessages || !targetPinnedMessage) {
+            return;
+        }
+
+        return (
+            <PinnedMessage
+                key={targetPinnedMessage.id}
+                indexMessage={indexActivePinMessage + 1}
+                messageBriefInfo={{
+                    id: targetPinnedMessage.message.id,
+                    date: targetPinnedMessage.message.date,
+                }}
+                roomId={roomId}
+                onUnpinMessage={() => onUnpinMessage(targetPinnedMessage.id)}
+                onClickPinMessage={onNextPinnedMessage}
+            />
+        );
+    }, [
+        indexActivePinMessage,
+        onNextPinnedMessage,
+        onUnpinMessage,
+        pinnedMessages,
+        roomId,
+    ]);
+
+    if (!pinnedMessages.length) {
+        return;
+    }
+
+    return <div className="pinned-messages">{activePinnedMessage}</div>;
 };
 
 export default PinnedMessages;

@@ -13,6 +13,7 @@ import {
     handleMessageRead,
     handleMessageSocket,
     handlePinnedMessageSocket,
+    handleUnpinnedMessageSocket,
 } from "../actions/room";
 import { handleChangeUserOnlineSocket } from "../actions/users";
 // types
@@ -29,6 +30,7 @@ import {
     IMessageRead,
     IInnerStandardMessage,
     IInnerForwardedMessage,
+    IUnpinMessage,
 } from "@/models/room/IRoom.store";
 import { TRootState } from "@/store";
 import { TValueOf } from "@/models/TUtils";
@@ -72,6 +74,9 @@ const connectSocket = createAsyncThunk<void, void, { state: TRootState }>(
             });
             socket?.on("message:pinned", (data) => {
                 thunkApi.dispatch(handlePinnedMessageSocket(data));
+            });
+            socket?.on("message:unpinned", (data) => {
+                thunkApi.dispatch(handleUnpinnedMessageSocket(data));
             });
             socket?.on("message:edited", (data) => {
                 thunkApi.dispatch(handleEditedMessageSocket(data));
@@ -154,6 +159,24 @@ const pinMessageSocket = createAsyncThunk<
         }
 
         socket.emit("message:pin", [data]);
+    }
+    catch (error) {
+        return thunkAPI.rejectWithValue(error);
+    }
+});
+
+const unpinMessageSocket = createAsyncThunk<
+    void,
+    IUnpinMessage,
+    { state: TRootState }
+>("room/socket:unpin-message", (data, thunkAPI) => {
+    try {
+        const socket = thunkAPI.getState().room.socket;
+        if (!socket) {
+            throw new Error("There is no socket");
+        }
+
+        socket.emit("message:unpin", [data]);
     }
     catch (error) {
         return thunkAPI.rejectWithValue(error);
@@ -370,6 +393,7 @@ export {
     readMessageSocket,
     sendMessageSocket,
     pinMessageSocket,
+    unpinMessageSocket,
     editMessageSocket,
     deleteMessageSocket,
     forwardMessageSocket,

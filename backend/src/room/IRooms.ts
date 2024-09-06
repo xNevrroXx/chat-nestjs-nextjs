@@ -1,5 +1,5 @@
 import { Room, RoomType, User } from "@prisma/client";
-import { TMessage } from "../message/IMessage";
+import { TMessage, TPinnedMessagesByRoom } from "../message/IMessage";
 import { TValueOf } from "../models/TUtils";
 import { TNormalizedParticipant } from "../participant/IParticipant";
 import { IsString, Length } from "class-validator";
@@ -7,11 +7,7 @@ import { IsString, Length } from "class-validator";
 export interface IRoom extends Room {
     days: IMessagesByDays;
     participants: TNormalizedParticipant[];
-    pinnedMessages: {
-        id: string;
-        messageId: string;
-        text: string;
-    }[];
+    pinnedMessages: TValueOf<Pick<TPinnedMessagesByRoom, "messages">>;
     folderIds: string[];
 }
 

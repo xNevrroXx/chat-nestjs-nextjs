@@ -61,6 +61,11 @@ export interface IRoom {
     updatedAt: string | undefined | null;
 }
 
+export interface IMessageBriefInfo {
+    id: TValueOf<Pick<IOriginalMessage, "id">>;
+    date: string;
+}
+
 export interface IMessagesByDays {
     [date: string]: (IInnerStandardMessage | IInnerForwardedMessage)[];
 }
@@ -77,9 +82,11 @@ export interface IParticipant {
 
 export type TPinnedMessage = {
     id: string;
-    roomId: TValueOf<Pick<IRoom, "id">>;
-    messageId: TValueOf<Pick<IOriginalMessage, "id">>;
-    text: string | undefined;
+    pinDate: string;
+    message: {
+        id: TValueOf<Pick<IOriginalMessage, "id">>;
+        date: string;
+    };
 };
 
 export interface IUserTyping {
@@ -131,6 +138,9 @@ export interface IFile {
 }
 
 // HTTP response types
+export type TRoomWithPreviewFlag = IRoom & {
+    isPreview: false;
+};
 export type TPreviewExistingRoom = Omit<IRoom, "createdAt" | "updatedAt"> & {
     wasMember: boolean;
 };
@@ -176,6 +186,11 @@ export interface IEditedMessageSocket {
 export type TPinnedMessagesSocket = {
     roomId: TValueOf<Pick<IRoom, "id">>;
     messages: TPinnedMessage[];
+};
+export type TUnpinnedMessageSocket = {
+    id: TValueOf<Pick<TPinnedMessage, "id">>;
+    messageId: TValueOf<Pick<IOriginalMessage, "id">>;
+    roomId: TValueOf<Pick<IRoom, "id">>;
 };
 
 export interface IDeletedMessageSocket {
@@ -261,7 +276,9 @@ export interface IEditMessage {
 
 export interface IPinMessage {
     messageId: TValueOf<Pick<IOriginalMessage, "id">>;
-    roomId: TValueOf<Pick<IRoom, "id">>;
+}
+export interface IUnpinMessage {
+    pinnedMessageId: TValueOf<Pick<TPinnedMessage, "id">>;
 }
 
 // check methods

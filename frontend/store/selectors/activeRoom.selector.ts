@@ -1,21 +1,28 @@
 import { createSelector } from "@reduxjs/toolkit";
 import { TRootState } from "@/store";
-import { IRoom, TPreviewExistingRoomWithFlag } from "@/models/room/IRoom.store";
+import {
+    TPreviewExistingRoomWithFlag,
+    TRoomWithPreviewFlag,
+} from "@/models/room/IRoom.store";
 
 const activeRoomSelector = createSelector(
     [
         (state: TRootState) => state.room,
         (state: TRootState) => state.recentRooms,
     ],
-    (rooms, recentRooms): IRoom | TPreviewExistingRoomWithFlag | undefined => {
+    (
+        rooms,
+        recentRooms,
+    ): TRoomWithPreviewFlag | TPreviewExistingRoomWithFlag | null => {
         const currentRoomId = recentRooms.currentRoomId;
         if (!currentRoomId) {
-            return;
+            return null;
         }
 
         if (
             recentRooms.rooms.byId[currentRoomId] &&
-            recentRooms.rooms.byId[currentRoomId].isPreview
+            recentRooms.rooms.byId[currentRoomId].isPreview &&
+            rooms.previews.rooms.some((room) => room.id === currentRoomId)
         ) {
             return {
                 ...rooms.previews.rooms.find(
@@ -25,7 +32,14 @@ const activeRoomSelector = createSelector(
             };
         }
 
-        return rooms.local.rooms.byId[currentRoomId];
+        if (rooms.local.rooms.byId[currentRoomId]) {
+            return {
+                ...rooms.local.rooms.byId[currentRoomId],
+                isPreview: false,
+            };
+        }
+
+        return null;
     },
 );
 

@@ -29,6 +29,7 @@ import {
     IRoom,
     RoomType,
     TPreviewExistingRoomWithFlag,
+    TRoomWithPreviewFlag,
     TSendMessage,
 } from "@/models/room/IRoom.store";
 import {
@@ -44,7 +45,6 @@ import darkTheme from "@/theme/dark.theme";
 import {
     deleteMessageSocket,
     editMessageSocket,
-    pinMessageSocket,
     sendMessageSocket,
     toggleUserTypingSocket,
 } from "@/store/thunks/room";
@@ -60,7 +60,7 @@ const { useToken } = theme;
 type TJoinRoomFn = () => Promise<IRoom | undefined>;
 interface IActiveChatProps {
     user: IUserDto;
-    room: IRoom | TPreviewExistingRoomWithFlag | null | undefined;
+    room: TRoomWithPreviewFlag | TPreviewExistingRoomWithFlag | null;
     onCloseRoom: () => void;
     onJoinRoom: TJoinRoomFn;
 }
@@ -104,8 +104,8 @@ const ActiveRoom: FC<IActiveChatProps> = ({
             return;
         }
 
-        dispatch(openCallModal({ roomId: room?.id }));
-    }, [dispatch, room?.id]);
+        dispatch(openCallModal({ roomId: room.id }));
+    }, [dispatch, room]);
 
     const onClickScrollButton = () => {
         if (!refChatContent.current) return;
@@ -182,23 +182,6 @@ const ActiveRoom: FC<IActiveChatProps> = ({
         );
         removeMessageForAction();
     };
-
-    const onPinMessage = useCallback(() => {
-        if (
-            !room ||
-            !messageForAction ||
-            messageForAction.action !== MessageAction.PIN
-        )
-            return;
-
-        void dispatch(
-            pinMessageSocket({
-                roomId: room.id,
-                messageId: messageForAction.message.id,
-            }),
-        );
-        removeMessageForAction();
-    }, [dispatch, messageForAction, removeMessageForAction, room]);
 
     const onSendEditedMessage = (
         text: TValueOf<Pick<IEditMessage, "text">>,
@@ -376,7 +359,8 @@ const ActiveRoom: FC<IActiveChatProps> = ({
                                     >
                                         {room.participants.filter(
                                             (member) => member.isStillMember,
-                                        ).length + 1}{" "}
+                                        ).length +
+                                            (room.isPreview ? 0 : 1)}{" "}
                                         уч.
                                     </Text>
                                 )}
@@ -401,9 +385,7 @@ const ActiveRoom: FC<IActiveChatProps> = ({
                     </div>
                 </Header>
 
-                {room.pinnedMessages && room.pinnedMessages.length > 0 && (
-                    <PinnedMessages pinnedMessages={room.pinnedMessages} />
-                )}
+                <PinnedMessages roomId={room.id} />
 
                 <RoomContent
                     className="active-room__content"
@@ -489,18 +471,6 @@ const ActiveRoom: FC<IActiveChatProps> = ({
                         <Text>Сообщение будет удалено только у вас.</Text>
                     )}
                 </Modal>
-
-                <Modal
-                    title="Вы хотели бы закрепить сообщение?"
-                    onCancel={removeMessageForAction}
-                    onOk={onPinMessage}
-                    open={
-                        !!(
-                            messageForAction &&
-                            messageForAction.action === MessageAction.PIN
-                        )
-                    }
-                />
             </Layout>
         </ConfigProvider>
     );
