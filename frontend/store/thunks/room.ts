@@ -14,6 +14,7 @@ import {
     handleMessageSocket,
     handlePinnedMessageSocket,
     handleUnpinnedMessageSocket,
+    handleUserLeftRoomSocket,
 } from "../actions/room";
 import { handleChangeUserOnlineSocket } from "../actions/users";
 // types
@@ -63,8 +64,14 @@ const connectSocket = createAsyncThunk<void, void, { state: TRootState }>(
             socket?.on("user:toggle-online", (data) => {
                 thunkApi.dispatch(handleChangeUserOnlineSocket(data));
             });
+            socket?.on("room:user-left", (data) => {
+                thunkApi.dispatch(handleUserLeftRoomSocket(data));
+            });
             socket?.on("room:toggle-typing", (data) => {
                 thunkApi.dispatch(handleChangeUserTypingSocket(data));
+            });
+            socket?.on("room:add-or-update", (data) => {
+                thunkApi.dispatch(addOrUpdateRoomSocket(data));
             });
             socket?.on("message:read", (data) => {
                 thunkApi.dispatch(handleMessageRead(data));
@@ -86,9 +93,6 @@ const connectSocket = createAsyncThunk<void, void, { state: TRootState }>(
             });
             socket?.on("message:forwarded", (data) => {
                 thunkApi.dispatch(handleForwardedMessageSocket(data));
-            });
-            socket?.on("room:add-or-update", (data) => {
-                thunkApi.dispatch(addOrUpdateRoomSocket(data));
             });
         }
         catch (error) {
@@ -278,15 +282,30 @@ const getAll = createAsyncThunk("room/get-all", async (_, thunkAPI) => {
     }
 });
 
-const getPreviews = createAsyncThunk<
+const getPreviewRoomsByQuery = createAsyncThunk<
     TPreviewExistingRoom[],
-    string,
+    string | void,
     { state: TRootState }
->("room/get-previews", async (inputQueryString, thunkAPI) => {
+>("room/get-previews", async (input, thunkAPI) => {
     try {
-        const response = await RoomService.getPreviewsByQuery(inputQueryString);
+        let inputQueryString: string;
+        if (input) {
+            inputQueryString = input;
+        }
+        else {
+            inputQueryString = thunkAPI.getState().room.queryString;
+        }
 
-        const actualQueryString = thunkAPI.getState().room.queryString;
+        const response =
+            await RoomService.getPreviewRoomsByQuery(inputQueryString);
+
+        let actualQueryString: string;
+        if (input) {
+            actualQueryString = thunkAPI.getState().room.queryString;
+        }
+        else {
+            actualQueryString = inputQueryString;
+        }
 
         if (!actualQueryString || inputQueryString !== actualQueryString) {
             return thunkAPI.rejectWithValue(null);
@@ -346,7 +365,7 @@ const leaveRoom = createAsyncThunk<
     TValueOf<Pick<IRoom, "id">>,
     TValueOf<Pick<IRoom, "id">>,
     { state: TRootState }
->("room/leave", (roomId, thunkAPI) => {
+>("room/leave", async (roomId, thunkAPI) => {
     try {
         const socket = thunkAPI.getState().room.socket;
 
@@ -357,6 +376,8 @@ const leaveRoom = createAsyncThunk<
         thunkAPI.dispatch(removeRecentRoomData(roomId));
         thunkAPI.dispatch(excludeRoomFromFolders(roomId));
         socket.emit("room:leave", [{ roomId }]);
+        await RoomService.leave({ roomId });
+        void thunkAPI.dispatch(getPreviewRoomsByQuery());
         return roomId;
     }
     catch (error) {
@@ -381,7 +402,7 @@ const clearMyHistory = createAsyncThunk<
 
 export {
     getAll,
-    getPreviews,
+    getPreviewRoomsByQuery,
     getMessageById,
     joinRoom,
     leaveRoom,

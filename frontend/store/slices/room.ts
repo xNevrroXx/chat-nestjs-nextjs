@@ -8,7 +8,7 @@ import {
     createSocketInstance,
     getAll,
     getMessageById,
-    getPreviews,
+    getPreviewRoomsByQuery,
     joinRoom,
     leaveRoom,
 } from "@/store/thunks/room";
@@ -26,6 +26,7 @@ import {
     handleMessageSocket,
     handlePinnedMessageSocket,
     handleUnpinnedMessageSocket,
+    handleUserLeftRoomSocket,
     setUserId,
     userLeftRoom,
 } from "@/store/actions/room";
@@ -88,13 +89,13 @@ const room = createSlice({
             .addCase(changeQueryStringRooms, (state, action) => {
                 state.queryString = action.payload.queryString.trim();
             })
-            .addCase(getPreviews.pending, (state) => {
+            .addCase(getPreviewRoomsByQuery.pending, (state) => {
                 state.previews = {
                     ...state.previews,
                     status: FetchingStatus.FETCHING,
                 };
             })
-            .addCase(getPreviews.fulfilled, (state, action) => {
+            .addCase(getPreviewRoomsByQuery.fulfilled, (state, action) => {
                 state.previews = {
                     status: FetchingStatus.FULFILLED,
                     rooms: action.payload,
@@ -111,7 +112,9 @@ const room = createSlice({
                 state.local.rooms.byId[action.payload.id] = action.payload;
             })
             .addCase(addOrUpdateRoomSocket, (state, action) => {
-                state.local.allIds.push(action.payload.id);
+                if (!state.local.allIds.includes(action.payload.id)) {
+                    state.local.allIds.push(action.payload.id);
+                }
                 state.local.rooms.byId[action.payload.id] = action.payload;
             })
             .addCase(joinRoom.fulfilled, (state, action) => {
@@ -212,7 +215,8 @@ const room = createSlice({
                     state.local.rooms.byId[
                         action.payload.roomId
                     ].pinnedMessages.filter(
-                        (pinMessage) => pinMessage.id !== action.payload.id,
+                        (pinMessage) =>
+                            pinMessage.message.id !== action.payload.messageId,
                     );
             })
             .addCase(handleEditedMessageSocket, (state, action) => {
@@ -229,26 +233,6 @@ const room = createSlice({
 
                 targetMessage.text = action.payload.message.text;
                 targetMessage.updatedAt = action.payload.message.updatedAt;
-
-                // action.payload.dependentMessages.forEach((dependentMessage) => {
-                //     const msg = targetChat.days[dependentMessage.date].find(
-                //         (msg) => dependentMessage.id === msg.id,
-                //     );
-                //     if (msg) {
-                //         if (checkIsMessage(msg)) {
-                //             msg.replyToMessage!.updatedAt =
-                //                 action.payload.message.updatedAt;
-                //             msg.replyToMessage!.text =
-                //                 action.payload.message.text;
-                //         }
-                //         else {
-                //             msg.forwardedMessage.updatedAt =
-                //                 action.payload.message.updatedAt;
-                //             msg.forwardedMessage.text =
-                //                 action.payload.message.text;
-                //         }
-                //     }
-                // });
             })
             .addCase(handleDeletedMessageSocket, (state, action) => {
                 const targetChat =
@@ -262,26 +246,18 @@ const room = createSlice({
                     return;
                 }
                 targetMessage.isDeleted = action.payload.isDeleted;
-
-                // action.payload.dependentMessages.forEach((dependentMessage) => {
-                //     const msg = targetChat.days[dependentMessage.date].find(
-                //         (msg) => dependentMessage.id === msg.id,
-                //     );
-                //     if (msg) {
-                //         if (checkIsMessage(msg)) {
-                //             msg.replyToMessage!.isDeleted = true;
-                //         }
-                //         else {
-                //             msg.forwardedMessage.isDeleted = true;
-                //         }
-                //     }
-                // });
             })
             .addCase(handleChangeUserTypingSocket, (state, action) => {
                 const targetChat =
                     state.local.rooms.byId[action.payload[0].roomId];
 
                 targetChat.participants = action.payload;
+            })
+            .addCase(handleUserLeftRoomSocket, (state, action) => {
+                state.local.rooms.byId[action.payload.roomId].participants.find(
+                    (participant) =>
+                        participant.userId === action.payload.userId,
+                )!.isStillMember = false;
             });
     },
 });

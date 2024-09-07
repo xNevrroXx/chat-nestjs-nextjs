@@ -41,7 +41,7 @@ const SubMessage: FC<TSubMessageProps> = ({
     );
 
     useEffect(() => {
-        if (!(message == null)) {
+        if (message) {
             return;
         }
 

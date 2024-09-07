@@ -173,7 +173,6 @@ export type TPinnedMessagesByRoom = {
     messages: TPinnedMessage[];
 };
 export type TPinnedMessage = {
-    id: string;
     pinDate: string;
     message: {
         id: TValueOf<Pick<Message, "id">>;

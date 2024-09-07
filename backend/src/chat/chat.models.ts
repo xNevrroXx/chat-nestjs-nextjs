@@ -32,10 +32,9 @@ export type TPinMessage = {
     messageId: TValueOf<Pick<Message, "id">>;
 };
 export type TUnpinMessage = {
-    pinnedMessageId: TValueOf<Pick<PinnedMessage, "id">>;
+    messageId: TValueOf<Pick<PinnedMessage, "messageId">>;
 };
 export type TUnpinnedMessage = {
-    id: TValueOf<Pick<PinnedMessage, "id">>;
     roomId: TValueOf<Pick<Room, "id">>;
     messageId: TValueOf<Pick<Message, "id">>;
 };

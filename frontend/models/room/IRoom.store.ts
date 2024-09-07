@@ -81,7 +81,6 @@ export interface IParticipant {
 }
 
 export type TPinnedMessage = {
-    id: string;
     pinDate: string;
     message: {
         id: TValueOf<Pick<IOriginalMessage, "id">>;
@@ -188,7 +187,6 @@ export type TPinnedMessagesSocket = {
     messages: TPinnedMessage[];
 };
 export type TUnpinnedMessageSocket = {
-    id: TValueOf<Pick<TPinnedMessage, "id">>;
     messageId: TValueOf<Pick<IOriginalMessage, "id">>;
     roomId: TValueOf<Pick<IRoom, "id">>;
 };
@@ -278,7 +276,7 @@ export interface IPinMessage {
     messageId: TValueOf<Pick<IOriginalMessage, "id">>;
 }
 export interface IUnpinMessage {
-    pinnedMessageId: TValueOf<Pick<TPinnedMessage, "id">>;
+    messageId: TValueOf<Pick<IOriginalMessage, "id">>;
 }
 
 // check methods

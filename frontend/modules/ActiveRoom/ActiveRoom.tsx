@@ -373,7 +373,7 @@ const ActiveRoom: FC<IActiveChatProps> = ({
                             </Flex>
                         </div>
                     </div>
-                    <div className="active-room__space"></div>
+                    <PinnedMessages roomId={room.id} />
                     <div className="active-room__options">
                         {!checkIsPreviewExistingRoomWithFlag(room) && (
                             <PhoneOutlined
@@ -384,8 +384,6 @@ const ActiveRoom: FC<IActiveChatProps> = ({
                         <MenuFoldOutlined className="custom" />
                     </div>
                 </Header>
-
-                <PinnedMessages roomId={room.id} />
 
                 <RoomContent
                     className="active-room__content"

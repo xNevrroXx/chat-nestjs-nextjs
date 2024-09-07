@@ -1,7 +1,12 @@
 import { createSelector } from "@reduxjs/toolkit";
 import { TRootState } from "@/store";
 import { TValueOf } from "@/models/TUtils";
-import { IRoom, TPinnedMessage } from "@/models/room/IRoom.store";
+import {
+    IInnerForwardedMessage,
+    IInnerStandardMessage,
+    IOriginalMessage,
+    IRoom,
+} from "@/models/room/IRoom.store";
 
 const pinnedMessagesSelector = createSelector(
     [
@@ -9,20 +14,42 @@ const pinnedMessagesSelector = createSelector(
         (state: TRootState) => state.room.previews,
         (_, roomId: TValueOf<Pick<IRoom, "id">>) => roomId,
     ],
-    (localRooms, previewRooms, targetRoomId): TPinnedMessage[] => {
-        console.log("targetRoomID selector: ", targetRoomId);
+    (
+        localRooms,
+        previewRooms,
+        targetRoomId,
+    ): (
+        | IInnerStandardMessage
+        | IInnerForwardedMessage
+        | IOriginalMessage
+    )[] => {
         if (localRooms.allIds.includes(targetRoomId)) {
-            return localRooms.rooms.byId[targetRoomId].pinnedMessages;
+            const room = localRooms.rooms.byId[targetRoomId];
+
+            const pinnedMessages = room.pinnedMessages;
+            return pinnedMessages
+                .map((pinnedMsgInfo) => {
+                    return room.days[pinnedMsgInfo.message.date].find(
+                        (msg) => msg.id === pinnedMsgInfo.message.id,
+                    )!;
+                })
+                .filter((msg) => !msg.isDeleted);
         }
 
         const previewRoom = previewRooms.rooms.find(
             (previewRoom) => previewRoom.id === targetRoomId,
         );
         if (previewRoom) {
-            return previewRoom.pinnedMessages;
+            const pinnedMessages = previewRoom.pinnedMessages;
+            return pinnedMessages
+                .map((pinnedMsgInfo) => {
+                    return previewRoom.days[pinnedMsgInfo.message.date].find(
+                        (msg) => msg.id === pinnedMsgInfo.message.id,
+                    )!;
+                })
+                .filter((msg) => !msg.isDeleted);
         }
 
-        console.log("HERE");
         return [];
     },
 );

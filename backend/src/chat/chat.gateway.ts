@@ -7,6 +7,7 @@ import {
     OnGatewayConnection,
     ConnectedSocket,
     WsException,
+    WsResponse,
 } from "@nestjs/websockets";
 import { UseFilters, UseGuards } from "@nestjs/common";
 import { Server, Socket } from "socket.io";
@@ -245,7 +246,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
         this.server
             .to(roomId)
-            .emit("room:left", { roomId, userId: userWhoLeft.userId });
+            .emit("room:user-left", { roomId, userId: userWhoLeft.userId });
     }
 
     @UseGuards(WsAuthGuard)
@@ -387,14 +388,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
                         participants: {
                             some: {
                                 userId: sender.id,
+                                isStillMember: true,
                             },
                         },
                     },
-                    pinnedMessages: {
-                        none: {
-                            messageId: message.messageId,
-                        },
-                    },
+                    pinnedMessages: null,
                 },
             },
         });
@@ -442,7 +440,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
             roomId: pinnedMessage.roomId,
             messages: pinnedMessage.room.pinnedMessages.map((pinnedMessage) => {
                 return {
-                    id: pinnedMessage.id,
                     pinDate: DATE_FORMATTER_DATE.format(
                         new Date(pinnedMessage.createdAt)
                     ),
@@ -478,7 +475,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
         const targetPinnedMessage = await this.messageService.findOnePinned({
             where: {
-                id: message.pinnedMessageId,
+                messageId: message.messageId,
                 AND: {
                     room: {
                         participants: {
@@ -501,14 +498,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
             data: {
                 pinnedMessages: {
                     delete: {
-                        id: targetPinnedMessage.id,
+                        messageId: targetPinnedMessage.messageId,
                     },
                 },
             },
         });
 
         const responseInfo: TUnpinnedMessage = {
-            id: targetPinnedMessage.id,
             roomId: targetPinnedMessage.roomId,
             messageId: targetPinnedMessage.messageId,
         };
@@ -536,9 +532,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         if (!sender) {
             throw new WsException("Не найден отправитель сообщения");
         }
-        const deletedMessageQuery: Prisma.MessageUpdateInput =
+        const deleteMessageQuery: Prisma.MessageUpdateInput =
             message.isForEveryone
-                ? { isDeleteForEveryone: true }
+                ? {
+                      isDeleteForEveryone: true,
+                  }
                 : {
                       userDeletedThisMessage: {
                           create: {
@@ -554,7 +552,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
             where: {
                 id: message.messageId,
             },
-            data: deletedMessageQuery,
+            data: deleteMessageQuery,
             include: {
                 repliesThisMessage: true,
                 forwardThisMessage: true,

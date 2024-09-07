@@ -3,6 +3,7 @@ import { AxiosResponse } from "axios";
 import $api from "../http";
 import type { TRoomsResponse } from "@/models/room/IRoom.response";
 import {
+    ILeaveRoom,
     IRoom,
     TCreateGroupRoom,
     TPreviewExistingRoom,
@@ -30,11 +31,17 @@ class RoomService {
         return $api.post<IRoom>(this.base + "/create", data);
     }
 
+    static async leave(
+        data: Omit<ILeaveRoom, "userId">,
+    ): Promise<AxiosResponse> {
+        return $api.post<IRoom>(this.base + "/leave", data);
+    }
+
     static async getAll(): Promise<AxiosResponse<TRoomsResponse>> {
         return $api.get<TRoomsResponse>(this.base + "/all");
     }
 
-    static async getPreviewsByQuery(
+    static async getPreviewRoomsByQuery(
         query: string,
     ): Promise<AxiosResponse<TPreviewExistingRoom[]>> {
         return $api.get<TPreviewExistingRoom[]>(this.base + "/find-by-query", {

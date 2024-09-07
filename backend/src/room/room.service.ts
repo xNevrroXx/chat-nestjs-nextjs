@@ -70,7 +70,6 @@ export class RoomService {
             ),
             pinnedMessages: unnormalizedRoom.pinnedMessages.map(
                 (pinnedMessage) => ({
-                    id: pinnedMessage.id,
                     pinDate: DATE_FORMATTER_DATE.format(
                         new Date(pinnedMessage.createdAt)
                     ),

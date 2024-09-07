@@ -55,6 +55,9 @@ const handleForwardedMessageSocket = createAction<IForwardedMessageSocket>(
 const handleChangeUserTypingSocket = createAction<IParticipant[]>(
     "room/socket:room:handle-toggle-typing",
 );
+const handleUserLeftRoomSocket = createAction<ILeaveRoom>(
+    "room/socket:handle-user-left-room",
+);
 
 export {
     setUserId,
@@ -66,6 +69,7 @@ export {
     changeQueryStringRooms,
     handlePinnedMessageSocket,
     handleUnpinnedMessageSocket,
+    handleUserLeftRoomSocket,
     handleEditedMessageSocket,
     handleDeletedMessageSocket,
     handleForwardedMessageSocket,

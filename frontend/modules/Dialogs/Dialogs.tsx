@@ -21,7 +21,7 @@ import {
     changeQueryStringRooms,
     clearPreviewRooms,
 } from "@/store/actions/room";
-import { getPreviews } from "@/store/thunks/room";
+import { getPreviewRoomsByQuery } from "@/store/thunks/room";
 import { resetCurrentRoomId } from "@/store/actions/recent-rooms";
 // styles
 import "./dialogs.scss";
@@ -69,7 +69,7 @@ const Dialogs: FC<IDialogsProps> = ({
         // Сейчас AsyncThunk просто реджектится, если изменился queryString.
 
         if (dialogQueryString.trim()) {
-            void dispatch(getPreviews(dialogQueryString));
+            void dispatch(getPreviewRoomsByQuery(dialogQueryString));
         }
         else {
             dispatch(clearPreviewRooms());
