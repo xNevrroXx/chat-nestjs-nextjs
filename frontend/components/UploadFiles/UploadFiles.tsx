@@ -1,5 +1,5 @@
 import React, { useState, forwardRef } from "react";
-import { Upload, Modal, UploadFile } from "antd";
+import { Upload, Modal, UploadFile, Image } from "antd";
 // styles
 import "./upload-files.scss";
 import { useAppSelector } from "@/hooks/store.hook";
@@ -25,10 +25,7 @@ const UploadFiles = forwardRef<HTMLButtonElement, IUploadFilesProps>(
     ({ updateFileList, fileList }, ref) => {
         const room = useAppSelector(activeRoomSelector);
         const [isPreviewOpen, setIsPreviewOpen] = useState<boolean>(false);
-        const [previewTitle, setPreviewTitle] = useState<string>("");
         const [previewImage, setPreviewImage] = useState<string>("");
-
-        const handleCancel = () => setIsPreviewOpen(false);
 
         const handlePreview = async (file: UploadFile) => {
             if (!file.url && !file.preview) {
@@ -37,10 +34,6 @@ const UploadFiles = forwardRef<HTMLButtonElement, IUploadFilesProps>(
             }
 
             setPreviewImage(file.url || file.preview || "");
-            setPreviewTitle(
-                file.name ||
-                    file.url!.substring(file.url!.lastIndexOf("/") + 1),
-            );
             setIsPreviewOpen(true);
         };
 
@@ -96,21 +89,20 @@ const UploadFiles = forwardRef<HTMLButtonElement, IUploadFilesProps>(
                 >
                     <button style={{ display: "none" }} ref={ref}></button>
                 </Upload>
-                <Modal
-                    className="file-input__preview-wrapper"
-                    title={previewTitle}
-                    open={isPreviewOpen}
-                    footer={null}
-                    onCancel={handleCancel}
-                >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                        className="file-input__preview"
-                        alt="preview image"
-                        style={{ width: "100%" }}
+                {isPreviewOpen && (
+                    <Image
+                        alt={"preview image"}
+                        wrapperStyle={{ display: "none" }}
+                        preview={{
+                            visible: isPreviewOpen,
+                            onVisibleChange: (visible) =>
+                                setIsPreviewOpen(visible),
+                            afterOpenChange: (visible) =>
+                                !visible && setPreviewImage(""),
+                        }}
                         src={previewImage}
                     />
-                </Modal>
+                )}
             </div>
         );
     },
