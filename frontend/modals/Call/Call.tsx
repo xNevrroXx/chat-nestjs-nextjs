@@ -10,14 +10,14 @@ import {
 import { useWebRTC } from "@/hooks/useWebRTC.hook";
 import { useAppDispatch } from "@/hooks/store.hook";
 import { closeModals } from "@/store/actions/modal-windows";
-import { ICallModalOpened } from "@/models/modal-windows/modal-windows.store";
+import { IModalWithRoomIdOpened } from "@/models/modal-windows/modal-windows.store";
 // styles
 import "./call.scss";
 
 const { useToken } = theme;
 
 interface IProps {
-    modalInfo: ICallModalOpened;
+    modalInfo: IModalWithRoomIdOpened;
 }
 
 const Call: FC<IProps> = ({ modalInfo }) => {

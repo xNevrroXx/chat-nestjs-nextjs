@@ -20,14 +20,14 @@ const MessageForwarding = () => {
     const onOk = useCallback(
         (room: IRoom) => {
             onClose();
-            if (!modalInfo.forwardingMessageId) {
+            if (!modalInfo.messageId) {
                 return;
             }
 
             void dispatch(
                 forwardMessageSocket({
                     roomId: room.id,
-                    forwardedMessageId: modalInfo.forwardingMessageId,
+                    forwardedMessageId: modalInfo.messageId,
                 }),
             );
         },

@@ -1,8 +1,6 @@
 .pinned-messages {
-    display: flex;
-    justify-content: space-between;
     position: relative;
-    max-height: 3rem;
+    height: 3rem;
     z-index: 100;
 
     &__mark {
@@ -16,5 +14,13 @@
         transition: transform 0.25s ease-in-out;
         transform: translateY(0);
         height: 7px;
+    }
+}
+
+@media (max-width: 1024px) {
+    .pinned-messages {
+        width: 100%;
+        height: max-content;
+        min-height: auto;
     }
 }

@@ -7,9 +7,9 @@ import { PushpinOutlined } from "@ant-design/icons";
 // own modules
 import { IRoom } from "@/models/room/IRoom.store";
 import { TValueOf } from "@/models/TUtils";
+import { findMessageSelector } from "@/store/selectors/findMessage.selector";
 // styles
 import "./pinned-message.scss";
-import { findMessageSelector } from "@/store/selectors/findMessage.selector";
 
 const { useToken } = theme;
 const { Text } = Typography;
@@ -33,17 +33,16 @@ const PinnedMessage: FC<IPinnedMessageProps> = ({
         <Row
             className={classNames("pinned-message")}
             data-reply-message-id={message.id}
-            style={{ color: token.colorText }}
-            gutter={2}
+            style={{
+                color: token.colorText,
+            }}
+            gutter={1}
             justify={"space-between"}
         >
-            <Col span={19} onClick={onClickPinMessage}>
+            <Col span={20} onClick={onClickPinMessage}>
                 <Flex
                     className={"pinned-message__flex-container"}
-                    vertical
-                    component={"a"}
-                    // @ts-ignore
-                    href={"#".concat(message.id)}
+                    gap={"small"}
                 >
                     <div className="pinned-message__border">
                         <span>
@@ -63,23 +62,38 @@ const PinnedMessage: FC<IPinnedMessageProps> = ({
                         </span>
                         <div className="pinned-messages__mark"></div>
                     </div>
-                    <Text strong>Пересланное сообщение #{indexMessage}</Text>
-                    <Text ellipsis={true}>
-                        {message.text && (
-                            <Interweave
-                                noWrap
-                                content={emojiParser.parse(message.text, {
-                                    emojiCDN:
-                                        "https://cdnjs.cloudflare.com/ajax/libs/twemoji/",
-                                })}
-                            />
-                        )}
-                    </Text>
+                    <Flex
+                        className={"pinned-message__flex-container"}
+                        vertical
+                        component={"a"}
+                        // @ts-ignore
+                        href={"#".concat(message.id)}
+                    >
+                        <Text strong style={{ fontSize: token.fontSize }}>
+                            Пересланное сообщение #{indexMessage}
+                        </Text>
+                        <Text
+                            ellipsis={true}
+                            style={{ fontSize: token.fontSizeSM }}
+                        >
+                            {message.text && (
+                                <Interweave
+                                    noWrap
+                                    content={emojiParser.parse(message.text, {
+                                        emojiCDN:
+                                            "https://cdnjs.cloudflare.com/ajax/libs/twemoji/",
+                                    })}
+                                />
+                            )}
+                        </Text>
+                    </Flex>
                 </Flex>
             </Col>
             <Col span={3}>
                 <Flex
-                    className={"pinned-message__flex-container"}
+                    className={
+                        "pinned-message__flex-container pinned-message__flex-container_justify-right"
+                    }
                     align={"center"}
                 >
                     <Button

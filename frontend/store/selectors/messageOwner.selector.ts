@@ -6,16 +6,16 @@ const messageOwnerSelector = createSelector(
     [
         (state: TRootState) => state.authentication.user,
         (state: TRootState) => state.users.users,
-        (_, messageId: string | undefined | null) => messageId,
+        (_, senderId: string | undefined | null) => senderId,
     ],
-    (user, users, targetId): IUserDto | undefined => {
-        if (!targetId) {
+    (user, users, senderId): IUserDto | undefined => {
+        if (!senderId) {
             return;
         }
-        if (user && user.id === targetId) {
+        if (user && user.id === senderId) {
             return user;
         }
-        return users.find((user) => user.id === targetId);
+        return users.find((user) => user.id === senderId);
     },
 );
 

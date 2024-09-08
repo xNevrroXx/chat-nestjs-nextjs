@@ -376,7 +376,7 @@ const leaveRoom = createAsyncThunk<
         thunkAPI.dispatch(removeRecentRoomData(roomId));
         thunkAPI.dispatch(excludeRoomFromFolders(roomId));
         socket.emit("room:leave", [{ roomId }]);
-        await RoomService.leave({ roomId });
+        // void RoomService.leave({ roomId });
         void thunkAPI.dispatch(getPreviewRoomsByQuery());
         return roomId;
     }

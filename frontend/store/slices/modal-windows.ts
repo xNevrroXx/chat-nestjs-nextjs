@@ -2,6 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 import {
     closeModals,
     openCallModal,
+    openDeletingMessageModal,
     openMessageForwardingModal,
     openModal,
     openPinningMessageModal,
@@ -11,7 +12,6 @@ import { TModalWindowsStore } from "@/models/modal-windows/modal-windows.store";
 const initialState: TModalWindowsStore = {
     call: {
         isOpen: false,
-        roomId: null,
     },
     logout: {
         isOpen: false,
@@ -22,15 +22,16 @@ const initialState: TModalWindowsStore = {
     folderCreation: {
         isOpen: false,
     },
+    groupCreationMenu: {
+        isOpen: false,
+    },
     pinningMessage: {
         isOpen: false,
-        messageId: null,
     },
     messageForwarding: {
         isOpen: false,
-        forwardingMessageId: null,
     },
-    groupCreationMenu: {
+    messageDeletion: {
         isOpen: false,
     },
 };
@@ -60,17 +61,30 @@ const modalWindows = createSlice({
                 }
             })
             .addCase(openMessageForwardingModal, (state, action) => {
-                state.messageForwarding.isOpen = true;
-                state.messageForwarding.forwardingMessageId =
-                    action.payload.forwardingMessageId;
+                state.messageForwarding = {
+                    isOpen: true,
+                    messageId: action.payload.messageId,
+                };
             })
             .addCase(openCallModal, (state, action) => {
-                state.call.isOpen = true;
-                state.call.roomId = action.payload.roomId;
+                state.call = {
+                    isOpen: true,
+                    roomId: action.payload.roomId,
+                };
             })
             .addCase(openPinningMessageModal, (state, action) => {
-                state.pinningMessage.isOpen = true;
-                state.pinningMessage.messageId = action.payload.messageId;
+                state.pinningMessage = {
+                    isOpen: true,
+                    messageId: action.payload.messageId,
+                };
+            })
+            .addCase(openDeletingMessageModal, (state, action) => {
+                state.messageDeletion = {
+                    isOpen: true,
+                    roomId: action.payload.roomId,
+                    senderId: action.payload.senderId,
+                    messageId: action.payload.messageId,
+                };
             });
     },
 });

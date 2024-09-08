@@ -1,40 +1,33 @@
-import { IRoom } from "@/models/room/IRoom.store";
+import { IRoom, RoomType } from "@/models/room/IRoom.store";
 import { TValueOf } from "@/models/TUtils";
 
 type TModalWindowsStore = {
-    call: TCallModalInfo;
+    call: TModalWithRoomId;
     logout: TIsOpen;
     foldersMenu: TIsOpen;
     folderCreation: TIsOpen;
-    pinningMessage: TPinningMessageInfo;
-    messageForwarding: TForwardingMessageInfo;
+    pinningMessage: TModalWithMessageId;
+    messageForwarding: TModalWithMessageId;
+    messageDeletion: TModalDeletionInfo;
     groupCreationMenu: TIsOpen;
 };
 
 type TIsOpen = {
     isOpen: boolean;
 };
-
-type TForwardingMessageInfo =
-    | IForwardingMessageOpened
-    | IForwardingMessageClosed;
-interface IForwardingMessageOpened {
-    isOpen: true;
-    forwardingMessageId: string;
-}
-interface IForwardingMessageClosed {
+type TClosed = {
     isOpen: false;
-    forwardingMessageId: null;
-}
+};
 
-type TPinningMessageInfo = IPinningMessageOpened | IPinningMessageClosed;
-interface IPinningMessageOpened {
+type TModalWithMessageId = IModalWithMessageIdOpened | TClosed;
+type TModalWithRoomId = IModalWithRoomIdOpened | TClosed;
+interface IModalWithMessageIdOpened {
     isOpen: true;
     messageId: string;
 }
-interface IPinningMessageClosed {
-    isOpen: false;
-    messageId: null;
+interface IModalWithRoomIdOpened {
+    isOpen: true;
+    roomId: string;
 }
 
 interface IOpenModal {
@@ -42,38 +35,29 @@ interface IOpenModal {
         keyof TModalWindowsStore,
         "messageForwarding" | "call" | "pinningMessage"
     >;
+    // @defaultValue true
     closeOthers?: boolean;
 }
-
-type TCallModalInfo = ICallModalClosed | ICallModalOpened;
-interface ICallModalClosed {
-    isOpen: false;
-    roomId: null;
-}
-interface ICallModalOpened {
-    isOpen: true;
-    roomId: string;
-}
-
-interface IOpenCallModal {
+interface IOpenModalWithRoomId {
     roomId: TValueOf<Pick<IRoom, "id">>;
 }
-interface IOpenForwardingModal {
-    forwardingMessageId: string;
-}
-
-interface IOpenPinningMessageModal {
+interface IOpenModalWithMessageId {
     messageId: string;
 }
+
+type TModalDeletionInfo = TModalDeletionInfoOpened | TClosed;
+type TModalDeletionInfoOpened = IModalWithMessageIdOpened &
+    IModalWithRoomIdOpened & {
+        senderId: string;
+    };
+type TOpenModalDeletion = Omit<TModalDeletionInfoOpened, "isOpen">;
 
 export type {
     TModalWindowsStore,
     IOpenModal,
-    IOpenForwardingModal,
-    TCallModalInfo,
-    TForwardingMessageInfo,
-    IOpenCallModal,
-    ICallModalOpened,
-    ICallModalClosed,
-    IOpenPinningMessageModal,
+    TOpenModalDeletion,
+    IOpenModalWithMessageId,
+    TModalWithRoomId,
+    IOpenModalWithRoomId,
+    IModalWithRoomIdOpened,
 };

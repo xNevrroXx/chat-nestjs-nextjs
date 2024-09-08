@@ -27,6 +27,7 @@ import {
 } from "@/models/room/IRoom.general";
 import { useAppDispatch } from "@/hooks/store.hook";
 import {
+    openDeletingMessageModal,
     openMessageForwardingModal,
     openPinningMessageModal,
 } from "@/store/actions/modal-windows";
@@ -139,7 +140,7 @@ const Message = forwardRef<HTMLDivElement, TMessageProps>(
         const onChooseMessageForForward = useCallback(() => {
             dispatch(
                 openMessageForwardingModal({
-                    forwardingMessageId: message.id,
+                    messageId: message.id,
                 }),
             );
         }, [dispatch, message.id]);
@@ -169,21 +170,14 @@ const Message = forwardRef<HTMLDivElement, TMessageProps>(
         }, [onChooseMessageForAction, message]);
 
         const onClickMessageForDelete = useCallback(() => {
-            if (roomType === RoomType.GROUP && message.senderId === userId) {
-                onChooseMessageForAction({
-                    message,
-                    action: MessageAction.DELETE,
-                    isForEveryone: true,
-                });
-                return;
-            }
-
-            onChooseMessageForAction({
-                message,
-                action: MessageAction.DELETE,
-                isForEveryone: false,
-            });
-        }, [roomType, message, userId, onChooseMessageForAction]);
+            dispatch(
+                openDeletingMessageModal({
+                    messageId: message.id,
+                    senderId: message.senderId,
+                    roomId: message.roomId,
+                }),
+            );
+        }, [dispatch, message.id, message.roomId, message.senderId]);
 
         const isMine = useMemo((): boolean => {
             return userId === message.senderId;

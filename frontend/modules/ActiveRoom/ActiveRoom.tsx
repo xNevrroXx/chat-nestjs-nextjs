@@ -3,16 +3,7 @@ import {
     PhoneOutlined,
     LeftOutlined,
 } from "@ant-design/icons";
-import {
-    Button,
-    Checkbox,
-    ConfigProvider,
-    Flex,
-    Layout,
-    Modal,
-    theme,
-    Typography,
-} from "antd";
+import { Button, ConfigProvider, Flex, Layout, theme, Typography } from "antd";
 import React, { type FC, useCallback, useMemo, useRef, useState } from "react";
 // own modules
 import $api from "@/http";
@@ -43,7 +34,6 @@ import { truncateTheText } from "@/utils/truncateTheText";
 import darkTheme from "@/theme/dark.theme";
 // actions
 import {
-    deleteMessageSocket,
     editMessageSocket,
     sendMessageSocket,
     toggleUserTypingSocket,
@@ -73,6 +63,7 @@ const ActiveRoom: FC<IActiveChatProps> = ({
 }) => {
     const { token } = useToken();
     const dispatch = useAppDispatch();
+    const deviceDimensions = useAppSelector((state) => state.device);
     const typingTimoutRef = useRef<NodeJS.Timeout | null>(null);
     const interlocutor = useAppSelector((state) => {
         if (!room || room.type === RoomType.GROUP || !room.participants) return;
@@ -166,22 +157,6 @@ const ActiveRoom: FC<IActiveChatProps> = ({
             typingTimoutRef.current = null;
         }, 4000);
     }, [dispatch, room]); // todo: need fix, because during the change the active room - the typing status will not change back
-
-    const onDeleteMessage = () => {
-        if (
-            !messageForAction ||
-            messageForAction.action !== MessageAction.DELETE
-        )
-            return;
-
-        void dispatch(
-            deleteMessageSocket({
-                messageId: messageForAction.message.id,
-                isForEveryone: messageForAction.isForEveryone,
-            }),
-        );
-        removeMessageForAction();
-    };
 
     const onSendEditedMessage = (
         text: TValueOf<Pick<IEditMessage, "text">>,
@@ -373,7 +348,9 @@ const ActiveRoom: FC<IActiveChatProps> = ({
                             </Flex>
                         </div>
                     </div>
-                    <PinnedMessages roomId={room.id} />
+                    {deviceDimensions.screen.width > 1024 && (
+                        <PinnedMessages roomId={room.id} />
+                    )}
                     <div className="active-room__options">
                         {!checkIsPreviewExistingRoomWithFlag(room) && (
                             <PhoneOutlined
@@ -384,6 +361,9 @@ const ActiveRoom: FC<IActiveChatProps> = ({
                         <MenuFoldOutlined className="custom" />
                     </div>
                 </Header>
+                {deviceDimensions.screen.width <= 1024 && (
+                    <PinnedMessages roomId={room.id} />
+                )}
 
                 <RoomContent
                     className="active-room__content"
@@ -433,42 +413,6 @@ const ActiveRoom: FC<IActiveChatProps> = ({
                         />
                     )}
                 </Footer>
-
-                <Modal
-                    title="Вы хотите удалить сообщение?"
-                    onCancel={removeMessageForAction}
-                    onOk={onDeleteMessage}
-                    open={
-                        !!(
-                            messageForAction &&
-                            messageForAction.action === MessageAction.DELETE
-                        )
-                    }
-                >
-                    {room.type === RoomType.PRIVATE &&
-                    messageForAction &&
-                    messageForAction.action === MessageAction.DELETE &&
-                    messageForAction.message.senderId === user.id ? (
-                        <Checkbox
-                            checked={messageForAction.isForEveryone}
-                            onChange={(event) => {
-                                setMessageForAction({
-                                    message: messageForAction.message,
-                                    action: MessageAction.DELETE,
-                                    isForEveryone: event.target.checked,
-                                });
-                            }}
-                        >
-                            <Text>Удалить у всех</Text>
-                        </Checkbox>
-                    ) : messageForAction &&
-                      messageForAction.action === MessageAction.DELETE &&
-                      messageForAction.isForEveryone ? (
-                        <Text>Сообщение будет удалено у всех в этом чате.</Text>
-                    ) : (
-                        <Text>Сообщение будет удалено только у вас.</Text>
-                    )}
-                </Modal>
             </Layout>
         </ConfigProvider>
     );
