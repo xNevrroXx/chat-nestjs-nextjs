@@ -116,7 +116,7 @@ const Message = forwardRef<HTMLDivElement, IMessageProps>(
                                     maxLength: 11,
                                     cutCloseToLastSpace: false,
                                     trim: true,
-                                    isFile: true,
+                                    isFileName: true,
                                 })}
                             </Text>
                             <br />

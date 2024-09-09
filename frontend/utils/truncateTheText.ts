@@ -25,7 +25,7 @@ interface ICutTheTextParams {
      * truncateTheText("a-really-long-name-of-the-file.txt", 11, false);
      * @default true
      * */
-    isFile?: boolean;
+    isFileName?: boolean;
 }
 
 export const truncateTheText = ({
@@ -33,7 +33,7 @@ export const truncateTheText = ({
     maxLength,
     cutCloseToLastSpace = true,
     trim = true,
-    isFile = false,
+    isFileName = false,
 }: ICutTheTextParams): string => {
     const text = trim ? inputText.trim() : inputText;
     if (!text || text.length < maxLength - 1) {
@@ -42,7 +42,7 @@ export const truncateTheText = ({
 
     let result: string;
     let extension: string;
-    if (!isFile) {
+    if (!isFileName) {
         result = text.slice(0, maxLength);
     }
     else {
@@ -57,7 +57,7 @@ export const truncateTheText = ({
     }
 
     if (!cutCloseToLastSpace) {
-        if (isFile) {
+        if (isFileName) {
             result += extension!;
             return result;
         }
@@ -78,7 +78,7 @@ export const truncateTheText = ({
     } while (m);
 
     if (!lastMatch) {
-        if (isFile) {
+        if (isFileName) {
             result += extension!;
             return result;
         }
@@ -88,7 +88,7 @@ export const truncateTheText = ({
     }
 
     result = result.slice(0, lastMatch.index + 1).concat("...");
-    if (isFile) {
+    if (isFileName) {
         result += extension!;
     }
 

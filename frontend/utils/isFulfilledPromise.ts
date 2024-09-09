@@ -1,5 +1,7 @@
-function isFulfilledPromise<T>(promiseResult: PromiseSettledResult<unknown>): promiseResult is PromiseFulfilledResult<T> {
+function isFulfilledPromise<T>(
+    promiseResult: PromiseSettledResult<unknown>,
+): promiseResult is PromiseFulfilledResult<T> {
     return promiseResult.status === "fulfilled";
 }
 
-export {isFulfilledPromise};
+export { isFulfilledPromise };

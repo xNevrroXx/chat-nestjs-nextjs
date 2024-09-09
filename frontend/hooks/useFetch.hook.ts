@@ -12,8 +12,7 @@ export enum FetchingStatus {
 const useFetch = <T,>(url: string | undefined) => {
     const [status, setStatus] = useState<FetchingStatus>(FetchingStatus.IDLE);
     const [data, setData] = useState<T | null>(null);
-    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-    const [error, setError] = useState<unknown | null>(null);
+    const [error, setError] = useState<unknown>(null);
 
     const request = useCallback(
         async (config: AxiosRequestConfig): Promise<T | void> => {

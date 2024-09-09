@@ -1,4 +1,5 @@
-const REGEX = /(@)"?([a-zа-яё.&:\d]+[ ]?[a-zа-яё.&:\d]+)"?-([\S\s]+?)(?=\s+)/gim;
+const REGEX =
+    /(@)"?([a-zа-яё.&:\d]+[ ]?[a-zа-яё.&:\d]+)"?-([\S\s]+?)(?=\s+)/gim;
 
 /**
  * Extract id of the mentioned users from the string.

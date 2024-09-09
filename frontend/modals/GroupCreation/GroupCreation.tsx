@@ -1,6 +1,6 @@
 "use client";
 
-import React, { FC, useCallback, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { RoomType, TCreateGroupRoom } from "@/models/room/IRoom.store";
 import { Form, Input, Mentions, Modal } from "antd";
 import { useAppDispatch, useAppSelector } from "@/hooks/store.hook";

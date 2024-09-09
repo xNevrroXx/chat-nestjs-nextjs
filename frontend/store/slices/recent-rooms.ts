@@ -4,6 +4,7 @@ import {
     addRecentRoomData,
     removeRecentRoomData,
     resetCurrentRoomId,
+    updateMessageForAction,
     updateRecentRoomData,
 } from "@/store/actions/recent-rooms";
 
@@ -49,6 +50,18 @@ const recentRooms = createSlice({
 
                 state.rooms.byId[action.payload.id].input =
                     action.payload.input;
+            })
+            .addCase(updateMessageForAction, (state, action) => {
+                if (!state.currentRoomId) {
+                    return;
+                }
+
+                state.rooms.byId[state.currentRoomId].input.messageForAction =
+                    action.payload.messageForAction;
+                // state.rooms.byId[state.currentRoomId].input = {
+                //     ...state.rooms.byId[state.currentRoomId].input,
+                //     messageForAction: action.payload.messageForAction,
+                // };
             })
             .addCase(removeRecentRoomData, (state, action) => {
                 const index = state.allIds.indexOf(action.payload);

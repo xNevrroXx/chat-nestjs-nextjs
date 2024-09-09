@@ -5,8 +5,8 @@ import { useAppDispatch } from "@/hooks/store.hook";
 import { usePrevious } from "@/hooks/usePrevious";
 
 interface IProps {
-    roomId: string | null;
-    isPreviewRoom: boolean | null;
+    roomId: string;
+    isPreviewRoom: boolean;
 }
 
 const useOnTyping: ({ roomId, isPreviewRoom }: IProps) => {
@@ -17,7 +17,7 @@ const useOnTyping: ({ roomId, isPreviewRoom }: IProps) => {
     const previousRoomId = usePrevious(roomId);
     const { debounced, resetDebounceProcessing, isDebounceProcessing } =
         useDebounceCallback(() => {
-            if (!roomId || isPreviewRoom) {
+            if (isPreviewRoom) {
                 return;
             }
 
@@ -53,7 +53,7 @@ const useOnTyping: ({ roomId, isPreviewRoom }: IProps) => {
     ]);
 
     const onTyping = useCallback(() => {
-        if (!roomId || isPreviewRoom) {
+        if (isPreviewRoom) {
             return;
         }
 

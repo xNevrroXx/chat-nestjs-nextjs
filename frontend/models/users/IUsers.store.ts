@@ -1,5 +1,5 @@
-import {IUserDto} from "@/models/auth/IAuth.store";
+import { IUserDto } from "@/models/auth/IAuth.store";
 
 export interface IUsers {
-    users: IUserDto[]
+    users: IUserDto[];
 }

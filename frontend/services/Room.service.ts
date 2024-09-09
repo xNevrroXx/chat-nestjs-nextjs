@@ -7,6 +7,7 @@ import {
     IRoom,
     TCreateGroupRoom,
     TPreviewExistingRoom,
+    TPreviewRoomWithFlag,
 } from "@/models/room/IRoom.store";
 import { TValueOf } from "@/models/TUtils";
 
@@ -14,7 +15,7 @@ class RoomService {
     protected static base = "/room";
 
     static async join(
-        data: TPreviewExistingRoom,
+        data: Pick<TPreviewRoomWithFlag, "id">,
     ): Promise<AxiosResponse<IRoom>> {
         return $api.post<IRoom>(this.base + "/join", data);
     }

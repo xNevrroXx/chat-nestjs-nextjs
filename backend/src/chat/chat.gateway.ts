@@ -133,13 +133,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @SubscribeMessage("room:join-or-create")
     async joinNewRoom(
         @ConnectedSocket() client,
-        @MessageBody() roomData: { id: string }
+        @MessageBody() socketMessage: { id: string }
     ) {
         const userPayload: IUserSessionPayload = client.user;
 
         const unnormalizedRoom = (await this.roomService.findOne({
             where: {
-                id: roomData.id,
+                id: socketMessage.id,
             },
             include: PrismaIncludeFullRoomInfo,
         })) as Prisma.RoomGetPayload<{

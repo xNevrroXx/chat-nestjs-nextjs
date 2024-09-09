@@ -24,25 +24,14 @@ export interface IKnownAndUnknownFiles {
 }
 
 export enum MessageAction {
-    PIN = "PIN",
     EDIT = "EDIT",
     REPLY = "REPLY",
-    DELETE = "DELETE",
-    FORWARD = "FORWARD",
 }
 
 export type TMessageForAction =
     | {
           message: IInnerStandardMessage | IInnerForwardedMessage;
-          action:
-              | MessageAction.PIN
-              | MessageAction.REPLY
-              | MessageAction.FORWARD;
-      }
-    | {
-          message: IInnerStandardMessage | IInnerForwardedMessage;
-          action: MessageAction.DELETE;
-          isForEveryone: boolean;
+          action: MessageAction.REPLY;
       }
     | {
           message: IInnerStandardMessage;

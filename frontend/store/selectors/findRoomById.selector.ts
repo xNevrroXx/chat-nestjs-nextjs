@@ -1,7 +1,7 @@
 import { createSelector } from "@reduxjs/toolkit";
 import { TRootState } from "@/store";
 import {
-    TPreviewExistingRoomWithFlag,
+    TPreviewRoomWithFlag,
     TRoomWithPreviewFlag,
 } from "@/models/room/IRoom.store";
 
@@ -10,7 +10,7 @@ const findRoomByIdSelector = createSelector(
     (
         roomSlice,
         targetRoomId,
-    ): TRoomWithPreviewFlag | TPreviewExistingRoomWithFlag | null => {
+    ): TRoomWithPreviewFlag | TPreviewRoomWithFlag | null => {
         if (!targetRoomId) {
             return null;
         }

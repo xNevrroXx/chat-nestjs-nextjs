@@ -32,6 +32,7 @@ import {
     IInnerStandardMessage,
     IInnerForwardedMessage,
     IUnpinMessage,
+    TPreviewRoomWithFlag,
 } from "@/models/room/IRoom.store";
 import { TRootState } from "@/store";
 import { TValueOf } from "@/models/TUtils";
@@ -341,7 +342,7 @@ const createRoom = createAsyncThunk<
 
 const joinRoom = createAsyncThunk<
     IRoom,
-    TPreviewExistingRoom,
+    Pick<TPreviewRoomWithFlag, "id">,
     { state: TRootState }
 >("room/join", async (roomData, thunkAPI) => {
     try {

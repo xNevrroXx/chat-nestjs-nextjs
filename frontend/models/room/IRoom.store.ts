@@ -139,7 +139,7 @@ export type TRoomWithPreviewFlag = IRoom & {
 export type TPreviewExistingRoom = Omit<IRoom, "createdAt" | "updatedAt"> & {
     wasMember: boolean;
 };
-export type TPreviewExistingRoomWithFlag = TPreviewExistingRoom & {
+export type TPreviewRoomWithFlag = TPreviewExistingRoom & {
     isPreview: true;
 };
 
@@ -265,7 +265,7 @@ export interface IDeleteMessage {
 
 export interface IEditMessage {
     messageId: TValueOf<Pick<IOriginalMessage, "id">>;
-    text: TValueOf<Pick<IOriginalMessage, "text">>;
+    text: NonNullable<TValueOf<Pick<IOriginalMessage, "text">>>;
 }
 
 export interface IPinMessage {
@@ -291,11 +291,4 @@ export function checkIsStandardMessage(
 ): obj is IInnerStandardMessage {
     const message = obj as IInnerStandardMessage;
     return message.files !== undefined;
-}
-
-export function checkIsPreviewExistingRoomWithFlag(
-    obj: IRoom | TPreviewExistingRoomWithFlag,
-): obj is TPreviewExistingRoomWithFlag {
-    const room = obj as TPreviewExistingRoomWithFlag;
-    return room.isPreview;
 }

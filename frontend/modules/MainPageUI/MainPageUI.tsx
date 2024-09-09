@@ -7,21 +7,19 @@ import ActiveRoom from "@/modules/ActiveRoom/ActiveRoom";
 import { useWindowDimensions } from "@/hooks/useWindowDimensions.hook";
 import { IUserDto } from "@/models/auth/IAuth.store";
 import {
-    IRoom,
-    TPreviewExistingRoomWithFlag,
+    TPreviewRoomWithFlag,
     TRoomWithPreviewFlag,
 } from "@/models/room/IRoom.store";
 import darkTheme from "@/theme/dark.theme";
+import PlugRoom from "@/components/PlugRoom/PlugRoom";
 
 interface IProps {
-    windowDimensions: ReturnType<typeof useWindowDimensions>;
     user: IUserDto;
-    onOpenSubmenu: () => void;
+    activeRoom: TRoomWithPreviewFlag | TPreviewRoomWithFlag | null;
     isDrawerOpen: boolean;
-    activeRoom: TRoomWithPreviewFlag | TPreviewExistingRoomWithFlag | null;
-    closeCurrentRoom: () => void;
-    onJoinRoom: () => Promise<IRoom | undefined>;
+    onOpenSubmenu: () => void;
     onCloseSubmenu: () => void;
+    windowDimensions: ReturnType<typeof useWindowDimensions>;
 }
 
 const MainPageUi: FC<IProps> = ({
@@ -30,8 +28,6 @@ const MainPageUi: FC<IProps> = ({
     onOpenSubmenu,
     isDrawerOpen,
     activeRoom,
-    closeCurrentRoom,
-    onJoinRoom,
     onCloseSubmenu,
 }) => {
     if (windowDimensions.width >= 768) {
@@ -48,12 +44,11 @@ const MainPageUi: FC<IProps> = ({
                         },
                     }}
                 >
-                    <ActiveRoom
-                        onCloseRoom={closeCurrentRoom}
-                        room={activeRoom}
-                        user={user}
-                        onJoinRoom={onJoinRoom}
-                    />
+                    {activeRoom ? (
+                        <ActiveRoom room={activeRoom} user={user} />
+                    ) : (
+                        <PlugRoom />
+                    )}
                 </ConfigProvider>
             </Fragment>
         );
@@ -70,12 +65,7 @@ const MainPageUi: FC<IProps> = ({
                     },
                 }}
             >
-                <ActiveRoom
-                    onCloseRoom={closeCurrentRoom}
-                    room={activeRoom}
-                    user={user}
-                    onJoinRoom={onJoinRoom}
-                />
+                <ActiveRoom room={activeRoom} user={user} />
             </ConfigProvider>
         );
     }

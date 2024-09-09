@@ -31,3 +31,13 @@ export interface IRecentRooms {
     allIds: TValueOf<Pick<IRoom, "id">>[];
     currentRoomId: TValueOf<Pick<IRoom, "id">> | null;
 }
+
+export type TAddRecentRoomData = {
+    id: TValueOf<Pick<IRoom, "id">>;
+    isPreview?: true;
+};
+
+export type TUpdateMessageForAction = Pick<
+    IRecentRoom["input"],
+    "messageForAction"
+>;

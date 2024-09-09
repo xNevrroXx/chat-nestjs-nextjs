@@ -1,4 +1,4 @@
-import React, { FC, useCallback, useMemo } from "react";
+import React, { FC, useCallback } from "react";
 // own modules
 import DialogCard from "@/components/DialogCard/DialogCard";
 import { Spinner } from "@/components/Spinner/Spinner";
