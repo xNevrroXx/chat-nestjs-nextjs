@@ -54,7 +54,7 @@ export interface IRoom {
     folderIds: TValueOf<Pick<IFolder, "id">>[];
     creatorUser?: TValueOf<Pick<IUserDto, "id">>;
     days: IMessagesByDays;
-    participants: IParticipant[];
+    participants: TParticipant[];
     pinnedMessages: TPinnedMessage[];
 
     createdAt: string;
@@ -70,15 +70,11 @@ export interface IMessagesByDays {
     [date: string]: (IInnerStandardMessage | IInnerForwardedMessage)[];
 }
 
-export interface IParticipant {
-    id: string;
-    color: string;
-    roomId: TValueOf<Pick<IRoom, "id">>;
-    userId: TValueOf<Pick<IUserDto, "id">>;
-    nickname: string;
-    isTyping: boolean;
-    isStillMember: boolean;
-}
+export type TParticipant = Pick<IUserDto, "color" | "displayName"> &
+    Omit<IUserTyping, "updatedAt"> & {
+        id: string;
+        isStillMember: boolean;
+    };
 
 export type TPinnedMessage = {
     pinDate: string;

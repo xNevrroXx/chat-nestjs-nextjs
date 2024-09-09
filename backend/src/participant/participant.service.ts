@@ -77,14 +77,14 @@ export class ParticipantService {
             };
         }>
     ): TNormalizedParticipant {
-        const userNickname = participant.user.displayName;
+        const displayName = participant.user.displayName;
         const isTyping = participant.user.userTyping
             ? participant.user.userTyping.isTyping
             : false;
         const participantInfo = {
             ...participant,
             isTyping: isTyping,
-            nickname: userNickname,
+            displayName: displayName,
             color: participant.user.color,
         };
         delete participantInfo.user;

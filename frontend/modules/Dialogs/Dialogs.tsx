@@ -22,7 +22,10 @@ import {
     clearPreviewRooms,
 } from "@/store/actions/room";
 import { getPreviewRoomsByQuery } from "@/store/thunks/room";
-import { resetCurrentRoomId } from "@/store/actions/recent-rooms";
+import {
+    addRecentRoomData,
+    resetCurrentRoomId,
+} from "@/store/actions/recent-rooms";
 // styles
 import "./dialogs.scss";
 import { activeRoomSelector } from "@/store/selectors/activeRoom.selector";
@@ -32,22 +35,41 @@ const { Title, Text } = Typography;
 
 interface IDialogsProps {
     user: IUserDto;
-    activeRoomId: TValueOf<Pick<IRoom, "id">> | null;
-    onClickRoom: (roomId: TValueOf<Pick<IRoom, "id">>) => void;
-    onClickRemoteRoom: (room: TPreviewExistingRoom) => void;
 }
 
-const Dialogs: FC<IDialogsProps> = ({
-    user,
-    activeRoomId,
-    onClickRoom,
-    onClickRemoteRoom,
-}) => {
+const Dialogs: FC<IDialogsProps> = ({ user }) => {
     const dispatch = useAppDispatch();
     const currentActiveRoom = useAppSelector(activeRoomSelector);
     const dialogQueryString = useAppSelector((state) => state.room.queryString);
     const filteredLocalDialogs = useAppSelector((state) =>
         filteredRoomsSelector(state, dialogQueryString),
+    );
+
+    const onClickRoom = useCallback(
+        (roomId: TValueOf<Pick<IRoom, "id">>) => {
+            if (currentActiveRoom && roomId === currentActiveRoom.id) {
+                return;
+            }
+
+            dispatch(
+                addRecentRoomData({
+                    id: roomId,
+                }),
+            );
+        },
+        [currentActiveRoom, dispatch],
+    );
+
+    const onClickRemoteRoom = useCallback(
+        (remoteRoom: TPreviewExistingRoom) => {
+            dispatch(
+                addRecentRoomData({
+                    id: remoteRoom.id,
+                    isPreview: true,
+                }),
+            );
+        },
+        [dispatch],
     );
 
     const filteredRemoteDialogs = useAppSelector(
@@ -150,14 +172,14 @@ const Dialogs: FC<IDialogsProps> = ({
                 key={"list remote dialogs" + dialogQueryString}
                 user={user}
                 rooms={filteredRemoteDialogs.rooms}
-                activeRoomId={activeRoomId}
+                activeRoomId={currentActiveRoom ? currentActiveRoom.id : null}
                 onClickRemoteRoom={onClickRemoteRoom}
             />,
         );
 
         return content;
     }, [
-        activeRoomId,
+        currentActiveRoom,
         dialogQueryString,
         filteredRemoteDialogs,
         onClickRemoteRoom,
@@ -206,7 +228,7 @@ const Dialogs: FC<IDialogsProps> = ({
                 key={"list local dialogs" + dialogQueryString}
                 user={user}
                 rooms={filteredLocalDialogs}
-                activeRoomId={activeRoomId}
+                activeRoomId={currentActiveRoom ? currentActiveRoom.id : null}
                 onClickDialog={onClickRoom}
                 hasDropdown={true}
             />,
@@ -214,7 +236,7 @@ const Dialogs: FC<IDialogsProps> = ({
 
         return content;
     }, [
-        activeRoomId,
+        currentActiveRoom,
         dialogQueryString,
         filteredLocalDialogs,
         isPending,

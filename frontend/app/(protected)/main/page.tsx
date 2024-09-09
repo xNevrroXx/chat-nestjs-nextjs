@@ -56,38 +56,9 @@ const Main = () => {
         setIsDrawerOpen(false);
     }, []);
 
-    const onChangeActiveDialog = useCallback(
-        (roomId: TValueOf<Pick<IRoom, "id">>) => {
-            const targetRoom = rooms.rooms.byId[roomId];
-
-            if (activeRoom && targetRoom.id === activeRoom.id) {
-                return;
-            }
-
-            dispatch(
-                addRecentRoomData({
-                    id: targetRoom.id,
-                }),
-            );
-        },
-        [rooms, activeRoom, dispatch],
-    );
-
     const closeCurrentRoom = useCallback(() => {
         dispatch(resetCurrentRoomId());
     }, [dispatch]);
-
-    const onClickRemoteRoom = useCallback(
-        (remoteRoom: TPreviewExistingRoom) => {
-            dispatch(
-                addRecentRoomData({
-                    id: remoteRoom.id,
-                    isPreview: true,
-                }),
-            );
-        },
-        [dispatch],
-    );
 
     const onJoinRoom = useCallback(async () => {
         // activeRoom, probably, is a remote room viewing at this moment.
@@ -136,8 +107,6 @@ const Main = () => {
                     user={user}
                     onOpenSubmenu={onOpenSubmenu}
                     isDrawerOpen={isDrawerOpen}
-                    onChangeActiveDialog={onChangeActiveDialog}
-                    onClickRemoteRoom={onClickRemoteRoom}
                     activeRoom={activeRoom}
                     closeCurrentRoom={closeCurrentRoom}
                     onJoinRoom={onJoinRoom}

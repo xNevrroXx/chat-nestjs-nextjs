@@ -37,7 +37,6 @@ export type TPaddings = {
 };
 
 type TMessageProps = {
-    roomType: RoomType;
     userId: TValueOf<Pick<IUserDto, "id">>;
     message: IInnerStandardMessage | IInnerForwardedMessage;
     onChooseMessageForAction: (messageForAction: TMessageForAction) => void;
@@ -54,7 +53,6 @@ const Message = forwardRef<HTMLDivElement, TMessageProps>(
     (
         {
             userId,
-            roomType,
             message,
             onChooseMessageForAction,
             paddings,

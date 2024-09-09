@@ -1,5 +1,5 @@
 import React, { useState, forwardRef } from "react";
-import { Upload, Modal, UploadFile, Image } from "antd";
+import { Upload, UploadFile, Image } from "antd";
 // styles
 import "./upload-files.scss";
 import { useAppSelector } from "@/hooks/store.hook";

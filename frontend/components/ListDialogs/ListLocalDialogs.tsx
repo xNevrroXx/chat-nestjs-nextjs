@@ -68,7 +68,7 @@ const ListLocalDialogs: FC<IDialogsProps> = ({
                         );
 
                         sender = thirdPartySender
-                            ? thirdPartySender.nickname
+                            ? thirdPartySender.displayName
                             : sender;
                     }
 

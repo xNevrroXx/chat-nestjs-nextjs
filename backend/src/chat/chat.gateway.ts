@@ -286,6 +286,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
                     },
                 },
             });
+
             const normalizedParticipants = participants.map(
                 this.participantService.normalize
             );

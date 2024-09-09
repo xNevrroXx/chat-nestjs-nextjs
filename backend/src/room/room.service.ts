@@ -54,7 +54,7 @@ export class RoomService {
         if (unnormalizedRoom.type === RoomType.GROUP) {
             roomName = unnormalizedRoom.name;
         } else {
-            roomName = normalizedParticipants[0].nickname;
+            roomName = normalizedParticipants[0].displayName;
         }
 
         const result: IRoom & { roomOnFolder: unknown } = {

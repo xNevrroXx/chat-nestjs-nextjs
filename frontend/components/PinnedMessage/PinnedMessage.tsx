@@ -70,7 +70,7 @@ const PinnedMessage: FC<IPinnedMessageProps> = ({
                         href={"#".concat(message.id)}
                     >
                         <Text strong style={{ fontSize: token.fontSize }}>
-                            Пересланное сообщение #{indexMessage}
+                            Закрепленное сообщение #{indexMessage}
                         </Text>
                         <Text
                             ellipsis={true}

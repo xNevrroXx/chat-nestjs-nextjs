@@ -91,7 +91,6 @@ const MessagesByUser: FC<TProps> = ({
                     }
                     paddings={paddings}
                     key={message.id}
-                    roomType={roomType}
                     userId={userId}
                     message={message}
                     onChooseMessageForAction={onChooseMessageForAction}

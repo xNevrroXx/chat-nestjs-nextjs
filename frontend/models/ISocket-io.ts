@@ -2,7 +2,7 @@ import {
     TSendMessage,
     IForwardMessage,
     TSendUserTyping,
-    IParticipant,
+    TParticipant,
     IPinMessage,
     IEditMessage,
     IDeleteMessage,
@@ -25,7 +25,7 @@ export interface IServerToClientEvents {
     "user:toggle-online": (data: TUserOnline) => void;
     // room
     "room:user-left": (data: ILeaveRoom) => void;
-    "room:toggle-typing": (data: IParticipant[]) => void;
+    "room:toggle-typing": (data: TParticipant[]) => void;
     "room:add-or-update": (data: IRoom) => void;
     // message
     "message:read": (data: IReadMessageSocket) => void;

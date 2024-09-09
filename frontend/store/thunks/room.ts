@@ -365,7 +365,7 @@ const leaveRoom = createAsyncThunk<
     TValueOf<Pick<IRoom, "id">>,
     TValueOf<Pick<IRoom, "id">>,
     { state: TRootState }
->("room/leave", async (roomId, thunkAPI) => {
+>("room/leave", (roomId, thunkAPI) => {
     try {
         const socket = thunkAPI.getState().room.socket;
 

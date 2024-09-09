@@ -1,4 +1,5 @@
 import React, { FC, Fragment } from "react";
+import { ConfigProvider } from "antd";
 import MainMenu from "@/modules/MainMenu/MainMenu";
 import SubMenu from "@/modules/SubMenu/SubMenu";
 import Dialogs from "@/modules/Dialogs/Dialogs";
@@ -7,19 +8,17 @@ import { useWindowDimensions } from "@/hooks/useWindowDimensions.hook";
 import { IUserDto } from "@/models/auth/IAuth.store";
 import {
     IRoom,
-    TPreviewExistingRoom,
     TPreviewExistingRoomWithFlag,
+    TRoomWithPreviewFlag,
 } from "@/models/room/IRoom.store";
-import { TValueOf } from "@/models/TUtils";
+import darkTheme from "@/theme/dark.theme";
 
 interface IProps {
     windowDimensions: ReturnType<typeof useWindowDimensions>;
     user: IUserDto;
     onOpenSubmenu: () => void;
     isDrawerOpen: boolean;
-    onChangeActiveDialog: (roomId: TValueOf<Pick<IRoom, "id">>) => void;
-    onClickRemoteRoom: (remoteRoom: TPreviewExistingRoom) => void;
-    activeRoom: IRoom | TPreviewExistingRoomWithFlag | null;
+    activeRoom: TRoomWithPreviewFlag | TPreviewExistingRoomWithFlag | null;
     closeCurrentRoom: () => void;
     onJoinRoom: () => Promise<IRoom | undefined>;
     onCloseSubmenu: () => void;
@@ -30,8 +29,6 @@ const MainPageUi: FC<IProps> = ({
     windowDimensions,
     onOpenSubmenu,
     isDrawerOpen,
-    onChangeActiveDialog,
-    onClickRemoteRoom,
     activeRoom,
     closeCurrentRoom,
     onJoinRoom,
@@ -42,18 +39,22 @@ const MainPageUi: FC<IProps> = ({
             <Fragment>
                 <MainMenu onOpenSubmenu={onOpenSubmenu} />
                 <SubMenu isOpen={isDrawerOpen} onClose={onCloseSubmenu} />
-                <Dialogs
-                    user={user}
-                    onClickRoom={onChangeActiveDialog}
-                    onClickRemoteRoom={onClickRemoteRoom}
-                    activeRoomId={activeRoom ? activeRoom.id : null}
-                />
-                <ActiveRoom
-                    onCloseRoom={closeCurrentRoom}
-                    room={activeRoom}
-                    user={user}
-                    onJoinRoom={onJoinRoom}
-                />
+                <Dialogs user={user} />
+                <ConfigProvider
+                    theme={{
+                        ...darkTheme,
+                        token: {
+                            colorBgLayout: "#0e1621",
+                        },
+                    }}
+                >
+                    <ActiveRoom
+                        onCloseRoom={closeCurrentRoom}
+                        room={activeRoom}
+                        user={user}
+                        onJoinRoom={onJoinRoom}
+                    />
+                </ConfigProvider>
             </Fragment>
         );
     }
@@ -61,12 +62,21 @@ const MainPageUi: FC<IProps> = ({
     // the tablet or phone devices below
     if (activeRoom) {
         return (
-            <ActiveRoom
-                onCloseRoom={closeCurrentRoom}
-                room={activeRoom}
-                user={user}
-                onJoinRoom={onJoinRoom}
-            />
+            <ConfigProvider
+                theme={{
+                    ...darkTheme,
+                    token: {
+                        colorBgLayout: "#0e1621",
+                    },
+                }}
+            >
+                <ActiveRoom
+                    onCloseRoom={closeCurrentRoom}
+                    room={activeRoom}
+                    user={user}
+                    onJoinRoom={onJoinRoom}
+                />
+            </ConfigProvider>
         );
     }
 
@@ -74,12 +84,7 @@ const MainPageUi: FC<IProps> = ({
         <Fragment>
             <MainMenu onOpenSubmenu={onOpenSubmenu} />
             <SubMenu isOpen={isDrawerOpen} onClose={onCloseSubmenu} />
-            <Dialogs
-                user={user}
-                onClickRoom={onChangeActiveDialog}
-                onClickRemoteRoom={onClickRemoteRoom}
-                activeRoomId={null}
-            />
+            <Dialogs user={user} />
         </Fragment>
     );
 };

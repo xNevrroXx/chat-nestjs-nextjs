@@ -13,7 +13,6 @@ import { useAppDispatch, useAppSelector } from "@/hooks/store.hook";
 import { activeRoomInputDataSelector } from "@/store/selectors/activeRoomInputData.selector";
 import { updateRecentRoomData } from "@/store/actions/recent-rooms";
 import { IRecentRoom } from "@/models/recent-rooms/IRecentRooms.store";
-import { usePrevious } from "@/hooks/usePrevious";
 import {
     MessageAction,
     TMessageForAction,
@@ -23,6 +22,7 @@ import { DATE_FORMATTER_SHORT } from "@/utils/normalizeDate";
 import SubMessage from "@/components/SubMessage/SubMessage";
 // styles
 import "./input-message.scss";
+import { usePreviousRenderState } from "@/hooks/usePreviousRender.hook";
 
 interface IInputMessage {
     onSendMessage: (
@@ -52,7 +52,7 @@ const InputMessage: FC<IInputMessage> = ({
     const currentRoomId = useAppSelector(
         (state) => state.recentRooms.currentRoomId,
     );
-    const previousRoomId = usePrevious(currentRoomId);
+    const previousRenderRoomId = usePreviousRenderState(currentRoomId);
     const initialInputInfo = useAppSelector(activeRoomInputDataSelector);
     const inputRef = useRef<HTMLDivElement | null>(null);
     const [message, setMessage] = useState<string>("");
@@ -70,7 +70,7 @@ const InputMessage: FC<IInputMessage> = ({
 
     useEffect(() => {
         // save current input data to the global store
-        if (!previousRoomId || previousRoomId === currentRoomId) {
+        if (!previousRenderRoomId || currentRoomId === previousRenderRoomId) {
             return;
         }
         let inputData: TValueOf<Pick<IRecentRoom, "input">>;
@@ -94,7 +94,7 @@ const InputMessage: FC<IInputMessage> = ({
 
         dispatch(
             updateRecentRoomData({
-                id: previousRoomId,
+                id: previousRenderRoomId,
                 input: inputData,
             }),
         );
@@ -106,12 +106,12 @@ const InputMessage: FC<IInputMessage> = ({
         fileList,
         message,
         messageForAction,
-        previousRoomId,
+        previousRenderRoomId,
     ]);
 
     useEffect(() => {
         // update input state in the current chat (load from the global store)
-        if (currentRoomId === previousRoomId || !initialInputInfo) {
+        if (currentRoomId === previousRenderRoomId || !initialInputInfo) {
             return;
         }
         setMessage("");
@@ -134,7 +134,7 @@ const InputMessage: FC<IInputMessage> = ({
         initialInputInfo,
         setMessage,
         manualSetAudioData,
-        previousRoomId,
+        previousRenderRoomId,
         currentRoomId,
         cleanAudio,
         messageForAction,

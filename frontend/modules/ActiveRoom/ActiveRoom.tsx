@@ -3,7 +3,7 @@ import {
     PhoneOutlined,
     LeftOutlined,
 } from "@ant-design/icons";
-import { Button, ConfigProvider, Flex, Layout, theme, Typography } from "antd";
+import { Button, Flex, Layout, theme, Typography } from "antd";
 import React, { type FC, useCallback, useMemo, useRef, useState } from "react";
 // own modules
 import $api from "@/http";
@@ -31,16 +31,12 @@ import {
 import PinnedMessages from "../PinnedMessages/PinnedMessages";
 import { useAppDispatch, useAppSelector } from "@/hooks/store.hook";
 import { truncateTheText } from "@/utils/truncateTheText";
-import darkTheme from "@/theme/dark.theme";
 // actions
-import {
-    editMessageSocket,
-    sendMessageSocket,
-    toggleUserTypingSocket,
-} from "@/store/thunks/room";
+import { editMessageSocket, sendMessageSocket } from "@/store/thunks/room";
 import { openCallModal } from "@/store/actions/modal-windows";
 // styles
 import "./active-room.scss";
+import { useOnTyping } from "@/hooks/useOnTyping.hook";
 
 const { Header, Footer } = Layout;
 const { Text, Title } = Typography;
@@ -63,8 +59,11 @@ const ActiveRoom: FC<IActiveChatProps> = ({
 }) => {
     const { token } = useToken();
     const dispatch = useAppDispatch();
+    const { onTyping, resetDebouncedOnTypingFunction } = useOnTyping({
+        roomId: room ? room.id : null,
+        isPreviewRoom: room ? room.isPreview : null,
+    });
     const deviceDimensions = useAppSelector((state) => state.device);
-    const typingTimoutRef = useRef<NodeJS.Timeout | null>(null);
     const interlocutor = useAppSelector((state) => {
         if (!room || room.type === RoomType.GROUP || !room.participants) return;
         return state.users.users.find(
@@ -118,46 +117,6 @@ const ActiveRoom: FC<IActiveChatProps> = ({
         setMessageForAction(null);
     }, []);
 
-    const onTyping = useCallback(() => {
-        if (!room || checkIsPreviewExistingRoomWithFlag(room)) {
-            return;
-        }
-
-        if (typingTimoutRef.current) {
-            // if the user has recently typed
-            clearTimeout(typingTimoutRef.current);
-
-            typingTimoutRef.current = setTimeout(() => {
-                void dispatch(
-                    toggleUserTypingSocket({
-                        roomId: room.id,
-                        isTyping: false,
-                    }),
-                );
-                typingTimoutRef.current = null;
-            }, 4000);
-
-            return;
-        }
-
-        void dispatch(
-            toggleUserTypingSocket({
-                roomId: room.id,
-                isTyping: true,
-            }),
-        );
-
-        typingTimoutRef.current = setTimeout(() => {
-            void dispatch(
-                toggleUserTypingSocket({
-                    roomId: room.id,
-                    isTyping: false,
-                }),
-            );
-            typingTimoutRef.current = null;
-        }, 4000);
-    }, [dispatch, room]); // todo: need fix, because during the change the active room - the typing status will not change back
-
     const onSendEditedMessage = (
         text: TValueOf<Pick<IEditMessage, "text">>,
     ) => {
@@ -180,10 +139,7 @@ const ActiveRoom: FC<IActiveChatProps> = ({
         ) => {
             if (!room) return;
 
-            if (typingTimoutRef.current) {
-                clearTimeout(typingTimoutRef.current);
-                typingTimoutRef.current = null;
-            }
+            resetDebouncedOnTypingFunction();
 
             const messageWithoutRoomId: Omit<TSendMessage, "roomId"> = {
                 text,
@@ -219,7 +175,14 @@ const ActiveRoom: FC<IActiveChatProps> = ({
             void dispatch(sendMessageSocket(message));
             removeMessageForAction();
         },
-        [room, messageForAction, removeMessageForAction, onJoinRoom, dispatch],
+        [
+            room,
+            resetDebouncedOnTypingFunction,
+            messageForAction,
+            dispatch,
+            removeMessageForAction,
+            onJoinRoom,
+        ],
     );
 
     const sendVoiceMessage = async (record: Blob) => {
@@ -262,7 +225,7 @@ const ActiveRoom: FC<IActiveChatProps> = ({
             case RoomType.GROUP: {
                 const typingUsersText = room.participants
                     .filter((participant) => participant.isTyping)
-                    .map((participant) => participant.nickname + "...")
+                    .map((participant) => participant.displayName + "...")
                     .join(" ");
 
                 return truncateTheText({
@@ -275,146 +238,125 @@ const ActiveRoom: FC<IActiveChatProps> = ({
 
     if (!room) {
         return (
-            <ConfigProvider
-                theme={{
-                    ...darkTheme,
-                    token: {
-                        colorBgLayout: "#0e1621",
-                    },
-                }}
-            >
-                <Layout>
-                    <Flex
-                        className="active-room__not-exist"
-                        justify="center"
-                        align="center"
+            <Layout>
+                <Flex
+                    className="active-room__not-exist"
+                    justify="center"
+                    align="center"
+                >
+                    <Title
+                        level={5}
+                        style={{ color: token.colorTextSecondary }}
                     >
-                        <Title
-                            level={5}
-                            style={{ color: token.colorTextSecondary }}
-                        >
-                            Выберите чат
-                        </Title>
-                    </Flex>
-                </Layout>
-            </ConfigProvider>
+                        Выберите чат
+                    </Title>
+                </Flex>
+            </Layout>
         );
     }
 
     return (
-        <ConfigProvider
-            theme={{
-                ...darkTheme,
-                token: {
-                    colorBgLayout: "#0e1621",
-                },
-            }}
-        >
-            <Layout className={"active-room"}>
-                <Header className="active-room__header">
-                    <Button
-                        onClick={onCloseRoom}
-                        className={"active-room__return-btn"}
-                        type={"text"}
-                        size={"large"}
-                        icon={<LeftOutlined />}
-                    />
-                    <div className="active-room__info">
-                        <div className="active-room__wrapper">
-                            <Title level={5} className="active-room__name">
-                                {room.name}
-                            </Title>
-                            <Flex gap={"small"}>
-                                {room.type === RoomType.GROUP && (
-                                    <Text
-                                        style={{
-                                            color: token.colorTextDisabled,
-                                        }}
-                                        className="active-room__status"
-                                    >
-                                        {room.participants.filter(
-                                            (member) => member.isStillMember,
-                                        ).length +
-                                            (room.isPreview ? 0 : 1)}{" "}
-                                        уч.
-                                    </Text>
-                                )}
+        <Layout className={"active-room"}>
+            <Header className="active-room__header">
+                <Button
+                    onClick={onCloseRoom}
+                    className={"active-room__return-btn"}
+                    type={"text"}
+                    size={"large"}
+                    icon={<LeftOutlined />}
+                />
+                <div className="active-room__info">
+                    <div className="active-room__wrapper">
+                        <Title level={5} className="active-room__name">
+                            {room.name}
+                        </Title>
+                        <Flex gap={"small"}>
+                            {room.type === RoomType.GROUP && (
                                 <Text
-                                    style={{ color: token.colorTextDisabled }}
+                                    style={{
+                                        color: token.colorTextDisabled,
+                                    }}
                                     className="active-room__status"
                                 >
-                                    {userStatuses}
+                                    {room.participants.filter(
+                                        (member) => member.isStillMember,
+                                    ).length + (room.isPreview ? 0 : 1)}{" "}
+                                    уч.
                                 </Text>
-                            </Flex>
-                        </div>
+                            )}
+                            <Text
+                                style={{ color: token.colorTextDisabled }}
+                                className="active-room__status"
+                            >
+                                {userStatuses}
+                            </Text>
+                        </Flex>
                     </div>
-                    {deviceDimensions.screen.width > 1024 && (
-                        <PinnedMessages roomId={room.id} />
-                    )}
-                    <div className="active-room__options">
-                        {!checkIsPreviewExistingRoomWithFlag(room) && (
-                            <PhoneOutlined
-                                onClick={onInitCall}
-                                className="custom"
-                            />
-                        )}
-                        <MenuFoldOutlined className="custom" />
-                    </div>
-                </Header>
-                {deviceDimensions.screen.width <= 1024 && (
+                </div>
+                {deviceDimensions.screen.width > 1024 && (
                     <PinnedMessages roomId={room.id} />
                 )}
-
-                <RoomContent
-                    className="active-room__content"
-                    ref={refChatContent}
-                    user={user}
-                    room={room}
-                    isNeedScrollToLastMessage={isNeedScrollToLastMessage}
-                    onChooseMessageForAction={onChooseMessageForAction}
-                />
-
-                <Footer className="active-room__footer">
-                    {isVisibleScrollButtonState && (
-                        <ScrollDownButton
-                            onClick={onClickScrollButton}
-                            /*todo dynamically change amount of the unread messages*/
-                            amountUnreadMessages={0}
+                <div className="active-room__options">
+                    {!checkIsPreviewExistingRoomWithFlag(room) && (
+                        <PhoneOutlined
+                            onClick={onInitCall}
+                            className="custom"
                         />
                     )}
+                    <MenuFoldOutlined className="custom" />
+                </div>
+            </Header>
+            {deviceDimensions.screen.width <= 1024 && (
+                <PinnedMessages roomId={room.id} />
+            )}
 
-                    {room &&
-                    checkIsPreviewExistingRoomWithFlag(room) &&
-                    room.type === RoomType.GROUP ? (
-                        <Button
-                            onClick={onJoinRoom}
-                            block
-                            style={{ marginBottom: "10px" }}
-                        >
-                            Вступить в группу
-                        </Button>
-                    ) : (
-                        <InputMessage
-                            changeMessageForAction={onChooseMessageForAction}
-                            messageForAction={
-                                messageForAction &&
-                                (messageForAction.action ===
-                                    MessageAction.EDIT ||
-                                    messageForAction.action ===
-                                        MessageAction.REPLY)
-                                    ? (messageForAction as TMessageForActionEditOrReply)
-                                    : null
-                            }
-                            removeMessageForAction={removeMessageForAction}
-                            onTyping={onTyping}
-                            onSendMessage={onSendMessage}
-                            onSendVoiceMessage={sendVoiceMessage}
-                            onSendEditedMessage={onSendEditedMessage}
-                        />
-                    )}
-                </Footer>
-            </Layout>
-        </ConfigProvider>
+            <RoomContent
+                className="active-room__content"
+                ref={refChatContent}
+                user={user}
+                room={room}
+                isNeedScrollToLastMessage={isNeedScrollToLastMessage}
+                onChooseMessageForAction={onChooseMessageForAction}
+            />
+
+            <Footer className="active-room__footer">
+                {isVisibleScrollButtonState && (
+                    <ScrollDownButton
+                        onClick={onClickScrollButton}
+                        /*todo dynamically change amount of the unread messages*/
+                        amountUnreadMessages={0}
+                    />
+                )}
+
+                {room &&
+                checkIsPreviewExistingRoomWithFlag(room) &&
+                room.type === RoomType.GROUP ? (
+                    <Button
+                        onClick={onJoinRoom}
+                        block
+                        style={{ marginBottom: "10px" }}
+                    >
+                        Вступить в группу
+                    </Button>
+                ) : (
+                    <InputMessage
+                        changeMessageForAction={onChooseMessageForAction}
+                        messageForAction={
+                            messageForAction &&
+                            (messageForAction.action === MessageAction.EDIT ||
+                                messageForAction.action === MessageAction.REPLY)
+                                ? (messageForAction as TMessageForActionEditOrReply)
+                                : null
+                        }
+                        removeMessageForAction={removeMessageForAction}
+                        onTyping={onTyping}
+                        onSendMessage={onSendMessage}
+                        onSendVoiceMessage={sendVoiceMessage}
+                        onSendEditedMessage={onSendEditedMessage}
+                    />
+                )}
+            </Footer>
+        </Layout>
     );
 };
 

@@ -1,7 +1,7 @@
 import { createAction } from "@reduxjs/toolkit";
 import {
     IRoom,
-    IParticipant,
+    TParticipant,
     IEditedMessageSocket,
     IDeletedMessageSocket,
     TPinnedMessagesSocket,
@@ -52,7 +52,7 @@ const handleDeletedMessageSocket = createAction<IDeletedMessageSocket>(
 const handleForwardedMessageSocket = createAction<IForwardedMessageSocket>(
     "room/socket:handle-forwarded-message",
 );
-const handleChangeUserTypingSocket = createAction<IParticipant[]>(
+const handleChangeUserTypingSocket = createAction<TParticipant[]>(
     "room/socket:room:handle-toggle-typing",
 );
 const handleUserLeftRoomSocket = createAction<ILeaveRoom>(
