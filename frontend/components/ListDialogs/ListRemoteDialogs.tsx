@@ -1,27 +1,49 @@
-import { FC, useMemo } from "react";
+import React, { FC } from "react";
 // own modules
 import DialogCard from "@/components/DialogCard/DialogCard";
 // types
 import { IRoom, TPreviewExistingRoom } from "@/models/room/IRoom.store";
 import { TValueOf } from "@/models/TUtils";
-import { IUserDto } from "@/models/auth/IAuth.store";
-// styles
+import { FetchingStatus } from "@/hooks/useFetch.hook";
+import { Spinner } from "@/components/Spinner/Spinner";
+import { Typography } from "antd";
+
+const { Text } = Typography;
 
 interface IDialogsProps {
-    user: IUserDto;
     rooms: TPreviewExistingRoom[];
     activeRoomId: TValueOf<Pick<IRoom, "id">> | null;
     onClickRemoteRoom: (room: TPreviewExistingRoom) => void;
+    dialogQueryString: string;
+    statusFetching: FetchingStatus;
 }
 
 const ListRemoteDialogs: FC<IDialogsProps> = ({
     rooms,
     onClickRemoteRoom,
     activeRoomId,
+    dialogQueryString,
+    statusFetching,
 }) => {
-    const list = useMemo(() => {
-        return rooms.map((room) => {
-            return (
+    if (dialogQueryString && statusFetching === FetchingStatus.FETCHING) {
+        return (
+            <div className={"dialogs__pl"} key={"remote dialogs spinner"}>
+                <Spinner />
+            </div>
+        );
+    }
+
+    if (statusFetching === FetchingStatus.FULFILLED && rooms.length === 0) {
+        return (
+            <Text className={"dialogs__pl"} key={"remote dialogs not found"}>
+                Не найдены
+            </Text>
+        );
+    }
+
+    return (
+        <ul className="dialogs__list">
+            {rooms.map((room) => (
                 <DialogCard
                     color={room.color}
                     key={room.id.toString() + "dialog card"}
@@ -32,11 +54,9 @@ const ListRemoteDialogs: FC<IDialogsProps> = ({
                     roomType={room.type}
                     lastMessageInfo={null}
                 />
-            );
-        });
-    }, [rooms, activeRoomId, onClickRemoteRoom]);
-
-    return <ul className="dialogs__list">{list}</ul>;
+            ))}
+        </ul>
+    );
 };
 
 export default ListRemoteDialogs;

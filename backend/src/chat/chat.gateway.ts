@@ -482,6 +482,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
                         participants: {
                             some: {
                                 userId: sender.id,
+                                isStillMember: true,
                             },
                         },
                     },

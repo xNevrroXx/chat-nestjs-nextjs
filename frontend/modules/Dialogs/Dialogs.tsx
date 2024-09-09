@@ -1,9 +1,9 @@
 import React, {
     ChangeEventHandler,
     FC,
+    Fragment,
     useCallback,
     useEffect,
-    useMemo,
     useTransition,
 } from "react";
 import { Divider, Input, Layout, Typography } from "antd";
@@ -13,8 +13,6 @@ import { TValueOf } from "@/models/TUtils";
 import { IRoom, TPreviewExistingRoom } from "@/models/room/IRoom.store";
 import { useAppDispatch, useAppSelector } from "@/hooks/store.hook";
 import { filteredRoomsSelector } from "@/store/selectors/filteredRooms.selector";
-import { FetchingStatus } from "@/hooks/useFetch.hook";
-import { Spinner } from "@/components/Spinner/Spinner";
 import ListLocalDialogs from "@/components/ListDialogs/ListLocalDialogs";
 import ListRemoteDialogs from "@/components/ListDialogs/ListRemoteDialogs";
 import {
@@ -26,12 +24,12 @@ import {
     addRecentRoomData,
     resetCurrentRoomId,
 } from "@/store/actions/recent-rooms";
+import { activeRoomSelector } from "@/store/selectors/activeRoom.selector";
 // styles
 import "./dialogs.scss";
-import { activeRoomSelector } from "@/store/selectors/activeRoom.selector";
 
 const { Header, Content } = Layout;
-const { Title, Text } = Typography;
+const { Title } = Typography;
 
 interface IDialogsProps {
     user: IUserDto;
@@ -44,34 +42,6 @@ const Dialogs: FC<IDialogsProps> = ({ user }) => {
     const filteredLocalDialogs = useAppSelector((state) =>
         filteredRoomsSelector(state, dialogQueryString),
     );
-
-    const onClickRoom = useCallback(
-        (roomId: TValueOf<Pick<IRoom, "id">>) => {
-            if (currentActiveRoom && roomId === currentActiveRoom.id) {
-                return;
-            }
-
-            dispatch(
-                addRecentRoomData({
-                    id: roomId,
-                }),
-            );
-        },
-        [currentActiveRoom, dispatch],
-    );
-
-    const onClickRemoteRoom = useCallback(
-        (remoteRoom: TPreviewExistingRoom) => {
-            dispatch(
-                addRecentRoomData({
-                    id: remoteRoom.id,
-                    isPreview: true,
-                }),
-            );
-        },
-        [dispatch],
-    );
-
     const filteredRemoteDialogs = useAppSelector(
         (state) => state.room.previews,
     );
@@ -102,14 +72,44 @@ const Dialogs: FC<IDialogsProps> = ({ user }) => {
         if (currentActiveRoom) {
             return;
         }
-
         // reset the current PREVIEW room if this one isn't in the store.
         dispatch(resetCurrentRoomId());
     }, [currentActiveRoom, dispatch]);
 
+    const onClickRoom = useCallback(
+        (roomId: TValueOf<Pick<IRoom, "id">>) => {
+            if (roomId === (currentActiveRoom && currentActiveRoom.id)) {
+                return;
+            }
+
+            dispatch(
+                addRecentRoomData({
+                    id: roomId,
+                }),
+            );
+        },
+        [currentActiveRoom, dispatch],
+    );
+
+    const onClickRemoteRoom = useCallback(
+        (remoteRoom: TPreviewExistingRoom) => {
+            dispatch(
+                addRecentRoomData({
+                    id: remoteRoom.id,
+                    isPreview: true,
+                }),
+            );
+        },
+        [dispatch],
+    );
+
     const setDialogQueryString = useCallback(
         (str: string) => {
-            dispatch(changeQueryStringRooms({ queryString: str }));
+            dispatch(
+                changeQueryStringRooms({
+                    queryString: str,
+                }),
+            );
         },
         [dispatch],
     );
@@ -122,127 +122,6 @@ const Dialogs: FC<IDialogsProps> = ({ user }) => {
         },
         [setDialogQueryString],
     );
-
-    const remoteContent = useMemo(() => {
-        const content: JSX.Element[] = [];
-
-        if (dialogQueryString) {
-            content.push(
-                <Title
-                    className={"dialogs__pl"}
-                    key={"remote dialogs title:"}
-                    level={5}
-                >
-                    Возможные чаты:
-                </Title>,
-            );
-
-            if (
-                dialogQueryString &&
-                filteredRemoteDialogs.status === FetchingStatus.FETCHING
-            ) {
-                content.push(
-                    <div
-                        className={"dialogs__pl"}
-                        key={"remote dialogs spinner"}
-                    >
-                        <Spinner />
-                    </div>,
-                );
-                return content;
-            }
-            else if (
-                filteredRemoteDialogs.status === FetchingStatus.FULFILLED &&
-                filteredRemoteDialogs.rooms.length === 0
-            ) {
-                content.push(
-                    <Text
-                        className={"dialogs__pl"}
-                        key={"remote dialogs not found"}
-                    >
-                        Не найдены
-                    </Text>,
-                );
-                return content;
-            }
-        }
-
-        content.push(
-            <ListRemoteDialogs
-                key={"list remote dialogs" + dialogQueryString}
-                user={user}
-                rooms={filteredRemoteDialogs.rooms}
-                activeRoomId={currentActiveRoom ? currentActiveRoom.id : null}
-                onClickRemoteRoom={onClickRemoteRoom}
-            />,
-        );
-
-        return content;
-    }, [
-        currentActiveRoom,
-        dialogQueryString,
-        filteredRemoteDialogs,
-        onClickRemoteRoom,
-        user,
-    ]);
-
-    const localContent = useMemo(() => {
-        const content: JSX.Element[] = [];
-
-        if (dialogQueryString) {
-            content.push(
-                <Title
-                    className={"dialogs__pl"}
-                    key={"local dialogs title"}
-                    level={5}
-                >
-                    Ваши чаты:
-                </Title>,
-            );
-            if (isPending) {
-                content.push(
-                    <div
-                        className={"dialogs__pl"}
-                        key={"local dialogs spinner"}
-                    >
-                        <Spinner />
-                    </div>,
-                );
-                return content;
-            }
-            else if (filteredLocalDialogs.length === 0) {
-                content.push(
-                    <Text
-                        className={"dialogs__pl"}
-                        key={"local dialogs not found"}
-                    >
-                        Не найдены
-                    </Text>,
-                );
-                return content;
-            }
-        }
-
-        content.push(
-            <ListLocalDialogs
-                key={"list local dialogs" + dialogQueryString}
-                user={user}
-                rooms={filteredLocalDialogs}
-                activeRoomId={currentActiveRoom ? currentActiveRoom.id : null}
-                onClickDialog={onClickRoom}
-                hasDropdown={true}
-            />,
-        );
-
-        return content;
-    }, [
-        currentActiveRoom,
-        dialogQueryString,
-        filteredLocalDialogs,
-        isPending,
-        onClickRoom,
-        user,
-    ]);
 
     return (
         <Layout className="dialogs">
@@ -261,10 +140,49 @@ const Dialogs: FC<IDialogsProps> = ({ user }) => {
             </Header>
             <Divider />
             <Content>
-                {localContent}
-                {(filteredRemoteDialogs.status !== FetchingStatus.IDLE ||
-                    filteredRemoteDialogs.rooms.length > 0) && <Divider />}
-                {remoteContent}
+                {dialogQueryString && (
+                    <Title
+                        className={"dialogs__pl"}
+                        key={"local dialogs title"}
+                        level={5}
+                    >
+                        Ваши чаты:
+                    </Title>
+                )}
+                <ListLocalDialogs
+                    key={"list local dialogs" + dialogQueryString}
+                    user={user}
+                    rooms={filteredLocalDialogs}
+                    activeRoomId={
+                        currentActiveRoom ? currentActiveRoom.id : null
+                    }
+                    onClickDialog={onClickRoom}
+                    hasDropdown={true}
+                    isPending={isPending}
+                    dialogQueryString={dialogQueryString}
+                />
+                {dialogQueryString && (
+                    <Fragment>
+                        <Divider />
+                        <Title
+                            className={"dialogs__pl"}
+                            key={"remote dialogs title:"}
+                            level={5}
+                        >
+                            Возможные чаты:
+                        </Title>
+                        <ListRemoteDialogs
+                            key={"list remote dialogs" + dialogQueryString}
+                            rooms={filteredRemoteDialogs.rooms}
+                            statusFetching={filteredRemoteDialogs.status}
+                            dialogQueryString={dialogQueryString}
+                            activeRoomId={
+                                currentActiveRoom ? currentActiveRoom.id : null
+                            }
+                            onClickRemoteRoom={onClickRemoteRoom}
+                        />
+                    </Fragment>
+                )}
             </Content>
         </Layout>
     );
