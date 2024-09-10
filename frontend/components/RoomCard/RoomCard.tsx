@@ -7,6 +7,7 @@ import { IRoom, RoomType } from "@/models/room/IRoom.store";
 // styles
 import "./room-card.scss";
 import { getNameInitials } from "@/utils/getNameInitials";
+import { interlocutorSelector } from "@/store/selectors/interlocutor.selector";
 
 const { Title, Text } = Typography;
 
@@ -16,12 +17,9 @@ interface IUserCardProps {
 }
 
 const RoomCard: FC<IUserCardProps> = ({ room, onClick }) => {
-    const interlocutor = useAppSelector((state) => {
-        if (room.type === RoomType.GROUP) return;
-        return state.users.users.find(
-            (user) => user.id === room.participants[0].userId,
-        );
-    });
+    const interlocutor = useAppSelector((state) =>
+        interlocutorSelector(state, room.type, room.participants),
+    );
 
     return (
         <li tabIndex={0} onClick={onClick} className={classNames("room-card")}>
@@ -39,7 +37,9 @@ const RoomCard: FC<IUserCardProps> = ({ room, onClick }) => {
                 <Text>
                     {room.type === RoomType.GROUP
                         ? "Группа"
-                        : interlocutor && interlocutor.userOnline.isOnline
+                        : interlocutor &&
+                            !interlocutor.isDeleted &&
+                            interlocutor.userOnline.isOnline
                           ? "В сети"
                           : "Не в сети"}
                 </Text>

@@ -88,12 +88,20 @@ const ActiveRoom: FC<IActiveChatProps> = ({ user, room }) => {
     }, [dispatch]);
 
     const onJoinRoom = useCallback(
-        async (roomId: TValueOf<Pick<TPreviewRoomWithFlag, "id">>) => {
+        async (
+            roomId: TValueOf<Pick<TPreviewRoomWithFlag, "id">>,
+            type: RoomType,
+            wasMember?: boolean,
+        ) => {
             // activeRoom, probably, is a remote room viewing at this moment.
             try {
                 dispatch(removeRecentRoomData(roomId));
                 const newRoom = await dispatch(
-                    joinRoom({ id: roomId }),
+                    joinRoom({
+                        id: roomId,
+                        type,
+                        wasMember: wasMember || false,
+                    }),
                 ).unwrap();
 
                 dispatch(
@@ -118,7 +126,9 @@ const ActiveRoom: FC<IActiveChatProps> = ({ user, room }) => {
             afterSendingCb: () =>
                 dispatch(updateMessageForAction({ messageForAction: null })),
             beforeSendingCb: () => resetDebouncedOnTypingFunction(),
-            isPreviewRoom: room.isPreview,
+            previewInfo: room.isPreview
+                ? { isPreview: room.isPreview, wasMember: room.wasMember }
+                : { isPreview: room.isPreview },
             roomType: room.type,
             roomId: room.id,
             messageId: messageForAction && messageForAction.message.id,
@@ -223,7 +233,9 @@ const ActiveRoom: FC<IActiveChatProps> = ({ user, room }) => {
 
                 {room && room.isPreview && room.type === RoomType.GROUP ? (
                     <Button
-                        onClick={() => onJoinRoom(room.id)}
+                        onClick={() =>
+                            onJoinRoom(room.id, room.type, room.wasMember)
+                        }
                         block
                         style={{ marginBottom: "10px" }}
                     >

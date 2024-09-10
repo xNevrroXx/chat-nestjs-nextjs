@@ -2,22 +2,23 @@
 
 import { createAsyncThunk } from "@reduxjs/toolkit";
 // own modules
+import { getCookie } from "@/utils/getCookie";
 import { AuthService } from "@/services/Auth.service";
-// actions
 import { getAll as getAllUsers } from "@/store/thunks/users";
 import { setUserId } from "@/store/actions/room";
-// types
-import type { IUserAuth, TLoginFormData } from "@/models/auth/IAuth.store";
+import { getAllFolders } from "@/store/thunks/roomsOnFolders";
+import { UserService } from "@/services/UserService";
 import {
     connectSocket,
     createSocketInstance,
     disconnectSocket,
     getAll as getAllChats,
 } from "@/store/thunks/room";
+// types
+import type { IUserAuth, TLoginFormData } from "@/models/auth/IAuth.store";
 import { IAuthResponse } from "@/models/auth/IAuth.response";
 import { TRootState } from "@/store";
-import { getCookie } from "@/utils/getCookie";
-import { getAllFolders } from "@/store/thunks/roomsOnFolders";
+import { IDepersonalizeOrDeleteAccount } from "@/models/users/IUsers.store";
 
 const login = createAsyncThunk<
     IAuthResponse,
@@ -55,6 +56,23 @@ const logout = createAsyncThunk<void, void, { state: TRootState }>(
         try {
             void thunkAPI.dispatch(disconnectSocket());
             await AuthService.logout();
+        }
+        catch (error) {
+            return thunkAPI.rejectWithValue(error);
+        }
+    },
+);
+
+const deleteAccount = createAsyncThunk<
+    void,
+    IDepersonalizeOrDeleteAccount,
+    { state: TRootState }
+>(
+    "authentication/account-deletion",
+    async (whetherDepersonalizeAccount, thunkAPI) => {
+        try {
+            void thunkAPI.dispatch(disconnectSocket());
+            await UserService.deleteAccount(whetherDepersonalizeAccount);
         }
         catch (error) {
             return thunkAPI.rejectWithValue(error);
@@ -123,4 +141,4 @@ const checkAuthentication = createAsyncThunk<
     }
 });
 
-export { login, logout, registration, checkAuthentication };
+export { login, logout, deleteAccount, registration, checkAuthentication };

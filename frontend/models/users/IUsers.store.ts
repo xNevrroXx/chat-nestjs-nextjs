@@ -1,5 +1,9 @@
-import { IUserDto } from "@/models/auth/IAuth.store";
+import { IUserDto, TDepersonalizedUser } from "@/models/auth/IAuth.store";
 
 export interface IUsers {
-    users: IUserDto[];
+    users: (IUserDto | TDepersonalizedUser)[];
+}
+
+export interface IDepersonalizeOrDeleteAccount {
+    whetherDepersonalize: "depersonalize" | "delete";
 }

@@ -14,20 +14,21 @@ datasource db {
 model User {
     id          String  @id @default(uuid())
     displayName String  @map("display_name")
-    givenName   String  @map("given_name")
-    familyName  String  @map("family_name")
-    email       String
+    givenName   String? @map("given_name")
+    familyName  String? @map("family_name")
+    email       String?
     age         Int?
     sex         Sex?
     password    String?
     color       String
+
+    isDeleted Boolean @default(false) @map("is_deleted")
 
     createdAt DateTime  @default(now()) @map("created_at")
     updatedAt DateTime? @map("updated_at")
 
     userOnline            UserOnline?             @relation("user_online")
     userTyping            UserTyping?             @relation("user_typing")
-    refreshToken          RefreshToken?           @relation("refresh_token")
     room                  Room[]                  @relation("room")
     messages              Message[]               @relation("messages")
     deletedMessages       UserOnDeletedMessage[]  @relation("deleted_messages")
@@ -37,7 +38,7 @@ model User {
     folders               Folder[]                @relation("user_to_folder")
     calls                 Call[]                  @relation("calls")
     CallParticipant       CallParticipant[]       @relation("call_participants")
-    MessageBeingProcessed MessageBeingProcessed[] @relation("messages_being_processed")
+    messageBeingProcessed MessageBeingProcessed[] @relation("messages_being_processed")
 
     @@unique([email])
     @@map("user")
@@ -82,19 +83,6 @@ model Friendship {
 
     @@unique([userId1, userId2])
     @@map("friendship")
-}
-
-model RefreshToken {
-    id     String @id @default(uuid())
-    userId String @map("user_id")
-    token  String @db.VarChar(255)
-
-    updatedAt DateTime @default(now()) @map("updated_at")
-
-    user User @relation("refresh_token", fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-
-    @@unique([userId])
-    @@map("refresh_token")
 }
 
 model Folder {
@@ -180,14 +168,14 @@ model CallParticipant {
 }
 
 model Call {
-    id            String @id @default(uuid())
-    initializerId String @map("initializer_id")
-    roomId        String @map("room_id")
+    id            String  @id @default(uuid())
+    initializerId String? @map("initializer_id")
+    roomId        String  @map("room_id")
 
     createdAt DateTime  @default(now()) @map("created_at")
     endedAt   DateTime? @map("ended_at")
 
-    initializer     User              @relation("calls", fields: [initializerId], references: [id], onDelete: NoAction, onUpdate: Cascade)
+    initializer     User?             @relation("calls", fields: [initializerId], references: [id], onDelete: SetNull, onUpdate: Cascade)
     room            Room              @relation("calls", fields: [roomId], references: [id], onDelete: Cascade, onUpdate: Cascade)
     CallParticipant CallParticipant[] @relation("call_participants")
 
@@ -207,7 +195,7 @@ model Message {
     createdAt DateTime  @default(now()) @map("created_at")
     updatedAt DateTime? @map("updated_at")
 
-    sender                 User                   @relation("messages", fields: [senderId], references: [id], onDelete: NoAction, onUpdate: Cascade)
+    sender                 User                   @relation("messages", fields: [senderId], references: [id], onDelete: Cascade, onUpdate: Cascade)
     room                   Room                   @relation("messages", fields: [roomId], references: [id], onDelete: Cascade, onUpdate: Cascade)
     replyToMessage         Message?               @relation("reply_to_message", fields: [replyToMessageId], references: [id], onDelete: SetNull, onUpdate: Cascade)
     repliesThisMessage     Message[]              @relation("reply_to_message")
@@ -229,7 +217,7 @@ model MessageBeingProcessed {
     createdAt DateTime  @default(now()) @map("created_at")
     updatedAt DateTime? @map("updated_at")
 
-    sender User                    @relation("messages_being_processed", fields: [senderId], references: [id], onDelete: NoAction, onUpdate: Cascade)
+    sender User                    @relation("messages_being_processed", fields: [senderId], references: [id], onDelete: Cascade, onUpdate: Cascade)
     room   Room                    @relation("messages_being_processed", fields: [roomId], references: [id], onDelete: Cascade, onUpdate: Cascade)
     files  FileProcessedMessages[] @relation("files_message_being_processed")
 

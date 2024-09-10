@@ -1,10 +1,11 @@
-import { IRoom, RoomType } from "@/models/room/IRoom.store";
+import { IRoom } from "@/models/room/IRoom.store";
 import { TValueOf } from "@/models/TUtils";
 
 type TModalWindowsStore = {
     call: TModalWithRoomId;
     logout: TIsOpen;
     foldersMenu: TIsOpen;
+    accountDeletion: TIsOpen;
     folderCreation: TIsOpen;
     pinningMessage: TModalWithMessageId;
     messageForwarding: TModalWithMessageId;

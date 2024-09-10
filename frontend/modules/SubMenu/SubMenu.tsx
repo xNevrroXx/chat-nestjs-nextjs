@@ -8,8 +8,9 @@ import {
     Typography,
 } from "antd";
 import {
-    PlusCircleOutlined,
     CloseOutlined,
+    DeleteOutlined,
+    PlusCircleOutlined,
     CloseCircleOutlined,
 } from "@ant-design/icons";
 import { Header } from "antd/lib/layout/layout";
@@ -20,26 +21,6 @@ import { getNameInitials } from "@/utils/getNameInitials";
 import { openModal } from "@/store/actions/modal-windows";
 
 const { Text } = Typography;
-
-// const CustomButton: FC<ButtonProps> = ({ children, ...props }) => {
-//     return (
-//         <Button
-//             type={"text"}
-//             block
-//             {...props}
-//             style={{
-//                 display: "flex",
-//                 alignItems: "center",
-//                 textAlign: "left",
-//                 minWidth: "min-content",
-//                 wordBreak: "normal",
-//                 ...props.style,
-//             }}
-//         >
-//             {children}
-//         </Button>
-//     );
-// };
 
 interface ISubMenuProps {
     isOpen: boolean;
@@ -56,6 +37,10 @@ const SubMenu: FC<ISubMenuProps> = ({ isOpen, onClose }) => {
 
     const openModalToCreateGroup = useCallback(() => {
         dispatch(openModal({ modalName: "groupCreationMenu" }));
+    }, [dispatch]);
+
+    const openModalToDeleteAccount = useCallback(() => {
+        dispatch(openModal({ modalName: "accountDeletion" }));
     }, [dispatch]);
 
     if (!user) {
@@ -114,7 +99,16 @@ const SubMenu: FC<ISubMenuProps> = ({ isOpen, onClose }) => {
                     />
                 </Header>
                 <Divider style={{ margin: "15px 0" }} />
-                <Flex vertical gap="small">
+                <Flex vertical gap="small" style={{ height: "fill-available" }}>
+                    <FlexButton
+                        style={{
+                            padding: "0 25px",
+                        }}
+                        icon={<DeleteOutlined style={{ fontSize: "20px" }} />}
+                        onClick={openModalToDeleteAccount}
+                    >
+                        Удалить аккаунт
+                    </FlexButton>
                     <FlexButton
                         style={{
                             padding: "0 25px",
@@ -126,13 +120,6 @@ const SubMenu: FC<ISubMenuProps> = ({ isOpen, onClose }) => {
                     >
                         Новая группа
                     </FlexButton>
-                    {/*<CustomButton*/}
-                    {/*    style={{*/}
-                    {/*        padding: "0 25px",*/}
-                    {/*    }}*/}
-                    {/*>*/}
-                    {/*    Ночной режим*/}
-                    {/*</CustomButton>*/}
                     <FlexButton
                         style={{
                             padding: "0 25px",

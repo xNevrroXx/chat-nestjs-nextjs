@@ -184,7 +184,7 @@ export class RoomController {
         @Req() request: Request,
         @Query("query") query: string,
         @Query("isOnlyUsers") isOnlyUsers?: boolean
-    ): Promise<TRoomPreview[]> {
+    ) /*: Promise<TRoomPreview[]>*/ {
         // todo add a boolean flag to specify whether to find users by their firstname + lastname or just by their nickname
         const userPayload = request.user as IUserSessionPayload;
 
@@ -200,7 +200,9 @@ export class RoomController {
                        AND intersecting_room.type = 'PRIVATE'
                 ) ON u.id = p.user_id
             WHERE
-                target_user_participant.user_id is null
+                u.is_deleted <> 1
+                AND u.id <> ${userPayload.id}
+                AND target_user_participant.user_id is null
                 AND
                     (
                         u.display_name LIKE ${"%" + query + "%"}
@@ -208,8 +210,7 @@ export class RoomController {
                         CONCAT(u.given_name, ' ', u.family_name) LIKE ${
                             "%" + query + "%"
                         }
-                    )
-                AND u.id <> ${userPayload.id};
+                    );
         `;
 
         const rooms = isOnlyUsers
@@ -218,7 +219,11 @@ export class RoomController {
                   where: {
                       OR: [
                           {
+                              // just a group room with an appropriate name.
                               AND: [
+                                  {
+                                      type: RoomType.GROUP,
+                                  },
                                   {
                                       name: {
                                           contains: query as string,
@@ -238,34 +243,30 @@ export class RoomController {
                           {
                               AND: [
                                   {
-                                      OR: [
-                                          {
-                                              name: {
-                                                  equals: null,
-                                              },
-                                          },
-                                          {
-                                              name: {
-                                                  contains: query as string,
-                                              },
-                                          },
-                                      ],
+                                      // 1) a private room
+                                      type: RoomType.PRIVATE,
                                   },
                                   {
+                                      // 2) I've been in this room before
                                       participants: {
                                           some: {
-                                              AND: [
-                                                  {
-                                                      userId: {
-                                                          equals: userPayload.id,
-                                                      },
+                                              userId: userPayload.id,
+                                              isStillMember: {
+                                                  equals: false,
+                                              },
+                                          },
+                                      },
+                                  },
+                                  {
+                                      // 3) the interlocutor shouldn't be a deleted user
+                                      participants: {
+                                          some: {
+                                              user: {
+                                                  id: {
+                                                      not: userPayload.id,
                                                   },
-                                                  {
-                                                      isStillMember: {
-                                                          equals: false,
-                                                      },
-                                                  },
-                                              ],
+                                                  isDeleted: false,
+                                              },
                                           },
                                       },
                                   },

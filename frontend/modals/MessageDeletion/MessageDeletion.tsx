@@ -66,7 +66,6 @@ const MessageDeletion = () => {
             onCancel={onClose}
             onOk={onOk}
             open={modalInfo.isOpen}
-            // styles={{header: }}
         >
             <Flex vertical gap={"small"}>
                 {room.type === RoomType.PRIVATE && isMeMessageOwner && (

@@ -19,10 +19,11 @@ const MessageForwarding = () => {
 
     const onOk = useCallback(
         (room: IRoom) => {
-            onClose();
-            if (!modalInfo.messageId) {
+            if (!modalInfo.isOpen) {
                 return;
             }
+
+            onClose();
 
             void dispatch(
                 forwardMessageSocket({

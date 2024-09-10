@@ -13,7 +13,9 @@ const { Text } = Typography;
 interface IDialogsProps {
     rooms: TPreviewExistingRoom[];
     activeRoomId: TValueOf<Pick<IRoom, "id">> | null;
-    onClickRemoteRoom: (room: TPreviewExistingRoom) => void;
+    onClickRemoteRoom: (
+        roomId: TValueOf<Pick<TPreviewExistingRoom, "id">>,
+    ) => void;
     dialogQueryString: string;
     statusFetching: FetchingStatus;
 }
@@ -48,7 +50,7 @@ const ListRemoteDialogs: FC<IDialogsProps> = ({
                     color={room.color}
                     key={room.id.toString() + "dialog card"}
                     id={room.id}
-                    onClick={() => onClickRemoteRoom(room)}
+                    onClick={() => onClickRemoteRoom(room.id)}
                     dialogName={room.name}
                     isActive={activeRoomId === room.id}
                     roomType={room.type}

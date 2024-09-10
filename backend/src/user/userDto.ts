@@ -19,6 +19,7 @@ export class UserDto implements TUserDto {
     color: string;
     createdAt: Date;
     updatedAt: Date | null;
+    isDeleted: boolean;
 
     constructor(data: TUserDto) {
         this.id = data.id;
@@ -31,6 +32,7 @@ export class UserDto implements TUserDto {
         this.color = data.color;
         this.createdAt = data.createdAt;
         this.updatedAt = data.updatedAt;
+        this.isDeleted = data.isDeleted;
     }
 }
 

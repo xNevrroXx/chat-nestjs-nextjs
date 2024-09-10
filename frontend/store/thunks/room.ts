@@ -33,6 +33,7 @@ import {
     IInnerForwardedMessage,
     IUnpinMessage,
     TPreviewRoomWithFlag,
+    TJoinRoom,
 } from "@/models/room/IRoom.store";
 import { TRootState } from "@/store";
 import { TValueOf } from "@/models/TUtils";
@@ -340,27 +341,26 @@ const createRoom = createAsyncThunk<
     }
 });
 
-const joinRoom = createAsyncThunk<
-    IRoom,
-    Pick<TPreviewRoomWithFlag, "id">,
-    { state: TRootState }
->("room/join", async (roomData, thunkAPI) => {
-    try {
-        const response = await RoomService.join(roomData);
+const joinRoom = createAsyncThunk<IRoom, TJoinRoom, { state: TRootState }>(
+    "room/join",
+    async (roomData, thunkAPI) => {
+        try {
+            const response = await RoomService.join(roomData);
 
-        const socket = thunkAPI.getState().room.socket;
-        if (!socket) {
-            throw new Error("There is no socket");
+            const socket = thunkAPI.getState().room.socket;
+            if (!socket) {
+                throw new Error("There is no socket");
+            }
+            socket.emit("room:join-or-create", [{ id: response.data.id }]);
+
+            thunkAPI.dispatch(clearPreviewRooms());
+            return response.data;
         }
-        socket.emit("room:join-or-create", [{ id: response.data.id }]);
-
-        thunkAPI.dispatch(clearPreviewRooms());
-        return response.data;
-    }
-    catch (error) {
-        return thunkAPI.rejectWithValue(error);
-    }
-});
+        catch (error) {
+            return thunkAPI.rejectWithValue(error);
+        }
+    },
+);
 
 const leaveRoom = createAsyncThunk<
     TValueOf<Pick<IRoom, "id">>,

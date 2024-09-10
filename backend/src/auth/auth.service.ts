@@ -8,14 +8,12 @@ import { IUserSessionPayload } from "../user/IUser";
 import { UserService } from "../user/user.service";
 import { SessionService } from "../session/session.service";
 import { ISessionData } from "../session/ISession";
-import { AppConstantsService } from "../app.constants.service";
 
 @Injectable()
 export class AuthService {
     constructor(
         private readonly userService: UserService,
-        private readonly sessionService: SessionService,
-        private readonly appConstantsService: AppConstantsService
+        private readonly sessionService: SessionService
     ) {}
 
     async localValidateUser(email: string, password: string) {

@@ -21,10 +21,15 @@ export interface IUserAuth extends TPartialBy<IUser, "displayName"> {
 export interface IUserDto extends IUser {
     id: string;
     color: string;
+    isDeleted: false;
     createdAt: string;
     updatedAt: string | undefined;
     userOnline: TUserOnline;
 }
+
+export type TDepersonalizedUser = {
+    isDeleted: true;
+} & Pick<IUserDto, "id" | "displayName" | "color" | "createdAt" | "updatedAt">;
 
 export type TUserOnline = {
     id: string;

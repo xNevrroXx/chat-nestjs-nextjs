@@ -15,19 +15,21 @@ import { useFetch } from "@/hooks/useFetch.hook";
 interface IProps {
     beforeSendingCb: () => void;
     afterSendingCb: () => void;
-    isPreviewRoom: boolean;
+    previewInfo: { isPreview: true; wasMember: boolean } | { isPreview: false };
     roomType: RoomType;
     roomId: TValueOf<Pick<IRoom, "id">>;
     messageId: TValueOf<Pick<IOriginalMessage, "id">> | null;
     onJoinRoom: (
         roomId: TValueOf<Pick<TPreviewRoomWithFlag, "id">>,
+        type: RoomType,
+        wasMember?: boolean,
     ) => Promise<IRoom | undefined>;
 }
 
 const useSendMessage = ({
     beforeSendingCb,
     afterSendingCb,
-    isPreviewRoom,
+    previewInfo,
     onJoinRoom,
     messageId,
     roomType,
@@ -72,8 +74,12 @@ const useSendMessage = ({
             };
 
             let message: TSendMessage;
-            if (isPreviewRoom && roomType === RoomType.PRIVATE) {
-                const newRoom = await onJoinRoom(roomId);
+            if (previewInfo.isPreview && roomType === RoomType.PRIVATE) {
+                const newRoom = await onJoinRoom(
+                    roomId,
+                    roomType,
+                    previewInfo.wasMember,
+                );
                 if (!newRoom) {
                     return;
                 }
@@ -97,7 +103,7 @@ const useSendMessage = ({
             afterSendingCb,
             beforeSendingCb,
             dispatch,
-            isPreviewRoom,
+            previewInfo,
             messageId,
             onJoinRoom,
             roomId,
@@ -116,7 +122,11 @@ const useSendMessage = ({
             formData.set("roomId", roomId);
             formData.set("fileType", FileType.VOICE_RECORD);
 
-            const response = await request({ method: "POST", data: formData });
+            const response = await request({
+                method: "POST",
+                data: formData,
+                withCredentials: true,
+            });
 
             if (!response) {
                 return;

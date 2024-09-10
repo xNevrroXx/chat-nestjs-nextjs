@@ -47,14 +47,24 @@ export class RoomService {
         }, Promise.resolve({}));
 
         const normalizedParticipants = unnormalizedRoom.participants
-            .filter((participant) => participant.userId !== userId)
+            .filter(
+                (participant) => participant && participant.userId !== userId
+            )
             .map(this.participantService.normalize);
 
         let roomName: string;
         if (unnormalizedRoom.type === RoomType.GROUP) {
             roomName = unnormalizedRoom.name;
         } else {
-            roomName = normalizedParticipants[0].displayName;
+            // return {
+            //     roomId: unnormalizedRoom.id,
+            //     participants: normalizedParticipants,
+            // } as never as IRoom;
+            const interlocutor = normalizedParticipants[0];
+
+            if (interlocutor) {
+                roomName = interlocutor.displayName;
+            }
         }
 
         const result: IRoom & { roomOnFolder: unknown } = {

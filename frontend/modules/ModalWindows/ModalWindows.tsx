@@ -8,6 +8,7 @@ import Call from "@/modals/Call/Call";
 import { useAppSelector } from "@/hooks/store.hook";
 import PinningMessage from "@/modals/PinningMessage/PinningMessage";
 import MessageDeletion from "@/modals/MessageDeletion/MessageDeletion";
+import AccountDeletion from "@/modals/AccountDeletion/AccountDeletion";
 
 const ModalWindows = () => {
     const callModalInfo = useAppSelector((state) => state.modalWindows.call);
@@ -19,6 +20,7 @@ const ModalWindows = () => {
             <GroupCreation />
             <FolderCreation />
             <PinningMessage />
+            <AccountDeletion />
             <MessageDeletion />
             <MessageForwarding />
             {callModalInfo.isOpen && <Call modalInfo={callModalInfo} />}

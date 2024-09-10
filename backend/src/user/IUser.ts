@@ -1,5 +1,5 @@
 import { TValueOf } from "../models/TUtils";
-import { Prisma, User } from "@prisma/client";
+import { User } from "@prisma/client";
 
 export type TUser = Omit<User, "id" | "createdAt" | "updatedAt" | "color">;
 
@@ -11,12 +11,4 @@ export interface IUserSessionPayload {
 
 export type TUserLogin = Pick<User, "email" | "password">;
 
-export function isUserWithRefreshToken(
-    data: User | Prisma.UserGetPayload<{ include: { refreshToken: true } }>
-): data is Prisma.UserGetPayload<{ include: { refreshToken: true } }> {
-    return (
-        data &&
-        !!(data as Prisma.UserGetPayload<{ include: { refreshToken: true } }>)
-            .refreshToken
-    );
-}
+export type TDepersonalizeOrDelete = "depersonalize" | "delete";

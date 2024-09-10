@@ -92,15 +92,30 @@ const Dialogs: FC<IDialogsProps> = ({ user }) => {
     );
 
     const onClickRemoteRoom = useCallback(
-        (remoteRoom: TPreviewExistingRoom) => {
+        (remoteRoomId: TValueOf<Pick<TPreviewExistingRoom, "id">>) => {
             dispatch(
                 addRecentRoomData({
-                    id: remoteRoom.id,
+                    id: remoteRoomId,
                     isPreview: true,
                 }),
             );
         },
         [dispatch],
+    );
+
+    const onPressEnterOnDialog = useCallback(
+        (
+            event: KeyboardEvent,
+            roomId: string,
+            cb: (roomId: string) => void,
+        ) => {
+            if (event.key !== "Enter") {
+                return;
+            }
+
+            cb(roomId);
+        },
+        [],
     );
 
     const setDialogQueryString = useCallback(

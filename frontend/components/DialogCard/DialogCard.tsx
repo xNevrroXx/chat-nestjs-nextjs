@@ -43,6 +43,7 @@ const DialogCard: FC<IDialogCardProps> = ({
             data-list-id={id}
             className={classNames("dialog", isActive && "dialog_active")}
             onClick={onClick}
+            onKeyDown={onClick}
         >
             <div className="dialog__left">
                 <Avatar

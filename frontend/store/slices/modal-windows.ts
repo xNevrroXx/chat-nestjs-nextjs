@@ -22,6 +22,9 @@ const initialState: TModalWindowsStore = {
     folderCreation: {
         isOpen: false,
     },
+    accountDeletion: {
+        isOpen: false,
+    },
     groupCreationMenu: {
         isOpen: false,
     },

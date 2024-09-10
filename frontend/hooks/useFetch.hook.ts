@@ -23,6 +23,7 @@ const useFetch = <T,>(url: string | undefined) => {
                 const response = await $api<T>(url, config);
                 setData(response.data);
                 setStatus(FetchingStatus.FULFILLED);
+                return response.data;
             }
             catch (error) {
                 setError(error);

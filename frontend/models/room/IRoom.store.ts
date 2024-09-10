@@ -133,11 +133,11 @@ export interface IFile {
 }
 
 // HTTP response types
-export type TRoomWithPreviewFlag = IRoom & {
-    isPreview: false;
-};
 export type TPreviewExistingRoom = Omit<IRoom, "createdAt" | "updatedAt"> & {
     wasMember: boolean;
+};
+export type TRoomWithPreviewFlag = IRoom & {
+    isPreview: false;
 };
 export type TPreviewRoomWithFlag = TPreviewExistingRoom & {
     isPreview: true;
@@ -223,6 +223,8 @@ export interface ILeaveRoom {
     roomId: string;
     userId: string;
 }
+
+export type TJoinRoom = Pick<TPreviewExistingRoom, "id" | "type" | "wasMember">;
 
 export type TCreateGroupRoom = {
     name: TValueOf<Pick<IRoom, "name">>;
