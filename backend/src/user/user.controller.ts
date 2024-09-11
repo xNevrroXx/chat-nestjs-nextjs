@@ -11,12 +11,16 @@ import {
 import { UserService } from "./user.service";
 import { AuthGuard } from "../auth/auth.guard";
 import { excludeSensitiveFields } from "../utils/excludeSensitiveFields";
-import { TDepersonalizeOrDelete } from "./IUser";
-import { User } from "@prisma/client";
+import { IUserSessionPayload, TDepersonalizeOrDelete } from "./IUser";
+import { RoomType, User } from "@prisma/client";
+import { RoomService } from "../room/room.service";
 
 @Controller("user")
 export class UserController {
-    constructor(private readonly userService: UserService) {}
+    constructor(
+        private readonly userService: UserService,
+        private readonly roomService: RoomService
+    ) {}
 
     @UseGuards(AuthGuard)
     @HttpCode(HttpStatus.OK)
@@ -26,9 +30,19 @@ export class UserController {
         @Body("whetherDepersonalize")
         depersonalizeOrDelete: TDepersonalizeOrDelete
     ) {
-        const user = request.user;
+        const user = request.user as IUserSessionPayload;
 
         if (depersonalizeOrDelete === "delete") {
+            await this.roomService.deleteMany({
+                where: {
+                    type: RoomType.PRIVATE,
+                    participants: {
+                        some: {
+                            userId: user.id,
+                        },
+                    },
+                },
+            });
             await this.userService.delete({ id: user.id });
             return;
         }

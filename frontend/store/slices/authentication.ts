@@ -6,12 +6,12 @@ import {
     checkAuthentication,
 } from "@/store/thunks/authentication";
 // types
-import type { IAuth } from "@/models/auth/IAuth.store";
+import type { TAuthentication } from "@/models/auth/IAuth.store";
 
-const initialState: IAuth = {
+const initialState: TAuthentication = {
     user: null,
     isAuthenticated: false,
-};
+} as TAuthentication;
 
 const authentication = createSlice({
     name: "authentication",

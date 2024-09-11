@@ -4,20 +4,26 @@ import { RoomType, TParticipant } from "@/models/room/IRoom.store";
 
 const interlocutorSelector = createSelector(
     [
+        (state: TRootState) => state.authentication,
         (state: TRootState) => state.users,
         (_, roomType: RoomType, participants: TParticipant[]) => ({
             roomType,
             participants,
         }),
     ],
-    (usersSlice, { roomType, participants }) => {
-        if (roomType === RoomType.GROUP || !participants) {
+    (authSlice, usersSlice, { roomType, participants }) => {
+        if (
+            roomType === RoomType.GROUP ||
+            !participants ||
+            !authSlice.isAuthenticated
+        ) {
             return;
         }
 
-        return usersSlice.users.find(
-            (user) => user.id === participants[0].userId,
-        );
+        const interlocutor = participants.find(
+            (member) => member.userId !== authSlice.user.id,
+        )!;
+        return usersSlice.users.find((user) => user.id === interlocutor.userId);
     },
 );
 

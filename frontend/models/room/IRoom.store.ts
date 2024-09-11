@@ -72,7 +72,6 @@ export interface IMessagesByDays {
 
 export type TParticipant = Pick<IUserDto, "color" | "displayName"> &
     Omit<IUserTyping, "updatedAt"> & {
-        id: string;
         isStillMember: boolean;
     };
 

@@ -7,10 +7,9 @@ import {
     OnGatewayConnection,
     ConnectedSocket,
     WsException,
-    WsResponse,
 } from "@nestjs/websockets";
 import { UseFilters, UseGuards } from "@nestjs/common";
-import { Server, Socket } from "socket.io";
+import { Namespace, Socket } from "socket.io";
 // own modules
 import { WsAuthGuard } from "../auth/ws-auth.guard";
 import { UserService } from "../user/user.service";
@@ -56,7 +55,7 @@ import { excludeSensitiveFields } from "../utils/excludeSensitiveFields";
 })
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @WebSocketServer()
-    server: Server;
+    server: Namespace;
     socketRoomsInfo: SocketRoomsInfo;
 
     constructor(
@@ -125,7 +124,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         });
 
         roomIDs.forEach((roomId) => {
-            client.broadcast.to(roomId).emit("user:toggle-online", userOnline);
+            this.server.to(roomId).emit("user:toggle-online", userOnline);
         });
     }
 
@@ -135,8 +134,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         @ConnectedSocket() client,
         @MessageBody() socketMessage: { id: string }
     ) {
-        const userPayload: IUserSessionPayload = client.user;
-
         const unnormalizedRoom = (await this.roomService.findOne({
             where: {
                 id: socketMessage.id,
@@ -152,12 +149,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
                 unnormalizedRoom.id,
                 participant.userId
             );
-            const participantSockets: Socket[] = participantClientIds.map(
-                (socketId) => {
-                    // @ts-ignore
-                    return this.server.sockets.get(socketId);
-                }
-            );
+            const participantSockets = participantClientIds.map((socketId) => {
+                return this.server.sockets.get(socketId);
+            });
 
             if (participantSockets && participantSockets.length > 0) {
                 // participant is online - we have to manually join this one to the room.
@@ -176,14 +170,16 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
             );
 
             if (!userIdToSocketId) return;
-            const [userId, clientId] = userIdToSocketId;
+            const [userId, clientIds] = userIdToSocketId;
 
             this.roomService
                 .normalize(userId, unnormalizedRoom)
                 .then((room) => {
-                    client.broadcast
-                        .to(room.id)
-                        .emit("room:add-or-update", room);
+                    clientIds.forEach((clientId) =>
+                        this.server.sockets
+                            .get(clientId)
+                            .emit("room:add-or-update", room)
+                    );
                 });
         });
     }
@@ -264,11 +260,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     async toggleTypingStatus(
         client,
-        { userId, roomId, isTyping }: TToggleUserTyping
+        { userId: senderUserId, roomId, isTyping }: TToggleUserTyping
     ) {
         try {
             await this.userService.updateTypingStatus({
-                userId,
+                userId: senderUserId,
                 isTyping,
                 roomId,
             });
@@ -290,25 +286,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
             const normalizedParticipants = participants.map(
                 this.participantService.normalize
             );
-            normalizedParticipants.forEach((participant) => {
-                const userIdToSocketId = Object.entries(
-                    this.socketRoomsInfo.getRoomInfo(roomId)
-                ).find(
-                    ([userId, socketId]) =>
-                        participant.userId === userId && socketId !== client.id
-                );
 
-                if (!userIdToSocketId) return;
-                const [userId, clientId] = userIdToSocketId;
-                const excludingThisUserTypingInfo =
-                    normalizedParticipants.filter(
-                        (participant) => participant.userId !== userId
-                    );
-
-                client.broadcast
-                    .to(clientId)
-                    .emit("room:toggle-typing", excludingThisUserTypingInfo);
-            });
+            client.broadcast
+                .to(roomId)
+                .emit("room:toggle-typing", normalizedParticipants);
         } catch (error) {
             console.warn("error: ", error);
         }

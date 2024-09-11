@@ -3,7 +3,7 @@ import {
     PhoneOutlined,
     LeftOutlined,
 } from "@ant-design/icons";
-import { Button, Flex, Layout, theme, Typography } from "antd";
+import { Button, Layout, Typography } from "antd";
 import React, { type FC, useCallback, useRef, useState } from "react";
 // own modules
 import { useScrollTrigger } from "@/hooks/useScrollTrigger.hook";
@@ -22,7 +22,6 @@ import { useAppDispatch, useAppSelector } from "@/hooks/store.hook";
 // actions
 import { openCallModal } from "@/store/actions/modal-windows";
 import { useOnTyping } from "@/hooks/useOnTyping.hook";
-import { useUserStatuses } from "@/hooks/useUserStatuses.hook";
 import { interlocutorSelector } from "@/store/selectors/interlocutor.selector";
 import { useSendMessage } from "@/hooks/useSendMessage.hook";
 import {
@@ -36,11 +35,10 @@ import { TValueOf } from "@/models/TUtils";
 import { findMessageForActionSelector } from "@/store/selectors/findMessageForAction.selector";
 // styles
 import "./active-room.scss";
+import UserStatuses from "@/components/UserStatuses/UserStatuses";
 
 const { Header, Footer } = Layout;
-const { Text, Title } = Typography;
-
-const { useToken } = theme;
+const { Title } = Typography;
 
 interface IActiveChatProps {
     user: IUserDto;
@@ -48,7 +46,6 @@ interface IActiveChatProps {
 }
 
 const ActiveRoom: FC<IActiveChatProps> = ({ user, room }) => {
-    const { token } = useToken();
     const dispatch = useAppDispatch();
     const { onTyping, resetDebouncedOnTypingFunction } = useOnTyping({
         roomId: room.id,
@@ -58,11 +55,6 @@ const ActiveRoom: FC<IActiveChatProps> = ({ user, room }) => {
     const interlocutor = useAppSelector((state) =>
         interlocutorSelector(state, room.type, room.participants),
     );
-    const userStatuses = useUserStatuses({
-        interlocutor,
-        roomType: room.type,
-        participants: room.participants,
-    });
     const messageForAction = useAppSelector((state) =>
         findMessageForActionSelector(state, room.id),
     );
@@ -173,27 +165,12 @@ const ActiveRoom: FC<IActiveChatProps> = ({ user, room }) => {
                         <Title level={5} className="active-room__name">
                             {room.name}
                         </Title>
-                        <Flex gap={"small"}>
-                            {room.type === RoomType.GROUP && (
-                                <Text
-                                    style={{
-                                        color: token.colorTextDisabled,
-                                    }}
-                                    className="active-room__status"
-                                >
-                                    {room.participants.filter(
-                                        (member) => member.isStillMember,
-                                    ).length + (room.isPreview ? 0 : 1)}{" "}
-                                    уч.
-                                </Text>
-                            )}
-                            <Text
-                                style={{ color: token.colorTextDisabled }}
-                                className="active-room__status"
-                            >
-                                {userStatuses}
-                            </Text>
-                        </Flex>
+                        <UserStatuses
+                            userId={user.id}
+                            roomType={room.type}
+                            interlocutor={interlocutor}
+                            participants={room.participants}
+                        />
                     </div>
                 </div>
                 {deviceDimensions.screen.width > 1024 && (

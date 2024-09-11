@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { Prisma, Room, RoomType } from "@prisma/client";
+import { Prisma, PrismaPromise, Room, RoomType } from "@prisma/client";
 import { DatabaseService } from "../database/database.service";
 import {
     PrismaIncludeFullRoomInfo,
@@ -46,33 +46,35 @@ export class RoomService {
             return prev;
         }, Promise.resolve({}));
 
-        const normalizedParticipants = unnormalizedRoom.participants
-            .filter(
-                (participant) => participant && participant.userId !== userId
-            )
-            .map(this.participantService.normalize);
+        const normalizedParticipants = unnormalizedRoom.participants.map(
+            this.participantService.normalize
+        );
 
         let roomName: string;
-        if (unnormalizedRoom.type === RoomType.GROUP) {
-            roomName = unnormalizedRoom.name;
-        } else {
-            // return {
-            //     roomId: unnormalizedRoom.id,
-            //     participants: normalizedParticipants,
-            // } as never as IRoom;
-            const interlocutor = normalizedParticipants[0];
+        let roomColor: string;
+        switch (unnormalizedRoom.type) {
+            case RoomType.GROUP: {
+                roomName = unnormalizedRoom.name;
+                roomColor = unnormalizedRoom.color;
+                break;
+            }
+            case RoomType.PRIVATE: {
+                const interlocutor = normalizedParticipants.find(
+                    (member) => member.userId !== userId
+                );
 
-            if (interlocutor) {
-                roomName = interlocutor.displayName;
+                if (interlocutor) {
+                    roomName = interlocutor.displayName;
+                    roomColor = interlocutor.color;
+                }
+                break;
             }
         }
 
         const result: IRoom & { roomOnFolder: unknown } = {
             ...unnormalizedRoom,
             name: roomName,
-            color: unnormalizedRoom.color
-                ? unnormalizedRoom.color
-                : normalizedParticipants[0].color,
+            color: roomColor,
             participants: normalizedParticipants,
             days: normalizedMessagesByDays,
             folderIds: unnormalizedRoom.roomOnFolder.map(
@@ -245,6 +247,15 @@ export class RoomService {
 
     async delete(where: Prisma.RoomWhereUniqueInput): Promise<Room> {
         return this.prisma.room.delete({
+            where,
+        });
+    }
+    async deleteMany(params: {
+        where?: Prisma.RoomWhereInput;
+    }): Promise<PrismaPromise<Prisma.BatchPayload>> {
+        const { where } = params;
+
+        return this.prisma.room.deleteMany({
             where,
         });
     }

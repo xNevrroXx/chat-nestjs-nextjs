@@ -38,9 +38,14 @@ export type TUserOnline = {
     updatedAt: string | undefined;
 };
 
-export interface IAuth {
-    user: IUserDto | null;
-    isAuthenticated: boolean;
+export type TAuthentication = INotAuthenticated | IAuthenticated;
+interface INotAuthenticated {
+    user: null;
+    isAuthenticated: false;
+}
+interface IAuthenticated {
+    user: IUserDto;
+    isAuthenticated: true;
 }
 
 export type TLoginFormData = Pick<IUserAuth, "email" | "password">;

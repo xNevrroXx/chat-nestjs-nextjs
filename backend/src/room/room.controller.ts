@@ -230,13 +230,25 @@ export class RoomController {
                                       },
                                   },
                                   {
-                                      participants: {
-                                          every: {
-                                              userId: {
-                                                  not: userPayload.id,
+                                      OR: [
+                                          {
+                                              participants: {
+                                                  every: {
+                                                      userId: {
+                                                          not: userPayload.id,
+                                                      },
+                                                  },
                                               },
                                           },
-                                      },
+                                          {
+                                              participants: {
+                                                  some: {
+                                                      userId: userPayload.id,
+                                                      isStillMember: false,
+                                                  },
+                                              },
+                                          },
+                                      ],
                                   },
                               ],
                           },
@@ -251,9 +263,7 @@ export class RoomController {
                                       participants: {
                                           some: {
                                               userId: userPayload.id,
-                                              isStillMember: {
-                                                  equals: false,
-                                              },
+                                              isStillMember: false,
                                           },
                                       },
                                   },

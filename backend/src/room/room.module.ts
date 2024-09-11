@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { forwardRef, Module } from "@nestjs/common";
 import { RoomService } from "./room.service";
 import { RoomController } from "./room.controller";
 import { AuthModule } from "../auth/auth.module";
@@ -11,11 +11,11 @@ import { UserModule } from "../user/user.module";
 @Module({
     imports: [
         AuthModule,
-        UserModule,
         FileModule,
         MessageModule,
         ParticipantModule,
         LinkPreviewModule,
+        forwardRef(() => UserModule),
     ],
     controllers: [RoomController],
     providers: [RoomService],
