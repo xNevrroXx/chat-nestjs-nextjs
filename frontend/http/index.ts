@@ -1,12 +1,12 @@
 // third-party modules
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios";
 
-interface AxiosRequestConfigExtra extends AxiosRequestConfig {
+interface IAxiosRequestConfigExtra extends AxiosRequestConfig {
     _isRetry: boolean;
 }
 const isAxiosRequestConfigExtra = (
     _config: AxiosRequestConfig,
-): _config is AxiosRequestConfigExtra => {
+): _config is IAxiosRequestConfigExtra => {
     return true;
 };
 

@@ -8,7 +8,7 @@ import {
 } from "@/models/room/IRoom.store";
 import { TValueOf } from "@/models/TUtils";
 import { IUserDto } from "@/models/auth/IAuth.store";
-import { TMessageForAction } from "@/models/room/IRoom.general";
+import { TMessageForEditOrReply } from "@/models/room/IRoom.general";
 import MessagesByUser from "@/components/MessagesByUser/MessagesByUser";
 import "./messages-by-day.scss";
 
@@ -18,7 +18,6 @@ type TProps = {
     date: string;
     messages: (IInnerStandardMessage | IInnerForwardedMessage)[];
     userId: TValueOf<Pick<IUserDto, "id">>;
-    onChooseMessageForAction: (messageForAction: TMessageForAction) => void;
     roomType: RoomType;
     messageRefs: MutableRefObject<HTMLDivElement[]>;
 };
@@ -27,7 +26,6 @@ const MessagesByDay: FC<TProps> = ({
     userId,
     date,
     messages,
-    onChooseMessageForAction,
     roomType,
     messageRefs,
 }) => {
@@ -59,7 +57,6 @@ const MessagesByDay: FC<TProps> = ({
                         messages={messagesByCurrentUser}
                         userId={userId}
                         messagesByUserId={currentUserId}
-                        onChooseMessageForAction={onChooseMessageForAction}
                         roomType={roomType}
                         messageRefs={messageRefs}
                     />,
@@ -86,21 +83,13 @@ const MessagesByDay: FC<TProps> = ({
                     hasLastLargePadding={false}
                     messages={messagesByCurrentUser}
                     userId={userId}
-                    onChooseMessageForAction={onChooseMessageForAction}
                     roomType={roomType}
                     messageRefs={messageRefs}
                 />,
             );
 
         return resultElems;
-    }, [
-        date,
-        messageRefs,
-        messages,
-        onChooseMessageForAction,
-        roomType,
-        userId,
-    ]);
+    }, [date, messageRefs, messages, roomType, userId]);
 
     if (messagesByUserElems.length === 0) {
         return;

@@ -1,15 +1,13 @@
 import { createAction } from "@reduxjs/toolkit";
 import {
-    IRecentRoom,
     TAddRecentRoomData,
+    TUpdateInputData,
     TUpdateMessageForAction,
 } from "@/models/recent-rooms/IRecentRooms.store";
 import { TValueOf } from "@/models/TUtils";
 import { IRoom } from "@/models/room/IRoom.store";
 
-const update = createAction<Omit<IRecentRoom, "isPreview">>(
-    "recent-rooms/update-by-id",
-);
+const update = createAction<TUpdateInputData>("recent-rooms/update-by-id");
 const updateMessageForAction = createAction<TUpdateMessageForAction>(
     "recent-rooms/update-message-for-action",
 );

@@ -1,25 +1,26 @@
 import { TValueOf } from "@/models/TUtils";
 import { IRoom } from "@/models/room/IRoom.store";
-import { TMessageForActionEditOrReply } from "@/models/room/IRoom.general";
+import { TMessageForEditOrReply } from "@/models/room/IRoom.general";
 import { UploadFile } from "antd";
 
 export interface IRecentRoom {
     id: TValueOf<Pick<IRoom, "id">>;
     isPreview: boolean;
-    input: {
-        messageForAction: TMessageForActionEditOrReply | null;
-    } & (
-        | {
-              isAudioRecord: true;
-              blob: Blob;
-              url: string;
-          }
-        | {
-              isAudioRecord: false;
-              text: string;
-              files: UploadFile[];
-          }
-    );
+    input: IRecentRoomInputWithMessageForAction &
+        (IRecentRoomInputWithVoiceRecord | IRecentRoomInputStandard);
+}
+interface IRecentRoomInputWithMessageForAction {
+    messageForAction?: TMessageForEditOrReply | null;
+}
+export interface IRecentRoomInputWithVoiceRecord {
+    isAudioRecord: true;
+    blob: Blob;
+    url: string;
+}
+export interface IRecentRoomInputStandard {
+    isAudioRecord: false;
+    text: string;
+    files: UploadFile[];
 }
 
 export interface IRecentRooms {
@@ -41,3 +42,5 @@ export type TUpdateMessageForAction = Pick<
     IRecentRoom["input"],
     "messageForAction"
 >;
+
+export type TUpdateInputData = Omit<IRecentRoom, "isPreview">;

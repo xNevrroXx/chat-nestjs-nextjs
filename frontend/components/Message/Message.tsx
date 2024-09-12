@@ -28,7 +28,7 @@ import {
 import { IKnownAndUnknownFiles } from "@/models/room/IRoom.general";
 // styles
 import "./message.scss";
-import { TPaddings } from "@/HOC/Message";
+import { TPaddings } from "@/HOC/MessageHOC";
 import SubMessage from "@/components/SubMessage/SubMessage";
 
 const { useToken } = theme;

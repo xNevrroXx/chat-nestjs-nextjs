@@ -1,8 +1,4 @@
-import {
-    MenuFoldOutlined,
-    PhoneOutlined,
-    LeftOutlined,
-} from "@ant-design/icons";
+import { LeftOutlined, PhoneOutlined } from "@ant-design/icons";
 import { Button, Layout, Typography } from "antd";
 import React, { type FC, useCallback, useRef, useState } from "react";
 // own modules
@@ -16,26 +12,17 @@ import {
     TPreviewRoomWithFlag,
     TRoomWithPreviewFlag,
 } from "@/models/room/IRoom.store";
-import { TMessageForAction } from "@/models/room/IRoom.general";
 import PinnedMessages from "../PinnedMessages/PinnedMessages";
 import { useAppDispatch, useAppSelector } from "@/hooks/store.hook";
 // actions
 import { openCallModal } from "@/store/actions/modal-windows";
-import { useOnTyping } from "@/hooks/useOnTyping.hook";
 import { interlocutorSelector } from "@/store/selectors/interlocutor.selector";
-import { useSendMessage } from "@/hooks/useSendMessage.hook";
-import {
-    addRecentRoomData,
-    removeRecentRoomData,
-    resetCurrentRoomId,
-    updateMessageForAction,
-} from "@/store/actions/recent-rooms";
-import { joinRoom } from "@/store/thunks/room";
+import { resetCurrentRoomId } from "@/store/actions/recent-rooms";
 import { TValueOf } from "@/models/TUtils";
-import { findMessageForActionSelector } from "@/store/selectors/findMessageForAction.selector";
 // styles
 import "./active-room.scss";
 import UserStatuses from "@/components/UserStatuses/UserStatuses";
+import { joinRoomAndSetActive } from "@/store/thunks/recent-rooms";
 
 const { Header, Footer } = Layout;
 const { Title } = Typography;
@@ -47,16 +34,9 @@ interface IActiveChatProps {
 
 const ActiveRoom: FC<IActiveChatProps> = ({ user, room }) => {
     const dispatch = useAppDispatch();
-    const { onTyping, resetDebouncedOnTypingFunction } = useOnTyping({
-        roomId: room.id,
-        isPreviewRoom: room.isPreview,
-    });
     const deviceDimensions = useAppSelector((state) => state.device);
     const interlocutor = useAppSelector((state) =>
         interlocutorSelector(state, room.type, room.participants),
-    );
-    const messageForAction = useAppSelector((state) =>
-        findMessageForActionSelector(state, room.id),
     );
     const [isVisibleScrollButtonState, setIsVisibleScrollButtonState] =
         useState<boolean>(true);
@@ -79,53 +59,23 @@ const ActiveRoom: FC<IActiveChatProps> = ({ user, room }) => {
         dispatch(resetCurrentRoomId());
     }, [dispatch]);
 
-    const onJoinRoom = useCallback(
+    const onJoinAndSetActive = useCallback(
         async (
             roomId: TValueOf<Pick<TPreviewRoomWithFlag, "id">>,
             type: RoomType,
             wasMember?: boolean,
         ) => {
             // activeRoom, probably, is a remote room viewing at this moment.
-            try {
-                dispatch(removeRecentRoomData(roomId));
-                const newRoom = await dispatch(
-                    joinRoom({
-                        id: roomId,
-                        type,
-                        wasMember: wasMember || false,
-                    }),
-                ).unwrap();
-
-                dispatch(
-                    addRecentRoomData({
-                        id: newRoom.id,
-                    }),
-                );
-                return newRoom;
-            }
-            catch (rejectedValueOrSerializedError) {
-                console.warn(
-                    "Error when joining a room!: ",
-                    rejectedValueOrSerializedError,
-                );
-            }
+            return await dispatch(
+                joinRoomAndSetActive({
+                    id: roomId,
+                    type,
+                    wasMember: wasMember ? wasMember : false,
+                }),
+            ).unwrap();
         },
         [dispatch],
     );
-
-    const { sendEditedMessage, sendStandardMessage, sendVoiceMessage } =
-        useSendMessage({
-            afterSendingCb: () =>
-                dispatch(updateMessageForAction({ messageForAction: null })),
-            beforeSendingCb: () => resetDebouncedOnTypingFunction(),
-            previewInfo: room.isPreview
-                ? { isPreview: room.isPreview, wasMember: room.wasMember }
-                : { isPreview: room.isPreview },
-            roomType: room.type,
-            roomId: room.id,
-            messageId: messageForAction && messageForAction.message.id,
-            onJoinRoom: onJoinRoom,
-        });
 
     const onInitCall = useCallback(() => {
         if (room.isPreview) {
@@ -142,13 +92,6 @@ const ActiveRoom: FC<IActiveChatProps> = ({ user, room }) => {
 
         refChatContent.current.scrollTo(0, refChatContent.current.scrollHeight);
     };
-
-    const onChooseMessageForAction = useCallback(
-        (messageForAction: TMessageForAction | null) => {
-            dispatch(updateMessageForAction({ messageForAction }));
-        },
-        [dispatch],
-    );
 
     return (
         <Layout className={"active-room"}>
@@ -183,7 +126,6 @@ const ActiveRoom: FC<IActiveChatProps> = ({ user, room }) => {
                             className="custom"
                         />
                     )}
-                    <MenuFoldOutlined className="custom" />
                 </div>
             </Header>
             {deviceDimensions.screen.width <= 1024 && (
@@ -196,7 +138,6 @@ const ActiveRoom: FC<IActiveChatProps> = ({ user, room }) => {
                 user={user}
                 room={room}
                 isNeedScrollToLastMessage={isNeedScrollToLastMessage}
-                onChooseMessageForAction={onChooseMessageForAction}
             />
 
             <Footer className="active-room__footer">
@@ -211,7 +152,11 @@ const ActiveRoom: FC<IActiveChatProps> = ({ user, room }) => {
                 {room && room.isPreview && room.type === RoomType.GROUP ? (
                     <Button
                         onClick={() =>
-                            onJoinRoom(room.id, room.type, room.wasMember)
+                            onJoinAndSetActive(
+                                room.id,
+                                room.type,
+                                room.wasMember,
+                            )
                         }
                         block
                         style={{ marginBottom: "10px" }}
@@ -219,21 +164,7 @@ const ActiveRoom: FC<IActiveChatProps> = ({ user, room }) => {
                         Вступить в группу
                     </Button>
                 ) : (
-                    <InputMessage
-                        changeMessageForAction={onChooseMessageForAction}
-                        messageForAction={messageForAction}
-                        removeMessageForAction={() =>
-                            dispatch(
-                                updateMessageForAction({
-                                    messageForAction: null,
-                                }),
-                            )
-                        }
-                        onTyping={onTyping}
-                        onSendMessage={sendStandardMessage}
-                        onSendVoiceMessage={sendVoiceMessage}
-                        onSendEditedMessage={sendEditedMessage}
-                    />
+                    <InputMessage />
                 )}
             </Footer>
         </Layout>

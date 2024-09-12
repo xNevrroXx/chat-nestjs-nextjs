@@ -15,7 +15,6 @@ import {
     FileType,
     IInnerForwardedMessage,
     IInnerStandardMessage,
-    RoomType,
 } from "@/models/room/IRoom.store";
 import { IUserDto } from "@/models/auth/IAuth.store";
 import { TValueOf } from "@/models/TUtils";
@@ -23,7 +22,6 @@ import {
     IKnownAndUnknownFiles,
     MessageAction,
     TAttachmentType,
-    TMessageForAction,
 } from "@/models/room/IRoom.general";
 import { useAppDispatch } from "@/hooks/store.hook";
 import {
@@ -31,6 +29,7 @@ import {
     openMessageForwardingModal,
     openPinningMessageModal,
 } from "@/store/actions/modal-windows";
+import { updateMessageForAction } from "@/store/actions/recent-rooms";
 
 export type TPaddings = {
     bottom: "small" | "large";
@@ -39,7 +38,6 @@ export type TPaddings = {
 type TMessageProps = {
     userId: TValueOf<Pick<IUserDto, "id">>;
     message: IInnerStandardMessage | IInnerForwardedMessage;
-    onChooseMessageForAction: (messageForAction: TMessageForAction) => void;
     paddings: TPaddings;
     shouldSpecifyAuthor?:
         | false
@@ -49,17 +47,8 @@ type TMessageProps = {
           };
 };
 
-const Message = forwardRef<HTMLDivElement, TMessageProps>(
-    (
-        {
-            userId,
-            message,
-            onChooseMessageForAction,
-            paddings,
-            shouldSpecifyAuthor = false,
-        },
-        outerRef,
-    ) => {
+const MessageHOC = forwardRef<HTMLDivElement, TMessageProps>(
+    ({ userId, message, paddings, shouldSpecifyAuthor = false }, outerRef) => {
         const dispatch = useAppDispatch();
         const innerRef = useRef<HTMLDivElement | null>(null);
         const [isVoice, setIsVoice] = useState<boolean>(false);
@@ -152,20 +141,28 @@ const Message = forwardRef<HTMLDivElement, TMessageProps>(
         }, [dispatch, message.id]);
 
         const onClickMessageForReply = useCallback(() => {
-            onChooseMessageForAction({
-                message,
-                action: MessageAction.REPLY,
-            });
-        }, [onChooseMessageForAction, message]);
+            dispatch(
+                updateMessageForAction({
+                    messageForAction: {
+                        message,
+                        action: MessageAction.REPLY,
+                    },
+                }),
+            );
+        }, [dispatch, message]);
 
         const onClickMessageForEdit = useCallback(() => {
             if (!checkIsStandardMessage(message)) return;
 
-            onChooseMessageForAction({
-                message,
-                action: MessageAction.EDIT,
-            });
-        }, [onChooseMessageForAction, message]);
+            dispatch(
+                updateMessageForAction({
+                    messageForAction: {
+                        message,
+                        action: MessageAction.EDIT,
+                    },
+                }),
+            );
+        }, [dispatch, message]);
 
         const onClickMessageForDelete = useCallback(() => {
             dispatch(
@@ -199,6 +196,6 @@ const Message = forwardRef<HTMLDivElement, TMessageProps>(
         );
     },
 );
-Message.displayName = "MessageHOC";
+MessageHOC.displayName = "MessageHOC";
 
-export default Message;
+export default MessageHOC;

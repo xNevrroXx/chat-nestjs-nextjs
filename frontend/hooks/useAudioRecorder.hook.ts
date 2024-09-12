@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 
 export type TUseAudioRecorderReturnType = ReturnType<typeof useAudioRecorder>;
 
@@ -12,7 +12,7 @@ const useAudioRecorder = () => {
     const [audioURL, setAudioURL] = useState<string | null>(null);
     const [audioChunks, setAudioChunks] = useState<Blob[]>([]);
 
-    const getMicrophonePermission = async () => {
+    const getMicrophonePermission = useCallback(async () => {
         let streamData: MediaStream | null = null;
         if ("MediaRecorder" in window) {
             try {
@@ -33,7 +33,7 @@ const useAudioRecorder = () => {
         }
 
         return streamData;
-    };
+    }, []);
 
     const startRecording = async () => {
         const stream = await getMicrophonePermission();

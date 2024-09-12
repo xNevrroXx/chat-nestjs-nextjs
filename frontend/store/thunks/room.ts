@@ -345,6 +345,7 @@ const joinRoom = createAsyncThunk<IRoom, TJoinRoom, { state: TRootState }>(
     "room/join",
     async (roomData, thunkAPI) => {
         try {
+            thunkAPI.dispatch(removeRecentRoomData(roomData.id));
             const response = await RoomService.join(roomData);
 
             const socket = thunkAPI.getState().room.socket;

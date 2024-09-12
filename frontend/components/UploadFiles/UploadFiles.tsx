@@ -72,8 +72,8 @@ const UploadFiles = forwardRef<HTMLButtonElement, IUploadFilesProps>(
                     fileList={fileList}
                     onPreview={handlePreview}
                     onChange={handleChange}
-                    onRemove={(file) => {
-                        void $api.delete(
+                    onRemove={async (file) => {
+                        await $api.delete(
                             process.env.NEXT_PUBLIC_BASE_URL + "/file/waited",
                             {
                                 data: {

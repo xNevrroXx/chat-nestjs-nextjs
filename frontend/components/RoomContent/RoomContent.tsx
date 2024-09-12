@@ -16,7 +16,6 @@ import { readMessageSocket } from "@/store/thunks/room";
 import { useIntersectionObserver } from "@/hooks/useIntersectionObserver.hook";
 import { IUserDto } from "@/models/auth/IAuth.store";
 import { IRoom, TPreviewExistingRoom } from "@/models/room/IRoom.store";
-import { TMessageForAction } from "@/models/room/IRoom.general";
 // styles
 import "./room-content.scss";
 
@@ -25,20 +24,10 @@ interface IChatContentProps {
     user: IUserDto;
     room: IRoom | TPreviewExistingRoom;
     isNeedScrollToLastMessage: RefObject<boolean>;
-    onChooseMessageForAction: (messageForAction: TMessageForAction) => void;
 }
 
 const RoomContent = forwardRef<HTMLDivElement, IChatContentProps>(
-    (
-        {
-            className,
-            user,
-            room,
-            onChooseMessageForAction,
-            isNeedScrollToLastMessage,
-        },
-        outerRef,
-    ) => {
+    ({ className, user, room, isNeedScrollToLastMessage }, outerRef) => {
         const dispatch = useAppDispatch();
         const messageRefs = useRef<HTMLDivElement[]>([]);
 
@@ -80,13 +69,12 @@ const RoomContent = forwardRef<HTMLDivElement, IChatContentProps>(
                         messages={messages}
                         messageRefs={messageRefs}
                         userId={user.id}
-                        onChooseMessageForAction={onChooseMessageForAction}
                         roomType={room.type}
                     />,
                 );
             }
             return content;
-        }, [room.days, room.id, room.type, user.id, onChooseMessageForAction]);
+        }, [room.days, room.id, room.type, user.id]);
 
         const { rootRef: innerRef } = useIntersectionObserver<HTMLDivElement>(
             {

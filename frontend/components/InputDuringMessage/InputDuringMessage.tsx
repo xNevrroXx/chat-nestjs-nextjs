@@ -64,10 +64,6 @@ const InputDuringMessage = forwardRef<HTMLDivElement, IInputDuringMessageProps>(
                             size="large"
                         />
                     </div>
-                    {/*<div*/}
-                    {/*    className="input-message__field"*/}
-                    {/*    style={{ flexGrow: 1 }}*/}
-                    {/*>*/}
                     <InputEmoji
                         ref={ref}
                         value={message}
@@ -85,7 +81,6 @@ const InputDuringMessage = forwardRef<HTMLDivElement, IInputDuringMessageProps>(
                         fontFamily={"Roboto, sans-serif"}
                         shouldConvertEmojiToImage={false}
                     />
-                    {/*</div>*/}
                     <div className="input-message__btn-wrapper">
                         {message || fileList.length > 0 ? (
                             <Button
@@ -104,7 +99,7 @@ const InputDuringMessage = forwardRef<HTMLDivElement, IInputDuringMessageProps>(
                     </div>
                 </Flex>
                 <UploadFiles
-                    ref={buttonAddFilesRef}
+                    // ref={buttonAddFilesRef}
                     updateFileList={updateFileList}
                     fileList={fileList}
                 />

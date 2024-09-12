@@ -3,46 +3,51 @@ import { editMessageSocket, sendMessageSocket } from "@/store/thunks/room";
 import { useAppDispatch } from "@/hooks/store.hook";
 import {
     FileType,
-    IOriginalMessage,
-    IRoom,
     RoomType,
     TPreviewRoomWithFlag,
+    TRoomWithPreviewFlag,
     TSendMessage,
 } from "@/models/room/IRoom.store";
 import type { TValueOf } from "@/models/TUtils";
 import { useFetch } from "@/hooks/useFetch.hook";
+import {
+    MessageAction,
+    TMessageForEditOrReply,
+} from "@/models/room/IRoom.general";
+import { UploadFile } from "antd";
+import { joinRoomAndSetActive } from "@/store/thunks/recent-rooms";
 
 interface IProps {
     beforeSendingCb: () => void;
     afterSendingCb: () => void;
-    previewInfo: { isPreview: true; wasMember: boolean } | { isPreview: false };
-    roomType: RoomType;
-    roomId: TValueOf<Pick<IRoom, "id">>;
-    messageId: TValueOf<Pick<IOriginalMessage, "id">> | null;
-    onJoinRoom: (
-        roomId: TValueOf<Pick<TPreviewRoomWithFlag, "id">>,
-        type: RoomType,
-        wasMember?: boolean,
-    ) => Promise<IRoom | undefined>;
+    room: TPreviewRoomWithFlag | TRoomWithPreviewFlag;
+    messageForAction: TMessageForEditOrReply | undefined | null;
 }
 
 const useSendMessage = ({
     beforeSendingCb,
     afterSendingCb,
-    previewInfo,
-    onJoinRoom,
-    messageId,
-    roomType,
-    roomId,
+    messageForAction,
+    room,
 }: IProps) => {
     const dispatch = useAppDispatch();
     const { request } = useFetch<{ id: string }>(
         process.env.NEXT_PUBLIC_BASE_URL + "/file/upload",
     );
 
+    const onJoinRoomAndSetActive = useCallback(async () => {
+        return await dispatch(
+            joinRoomAndSetActive({
+                id: room.id,
+                type: room.type,
+                wasMember: room.isPreview ? room.wasMember : false,
+            }),
+        ).unwrap();
+    }, [dispatch, room]);
+
     const sendEditedMessage = useCallback(
         (text: string) => {
-            if (!messageId) {
+            if (!messageForAction) {
                 return;
             }
 
@@ -50,14 +55,14 @@ const useSendMessage = ({
 
             void dispatch(
                 editMessageSocket({
-                    messageId: messageId,
+                    messageId: messageForAction.message.id,
                     text: text,
                 }),
             );
 
             afterSendingCb();
         },
-        [afterSendingCb, beforeSendingCb, dispatch, messageId],
+        [afterSendingCb, beforeSendingCb, dispatch, messageForAction],
     );
 
     const sendStandardMessage = useCallback(
@@ -70,16 +75,12 @@ const useSendMessage = ({
             const messageWithoutRoomId: Omit<TSendMessage, "roomId"> = {
                 text,
                 attachmentIds,
-                replyToMessageId: messageId,
+                replyToMessageId: messageForAction?.message.id,
             };
 
             let message: TSendMessage;
-            if (previewInfo.isPreview && roomType === RoomType.PRIVATE) {
-                const newRoom = await onJoinRoom(
-                    roomId,
-                    roomType,
-                    previewInfo.wasMember,
-                );
+            if (room.isPreview && room.type === RoomType.PRIVATE) {
+                const newRoom = await onJoinRoomAndSetActive();
                 if (!newRoom) {
                     return;
                 }
@@ -90,7 +91,7 @@ const useSendMessage = ({
             }
             else {
                 message = {
-                    roomId,
+                    roomId: room.id,
                     ...messageWithoutRoomId,
                 };
             }
@@ -100,14 +101,12 @@ const useSendMessage = ({
             afterSendingCb();
         },
         [
+            room,
+            dispatch,
             afterSendingCb,
             beforeSendingCb,
-            dispatch,
-            previewInfo,
-            messageId,
-            onJoinRoom,
-            roomId,
-            roomType,
+            messageForAction,
+            onJoinRoomAndSetActive,
         ],
     );
 
@@ -118,8 +117,8 @@ const useSendMessage = ({
             });
 
             const formData = new FormData();
+            formData.set("roomId", room.id);
             formData.set("file", file, "set-random");
-            formData.set("roomId", roomId);
             formData.set("fileType", FileType.VOICE_RECORD);
 
             const response = await request({
@@ -133,16 +132,48 @@ const useSendMessage = ({
             }
             void sendStandardMessage(null, [response.id]);
         },
-        [request, roomId, sendStandardMessage],
+        [request, room.id, sendStandardMessage],
     );
 
-    const forwardMessage = useCallback(() => {}, []);
+    const sendMessage = useCallback(
+        (text: string, fileList: UploadFile[]) => {
+            beforeSendingCb();
+
+            if (
+                messageForAction &&
+                messageForAction.action === MessageAction.EDIT
+            ) {
+                sendEditedMessage(text);
+                afterSendingCb();
+                return;
+            }
+
+            if (fileList.some((file) => file.status === "uploading")) {
+                return;
+            }
+
+            const trimmedMessage = text ? text.trim() : null;
+
+            const attachmentIds = fileList.map<string>(
+                (file) => (file.response as { id: string }).id,
+            );
+
+            void sendStandardMessage(trimmedMessage, attachmentIds);
+
+            afterSendingCb();
+        },
+        [
+            afterSendingCb,
+            beforeSendingCb,
+            messageForAction,
+            sendEditedMessage,
+            sendStandardMessage,
+        ],
+    );
 
     return {
-        sendStandardMessage,
-        sendEditedMessage,
         sendVoiceMessage,
-        forwardMessage,
+        sendMessage,
     };
 };
 

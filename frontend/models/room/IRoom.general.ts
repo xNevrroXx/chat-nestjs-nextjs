@@ -28,17 +28,7 @@ export enum MessageAction {
     REPLY = "REPLY",
 }
 
-export type TMessageForAction =
-    | {
-          message: IInnerStandardMessage | IInnerForwardedMessage;
-          action: MessageAction.REPLY;
-      }
-    | {
-          message: IInnerStandardMessage;
-          action: MessageAction.EDIT;
-      };
-
-export type TMessageForActionEditOrReply =
+export type TMessageForEditOrReply =
     | {
           message: IInnerStandardMessage | IInnerForwardedMessage;
           action: MessageAction.REPLY;

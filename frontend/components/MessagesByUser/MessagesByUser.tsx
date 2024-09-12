@@ -6,8 +6,8 @@ import {
 } from "@/models/room/IRoom.store";
 import { TValueOf } from "@/models/TUtils";
 import { IUserDto } from "@/models/auth/IAuth.store";
-import { TMessageForAction } from "@/models/room/IRoom.general";
-import Message, { TPaddings } from "@/HOC/Message";
+import { TMessageForEditOrReply } from "@/models/room/IRoom.general";
+import MessageHOC, { TPaddings } from "@/HOC/MessageHOC";
 import { Avatar } from "antd";
 import { getNameInitials } from "@/utils/getNameInitials";
 // styles
@@ -19,7 +19,6 @@ type TProps = {
     date: string;
     messages: (IInnerStandardMessage | IInnerForwardedMessage)[];
     userId: TValueOf<Pick<IUserDto, "id">>;
-    onChooseMessageForAction: (messageForAction: TMessageForAction) => void;
     roomType: RoomType;
     messageRefs: MutableRefObject<HTMLDivElement[]>;
     hasLastLargePadding: boolean;
@@ -29,7 +28,6 @@ type TProps = {
 const MessagesByUser: FC<TProps> = ({
     userId,
     messages,
-    onChooseMessageForAction,
     roomType,
     messageRefs,
     hasLastLargePadding = false,
@@ -71,7 +69,7 @@ const MessagesByUser: FC<TProps> = ({
 
             messageRefs.current = [];
             return (
-                <Message
+                <MessageHOC
                     ref={(ref) => {
                         if (
                             message.senderId !== userId &&
@@ -93,19 +91,10 @@ const MessagesByUser: FC<TProps> = ({
                     key={message.id}
                     userId={userId}
                     message={message}
-                    onChooseMessageForAction={onChooseMessageForAction}
                 />
             );
         });
-    }, [
-        hasLastLargePadding,
-        messageRefs,
-        messages,
-        onChooseMessageForAction,
-        roomType,
-        user,
-        userId,
-    ]);
+    }, [hasLastLargePadding, messageRefs, messages, roomType, user, userId]);
 
     if (!user) {
         return;
