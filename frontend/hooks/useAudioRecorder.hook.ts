@@ -2,7 +2,7 @@ import { useCallback, useRef, useState } from "react";
 
 export type TUseAudioRecorderReturnType = ReturnType<typeof useAudioRecorder>;
 
-const mimeType = "audio/webm" as const;
+const mimeType = "audio/webM" as const;
 
 const useAudioRecorder = () => {
     const mediaRecorder = useRef<MediaRecorder | null>(null);

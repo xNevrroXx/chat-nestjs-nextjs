@@ -57,7 +57,7 @@ const useUserStatuses = ({
                 return result;
             }
 
-            if (participants[0].isTyping) {
+            if (interlocutorAsRoomParticipant.isTyping) {
                 result.otherInfo = "Печатает...";
                 return result;
             }

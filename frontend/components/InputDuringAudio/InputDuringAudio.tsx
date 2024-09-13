@@ -32,7 +32,6 @@ const InputDuringAudio: FC<IInputDuringAudioProps> = ({
         if (!audio && isRecording) {
             const audio = await stopRecording();
             onSendVoiceMessage(audio);
-            cleanAudio();
             return;
         }
         else if (!audio) {
@@ -40,7 +39,6 @@ const InputDuringAudio: FC<IInputDuringAudioProps> = ({
         }
 
         onSendVoiceMessage(audio);
-        cleanAudio();
     };
 
     return (

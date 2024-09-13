@@ -151,7 +151,7 @@ const MessageHOC = forwardRef<HTMLDivElement, TMessageProps>(
             );
         }, [dispatch, message]);
 
-        const onClickMessageForEdit = useCallback(() => {
+        const onEditingMessage = useCallback(() => {
             if (!checkIsStandardMessage(message)) return;
 
             dispatch(
@@ -186,7 +186,7 @@ const MessageHOC = forwardRef<HTMLDivElement, TMessageProps>(
                 isVoice={isVoice}
                 files={filesWithBlobUrls}
                 onChooseMessageForPin={onPinMessage}
-                onChooseMessageForEdit={onClickMessageForEdit}
+                onChooseMessageForEdit={onEditingMessage}
                 onChooseMessageForDelete={onClickMessageForDelete}
                 onChooseMessageForReply={onClickMessageForReply}
                 onChooseMessageForForward={onChooseMessageForForward}

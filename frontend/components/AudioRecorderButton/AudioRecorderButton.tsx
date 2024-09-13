@@ -17,29 +17,25 @@ const AudioRecorderButton: FC<IAudioRecorderProps> = ({
     startRecording,
     stopRecording,
 }) => {
-    const content = useMemo(() => {
-        if (!isRecording) {
-            return (
-                <Button
-                    type="text"
-                    icon={<AudioOutlined className="custom" />}
-                    onClick={startRecording}
-                    size="large"
-                />
-            );
-        }
-
+    if (!isRecording) {
         return (
             <Button
                 type="text"
                 icon={<AudioOutlined className="custom" />}
-                onClick={stopRecording}
+                onClick={startRecording}
                 size="large"
             />
         );
-    }, [isRecording, startRecording, stopRecording]);
+    }
 
-    return <Fragment>{content}</Fragment>;
+    return (
+        <Button
+            type="text"
+            icon={<AudioOutlined className="custom" />}
+            onClick={stopRecording}
+            size="large"
+        />
+    );
 };
 
 export default AudioRecorderButton;

@@ -99,7 +99,7 @@ const InputDuringMessage = forwardRef<HTMLDivElement, IInputDuringMessageProps>(
                     </div>
                 </Flex>
                 <UploadFiles
-                    // ref={buttonAddFilesRef}
+                    ref={buttonAddFilesRef}
                     updateFileList={updateFileList}
                     fileList={fileList}
                 />

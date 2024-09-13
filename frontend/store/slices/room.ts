@@ -28,7 +28,6 @@ import {
     handleUnpinnedMessageSocket,
     handleUserLeftRoomSocket,
     setUserId,
-    userLeftRoom,
 } from "@/store/actions/room";
 import { FetchingStatus } from "@/hooks/useFetch.hook";
 
@@ -126,11 +125,6 @@ const room = createSlice({
                     (id) => id !== action.payload,
                 );
                 delete state.local.rooms.byId[action.payload];
-            })
-            .addCase(userLeftRoom, (state, action) => {
-                state.local.rooms.byId[action.payload.roomId].participants.find(
-                    (member) => member.userId === action.payload.userId,
-                )!.isStillMember = false;
             })
             .addCase(clearMyHistory.fulfilled, (state, action) => {
                 state.local.rooms.byId[action.payload].days = {};
@@ -254,6 +248,15 @@ const room = createSlice({
                 targetChat.participants = action.payload;
             })
             .addCase(handleUserLeftRoomSocket, (state, action) => {
+                if (state.userId === action.payload.userId) {
+                    // if this user left room on the other device.
+                    delete state.local.rooms.byId[action.payload.roomId];
+                    state.local.allIds = state.local.allIds.filter(
+                        (id) => id !== action.payload.roomId,
+                    );
+                    return;
+                }
+
                 state.local.rooms.byId[action.payload.roomId].participants.find(
                     (participant) =>
                         participant.userId === action.payload.userId,

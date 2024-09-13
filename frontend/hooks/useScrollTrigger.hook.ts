@@ -17,15 +17,17 @@ type TTriggerFunction =
 type TOnIntersectProps = {
     onIntersectionBreakpoint: TTriggerFunction;
     /**
-     * When there is **less** than this value left to the **bottom** of the container, the "onIntersectionBreakpoint" events is triggered<br/>
-     * Default: 200(px)
+     * When there is **less** than this value left to the **bottom**\/**top** of the container,
+     * the "onIntersectionBreakpoint" events will be triggered<br/>
+     * @defaultValue: 200(px)
      * */
     breakpointPx: number;
 };
 
 type TUseScrollTrigger = {
     /**
-     * Default: 250(ms)
+     * Determines the throttling time
+     * @defaultValue: 100(ms)
      */
     wait?: number;
 } & TOnIntersectProps;

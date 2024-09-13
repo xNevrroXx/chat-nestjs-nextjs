@@ -19,7 +19,6 @@ import {
     TExcludeRoom,
 } from "@/models/rooms-on-folders/IRoomOnFolders.store";
 
-const userLeftRoom = createAction<ILeaveRoom>("room/left-room");
 const excludeFromFolder = createAction<TExcludeRoom>(
     "room/exclude-from-folder",
 );
@@ -61,7 +60,6 @@ const handleUserLeftRoomSocket = createAction<ILeaveRoom>(
 
 export {
     setUserId,
-    userLeftRoom,
     clearPreviewRooms,
     handleMessageRead,
     handleMessageSocket,

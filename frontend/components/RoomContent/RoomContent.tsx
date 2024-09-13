@@ -15,14 +15,17 @@ import { useAppDispatch } from "@/hooks/store.hook";
 import { readMessageSocket } from "@/store/thunks/room";
 import { useIntersectionObserver } from "@/hooks/useIntersectionObserver.hook";
 import { IUserDto } from "@/models/auth/IAuth.store";
-import { IRoom, TPreviewExistingRoom } from "@/models/room/IRoom.store";
+import {
+    TPreviewRoomWithFlag,
+    TRoomWithPreviewFlag,
+} from "@/models/room/IRoom.store";
 // styles
 import "./room-content.scss";
 
 interface IChatContentProps {
     className?: string;
     user: IUserDto;
-    room: IRoom | TPreviewExistingRoom;
+    room: TRoomWithPreviewFlag | TPreviewRoomWithFlag;
     isNeedScrollToLastMessage: RefObject<boolean>;
 }
 
@@ -67,14 +70,16 @@ const RoomContent = forwardRef<HTMLDivElement, IChatContentProps>(
                         key={room.id + date}
                         date={date}
                         messages={messages}
-                        messageRefs={messageRefs}
+                        messageRefs={
+                            room.isPreview ? { current: [] } : messageRefs
+                        }
                         userId={user.id}
                         roomType={room.type}
                     />,
                 );
             }
             return content;
-        }, [room.days, room.id, room.type, user.id]);
+        }, [room.days, room.id, room.isPreview, room.type, user.id]);
 
         const { rootRef: innerRef } = useIntersectionObserver<HTMLDivElement>(
             {

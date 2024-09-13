@@ -68,14 +68,6 @@ const Dialogs: FC<IDialogsProps> = ({ user }) => {
         }
     }, [dialogQueryString, dispatch]);
 
-    useEffect(() => {
-        if (currentActiveRoom) {
-            return;
-        }
-        // reset the current PREVIEW room if this one isn't in the store.
-        dispatch(resetCurrentRoomId());
-    }, [currentActiveRoom, dispatch]);
-
     const onClickRoom = useCallback(
         (roomId: TValueOf<Pick<IRoom, "id">>) => {
             if (roomId === (currentActiveRoom && currentActiveRoom.id)) {

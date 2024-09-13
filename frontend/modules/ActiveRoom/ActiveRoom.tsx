@@ -40,10 +40,17 @@ const ActiveRoom: FC<IActiveChatProps> = ({ user, room }) => {
     );
     const [isVisibleScrollButtonState, setIsVisibleScrollButtonState] =
         useState<boolean>(true);
+    // Indicates when a message is received, whether to scroll through the list of messages to new ones or not.
     const isNeedScrollToLastMessage = useRef<boolean>(true);
     const refChatContent = useScrollTrigger({
         onIntersectionBreakpoint: {
             toTop: () => {
+                /*
+                 * 1) When a user scrolls too far from the bottom of the page -
+                 * it will turn off automating scrolling down, when receiving a message.
+                 *
+                 * 2) And the "scroll down" button will be shown.
+                 * */
                 setIsVisibleScrollButtonState(true);
                 isNeedScrollToLastMessage.current = false;
             },

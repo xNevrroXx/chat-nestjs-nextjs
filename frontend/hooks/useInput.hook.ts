@@ -37,6 +37,7 @@ const useInput = () => {
             dispatch(updateMessageForAction({ messageForAction: null }));
             setMessageText("");
             setFileList([]);
+            audioRecorder.cleanAudio();
         },
         room: activeRoom,
         messageForAction:
@@ -81,8 +82,7 @@ const useInput = () => {
         );
     }, [storedInputInfo, onChangeMessage]);
 
-    useEffect(() => {
-        // update input state in the current chat (load from the global store)
+    const updateInputStates = useCallback(() => {
         if (!activeRoom.id || !storedInputInfo) {
             return;
         }
@@ -91,20 +91,15 @@ const useInput = () => {
         setFileList([]);
 
         const inputData = storedInputInfo.input;
-        switch (inputData.isAudioRecord) {
-            case true: {
-                audioRecorder.manualSetAudioData(inputData.blob);
-                return;
-            }
-            case false: {
-                onChangeMessage(inputData.text);
-                return;
-            }
+        if (inputData.isAudioRecord) {
+            audioRecorder.manualSetAudioData(inputData.blob);
         }
-    }, [activeRoom.id]);
+        else {
+            onChangeMessage(inputData.text);
+        }
+    }, [activeRoom.id, audioRecorder, onChangeMessage, storedInputInfo]);
 
-    useEffect(() => {
-        // save input data in the current chat to the global store
+    const updateInputStore = useCallback(() => {
         if (!activeRoom.id || !previousRoomId) {
             return;
         }
@@ -131,6 +126,20 @@ const useInput = () => {
                 input: inputData,
             }),
         );
+    }, [
+        activeRoom.id,
+        audioRecorder.audio,
+        audioRecorder.audioURL,
+        dispatch,
+        messageText,
+        previousRoomId,
+    ]);
+
+    useEffect(() => {
+        // update input state in the current chat (load from the global store)
+
+        updateInputStates();
+        updateInputStore();
     }, [activeRoom.id]);
 
     const removeMessageForAction = useCallback(() => {

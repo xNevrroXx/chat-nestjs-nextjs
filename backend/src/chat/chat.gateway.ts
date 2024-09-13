@@ -114,16 +114,17 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     async handleDisconnect(@ConnectedSocket() client) {
         const userToRoomInfo = this.socketRoomsInfo.leaveAll(client.id);
         if (!userToRoomInfo) {
+            // so, the user has other devices connected to the server.
             return;
         }
-        const { userId, roomIDs } = userToRoomInfo;
+        const { userId, roomIds } = userToRoomInfo;
 
         const userOnline = await this.userService.updateOnlineStatus({
             userId: userId,
             isOnline: false,
         });
 
-        roomIDs.forEach((roomId) => {
+        roomIds.forEach((roomId) => {
             this.server.to(roomId).emit("user:toggle-online", userOnline);
         });
     }
@@ -145,13 +146,15 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
         unnormalizedRoom.participants.forEach((participant) => {
             // the participant maybe didn't connect to the new room.
-            const participantClientIds = this.socketRoomsInfo.joinIfConnected(
+            const participantSocketIds = this.socketRoomsInfo.joinIfConnected(
                 unnormalizedRoom.id,
                 participant.userId
             );
-            const participantSockets = participantClientIds.map((socketId) => {
-                return this.server.sockets.get(socketId);
-            });
+            const participantSockets = Array.from(participantSocketIds).map(
+                (socketId) => {
+                    return this.server.sockets.get(socketId);
+                }
+            );
 
             if (participantSockets && participantSockets.length > 0) {
                 // participant is online - we have to manually join this one to the room.
@@ -163,7 +166,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
         unnormalizedRoom.participants.forEach((participant) => {
             const userIdToSocketId = Object.entries(
-                this.socketRoomsInfo.getRoomInfo(unnormalizedRoom.id)
+                this.socketRoomsInfo.getUserIdsWithSocketIdsByRoomId(
+                    unnormalizedRoom.id
+                )
             ).find(
                 ([userId, socketId]) =>
                     participant.userId === userId && socketId !== client.id
@@ -237,12 +242,24 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
             });
         });
 
-        const userWhoLeft = this.socketRoomsInfo.leaveOne(client.id, roomId);
+        const userWhoLeft = this.socketRoomsInfo.leaveRoomByUser(
+            client.id,
+            roomId
+        );
         client.leave(roomId);
 
+        void this.toggleTypingStatus(client, {
+            userId: userWhoLeft.userId,
+            isTyping: false,
+            roomId,
+        });
         this.server
             .to(roomId)
             .emit("room:user-left", { roomId, userId: userWhoLeft.userId });
+        // after notification - it will disconnect another user's devices.
+        userWhoLeft.cliendIds.forEach((socketId) => {
+            this.server.sockets.get(socketId).leave(roomId);
+        });
     }
 
     @UseGuards(WsAuthGuard)
@@ -313,6 +330,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         const readMessageInfo = (await this.messageService.findOne({
             where: {
                 id: data.messageId,
+                room: {
+                    participants: {
+                        some: {
+                            userId: sender.id,
+                            isStillMember: true,
+                        },
+                    },
+                },
                 senderId: {
                     not: sender.id,
                 },
@@ -928,11 +953,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         @MessageBody() { roomId }: IInitCall
     ) {
         console.log("join");
-        const clients = this.socketRoomsInfo.getRoomInfo(roomId);
+        const clients =
+            this.socketRoomsInfo.getUserIdsWithSocketIdsByRoomId(roomId);
 
         console.log("clients: ", clients);
         for (const [userId, socketIds] of Object.entries(clients)) {
-            if (socketIds.includes(client.id)) {
+            if (socketIds.has(client.id)) {
                 continue;
             }
 
@@ -987,7 +1013,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         @ConnectedSocket() client,
         @MessageBody() { roomId }: ILeaveCall
     ) {
-        const clients = this.socketRoomsInfo.getRoomInfo(roomId);
+        const clients =
+            this.socketRoomsInfo.getUserIdsWithSocketIdsByRoomId(roomId);
         for (const [, socketIds] of Object.entries(clients)) {
             this.server.to(socketIds[0]).emit("webrtc:remove-peer", {
                 peerId: client.id,

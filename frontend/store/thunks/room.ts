@@ -32,7 +32,6 @@ import {
     IInnerStandardMessage,
     IInnerForwardedMessage,
     IUnpinMessage,
-    TPreviewRoomWithFlag,
     TJoinRoom,
 } from "@/models/room/IRoom.store";
 import { TRootState } from "@/store";
@@ -309,7 +308,7 @@ const getPreviewRoomsByQuery = createAsyncThunk<
             actualQueryString = inputQueryString;
         }
 
-        if (!actualQueryString || inputQueryString !== actualQueryString) {
+        if (inputQueryString !== actualQueryString) {
             return thunkAPI.rejectWithValue(null);
         }
 
