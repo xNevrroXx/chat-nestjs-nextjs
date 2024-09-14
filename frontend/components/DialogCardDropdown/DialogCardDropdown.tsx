@@ -9,35 +9,14 @@ import {
     excludeRoomFromFolder,
 } from "@/store/thunks/roomsOnFolders";
 import { clearMyHistory, leaveRoom } from "@/store/thunks/room";
+import { openModalWithRoomId } from "@/store/actions/modal-windows";
+import { findRoomByIdSelector } from "@/store/selectors/findRoomById.selector";
+import { RoomType } from "@/models/room/IRoom.store";
 
 interface IDialogCardDropdownProps {
     children: JSX.Element;
     roomId: string;
 }
-
-const actionKeysToActionNames = {
-    "1": {
-        label: "Добавить в папку",
-        actions: {
-            // if it's already in this folder
-            remove: excludeRoomFromFolder,
-            // if it's not
-            add: addRoomOnFolder,
-        },
-    },
-    "2": {
-        label: "Очистить историю",
-        actions: {
-            leave: clearMyHistory,
-        },
-    },
-    "3": {
-        label: "Покинуть чат",
-        actions: {
-            leave: leaveRoom,
-        },
-    },
-};
 
 const DialogCardDropdown: FC<IDialogCardDropdownProps> = ({
     children,
@@ -47,6 +26,8 @@ const DialogCardDropdown: FC<IDialogCardDropdownProps> = ({
     const folderSuggestions = useAppSelector((state) =>
         folderSuggestionsSelector(state, roomId),
     );
+    const room = useAppSelector((state) => findRoomByIdSelector(state, roomId));
+    const user = useAppSelector((state) => state.authentication.user)!;
 
     const onClick: MenuProps["onClick"] = ({ key, keyPath }) => {
         const actionKey = keyPath[keyPath.length - 1];
@@ -80,13 +61,35 @@ const DialogCardDropdown: FC<IDialogCardDropdownProps> = ({
                 void dispatch(leaveRoom(roomId));
                 break;
             }
+            case "4": {
+                void dispatch(
+                    openModalWithRoomId({
+                        modalName: "roomDeletion",
+                        roomId: roomId,
+                    }),
+                );
+                break;
+            }
         }
     };
 
     const menuItems = useMemo((): MenuProps["items"] => {
+        if (!room) {
+            return;
+        }
+
+        const hasDeleteGroupButton =
+            room.type === RoomType.PRIVATE ||
+            (room.creatorUserId && room.creatorUserId == user.id)
+                ? {
+                      label: "Удалить чат",
+                      key: "4",
+                  }
+                : null;
+
         return [
             {
-                label: actionKeysToActionNames["1"].label,
+                label: "Добавить в папку",
                 key: "1",
                 children: folderSuggestions.map((folder) => {
                     if (folder.isInThisFolder) {
@@ -104,15 +107,16 @@ const DialogCardDropdown: FC<IDialogCardDropdownProps> = ({
                 }),
             },
             {
-                label: actionKeysToActionNames["2"].label,
+                label: "Очистить историю",
                 key: "2",
             },
             {
-                label: actionKeysToActionNames["3"].label,
+                label: "Покинуть чат",
                 key: "3",
             },
+            hasDeleteGroupButton,
         ];
-    }, [folderSuggestions]);
+    }, [folderSuggestions, room, user.id]);
 
     return (
         <Dropdown

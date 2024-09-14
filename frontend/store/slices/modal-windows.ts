@@ -1,11 +1,10 @@
 import { createSlice } from "@reduxjs/toolkit";
 import {
-    closeModals,
-    openCallModal,
-    openDeletingMessageModal,
-    openMessageForwardingModal,
     openModal,
-    openPinningMessageModal,
+    closeModals,
+    openModalWithRoomId,
+    openModalWithMessageId,
+    openDeletingMessageModal,
 } from "@/store/actions/modal-windows";
 import { TModalWindowsStore } from "@/models/modal-windows/modal-windows.store";
 
@@ -17,6 +16,9 @@ const initialState: TModalWindowsStore = {
         isOpen: false,
     },
     foldersMenu: {
+        isOpen: false,
+    },
+    roomDeletion: {
         isOpen: false,
     },
     folderCreation: {
@@ -63,20 +65,14 @@ const modalWindows = createSlice({
                     state[modalName].isOpen = false;
                 }
             })
-            .addCase(openMessageForwardingModal, (state, action) => {
-                state.messageForwarding = {
-                    isOpen: true,
-                    messageId: action.payload.messageId,
-                };
-            })
-            .addCase(openCallModal, (state, action) => {
-                state.call = {
+            .addCase(openModalWithRoomId, (state, action) => {
+                state[action.payload.modalName] = {
                     isOpen: true,
                     roomId: action.payload.roomId,
                 };
             })
-            .addCase(openPinningMessageModal, (state, action) => {
-                state.pinningMessage = {
+            .addCase(openModalWithMessageId, (state, action) => {
+                state[action.payload.modalName] = {
                     isOpen: true,
                     messageId: action.payload.messageId,
                 };

@@ -1,14 +1,13 @@
 import { ChangeEvent, useCallback, useState } from "react";
 import { Input, Modal } from "antd";
 import { useAppDispatch, useAppSelector } from "@/hooks/store.hook";
-import { modalInfoSelector } from "@/store/selectors/modalInfo.selector";
 import { closeModals } from "@/store/actions/modal-windows";
 import { createFolder } from "@/store/thunks/roomsOnFolders";
 
 const FolderCreation = () => {
     const dispatch = useAppDispatch();
-    const modalInfo = useAppSelector((state) =>
-        modalInfoSelector(state, "folderCreation"),
+    const modalInfo = useAppSelector(
+        (state) => state.modalWindows.folderCreation,
     );
     const [folderName, setFolderName] = useState<string>("");
 

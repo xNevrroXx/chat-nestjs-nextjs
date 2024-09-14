@@ -1,10 +1,8 @@
 import React, { useCallback, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/hooks/store.hook";
-import { modalInfoSelector } from "@/store/selectors/modalInfo.selector";
 import { deleteAccount } from "@/store/thunks/authentication";
 import { closeModals } from "@/store/actions/modal-windows";
 import { Checkbox, Flex, Modal, Typography } from "antd";
-import { RoomType } from "@/models/room/IRoom.store";
 import { IDepersonalizeOrDeleteAccount } from "@/models/users/IUsers.store";
 import { TValueOf } from "@/models/TUtils";
 
@@ -12,8 +10,8 @@ const { Text } = Typography;
 
 const AccountDeletion = () => {
     const dispatch = useAppDispatch();
-    const modalInfo = useAppSelector((state) =>
-        modalInfoSelector(state, "accountDeletion"),
+    const modalInfo = useAppSelector(
+        (state) => state.modalWindows.accountDeletion,
     );
     const [whetherDepersonalize, setWhetherDepersonalize] =
         useState<
@@ -22,17 +20,18 @@ const AccountDeletion = () => {
             >
         >("delete");
 
+    const onCancel = useCallback(() => {
+        dispatch(closeModals());
+    }, [dispatch]);
+
     const onOk = useCallback(() => {
+        onCancel();
         void dispatch(
             deleteAccount({
                 whetherDepersonalize,
             }),
         );
-    }, [dispatch, whetherDepersonalize]);
-
-    const onCancel = useCallback(() => {
-        dispatch(closeModals());
-    }, [dispatch]);
+    }, [dispatch, onCancel, whetherDepersonalize]);
 
     const toggleCheckbox = useCallback(() => {
         setWhetherDepersonalize((prev) =>

@@ -17,5 +17,6 @@ import { RoomsOnFoldersModule } from "../rooms-on-folders/rooms-on-folders.modul
         RoomsOnFoldersModule,
     ],
     providers: [ChatGateway],
+    exports: [ChatGateway],
 })
 export class ChatModule {}

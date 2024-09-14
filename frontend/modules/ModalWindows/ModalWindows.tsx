@@ -9,6 +9,7 @@ import { useAppSelector } from "@/hooks/store.hook";
 import PinningMessage from "@/modals/PinningMessage/PinningMessage";
 import MessageDeletion from "@/modals/MessageDeletion/MessageDeletion";
 import AccountDeletion from "@/modals/AccountDeletion/AccountDeletion";
+import RoomDeletion from "@/modals/RoomDeletion/RoomDeletion";
 
 const ModalWindows = () => {
     const callModalInfo = useAppSelector((state) => state.modalWindows.call);
@@ -18,6 +19,7 @@ const ModalWindows = () => {
             <Logout />
             <FoldersMenu />
             <GroupCreation />
+            <RoomDeletion />
             <FolderCreation />
             <PinningMessage />
             <AccountDeletion />

@@ -1,35 +1,30 @@
 import { createAction } from "@reduxjs/toolkit";
 import {
     IOpenModalWithRoomId,
-    IOpenModalWithMessageId,
     IOpenModal,
     TOpenModalDeletion,
+    IOpenModalWithMessageId,
 } from "@/models/modal-windows/modal-windows.store";
 
 const openModal = createAction<IOpenModal>("modal-windows/open");
 const closeModals = createAction("modal-windows/close");
 
-const openMessageForwardingModal = createAction<IOpenModalWithMessageId>(
-    "modal-windows/open-message-forwarding",
+const openModalWithRoomId = createAction<IOpenModalWithRoomId>(
+    "modal-windows/open-with-room-id",
 );
 
-const openPinningMessageModal = createAction<IOpenModalWithMessageId>(
-    "modal-windows/open-pinning-message",
+const openModalWithMessageId = createAction<IOpenModalWithMessageId>(
+    "modal-windows/open-with-message-id",
 );
 
 const openDeletingMessageModal = createAction<TOpenModalDeletion>(
     "modal-windows/open-deleting-message",
 );
 
-const openCallModal = createAction<IOpenModalWithRoomId>(
-    "modal-windows/open-call",
-);
-
 export {
     openModal,
     closeModals,
-    openCallModal,
-    openPinningMessageModal,
+    openModalWithRoomId,
+    openModalWithMessageId,
     openDeletingMessageModal,
-    openMessageForwardingModal,
 };

@@ -6,9 +6,11 @@ import {
     clearMyHistory,
     createRoom,
     createSocketInstance,
+    deleteGroup,
     getAll,
     getMessageById,
     getPreviewRoomsByQuery,
+    handleDeleteRoom,
     joinRoom,
     leaveRoom,
 } from "@/store/thunks/room";
@@ -109,6 +111,18 @@ const room = createSlice({
             .addCase(createRoom.fulfilled, (state, action) => {
                 state.local.allIds.push(action.payload.id);
                 state.local.rooms.byId[action.payload.id] = action.payload;
+            })
+            .addCase(deleteGroup.fulfilled, (state, action) => {
+                state.local.allIds = state.local.allIds.filter(
+                    (id) => id !== action.payload.id,
+                );
+                delete state.local.rooms.byId[action.payload.id];
+            })
+            .addCase(handleDeleteRoom.fulfilled, (state, action) => {
+                state.local.allIds = state.local.allIds.filter(
+                    (id) => id !== action.payload,
+                );
+                delete state.local.rooms.byId[action.payload];
             })
             .addCase(addOrUpdateRoomSocket, (state, action) => {
                 if (!state.local.allIds.includes(action.payload.id)) {

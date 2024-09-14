@@ -20,10 +20,7 @@ import {
     clearPreviewRooms,
 } from "@/store/actions/room";
 import { getPreviewRoomsByQuery } from "@/store/thunks/room";
-import {
-    addRecentRoomData,
-    resetCurrentRoomId,
-} from "@/store/actions/recent-rooms";
+import { addRecentRoomData } from "@/store/actions/recent-rooms";
 import { activeRoomSelector } from "@/store/selectors/activeRoom.selector";
 // styles
 import "./dialogs.scss";
@@ -48,18 +45,6 @@ const Dialogs: FC<IDialogsProps> = ({ user }) => {
     const [isPending, startTransition] = useTransition();
 
     useEffect(() => {
-        /*
-         * Баг был:
-         * 1) делается запрос на сервер
-         * 2) стираем букву, но запрос на сервер еще не выполнен
-         * 3) сбрасываются room previews
-         * 4) приходят данные с сервера, хотя они уже неактуальны
-         * */
-
-        // P.S: Debounce не помог.
-
-        // Сейчас AsyncThunk просто реджектится, если изменился queryString.
-
         if (dialogQueryString.trim()) {
             void dispatch(getPreviewRoomsByQuery(dialogQueryString));
         }

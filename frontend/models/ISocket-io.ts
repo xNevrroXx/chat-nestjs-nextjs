@@ -27,6 +27,7 @@ export interface IServerToClientEvents {
     "room:user-left": (data: ILeaveRoom) => void;
     "room:toggle-typing": (data: TParticipant[]) => void;
     "room:add-or-update": (data: IRoom) => void;
+    "room:delete": (data: Pick<IRoom, "id">) => void;
     // message
     "message:read": (data: IReadMessageSocket) => void;
     "message:pinned": (data: TPinnedMessagesSocket) => void;

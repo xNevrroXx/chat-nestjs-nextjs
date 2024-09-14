@@ -49,6 +49,7 @@ const MessageDeletion = () => {
                 isForEveryone,
             }),
         );
+
         onClose();
     }, [dispatch, isForEveryone, modalInfo, onClose]);
 

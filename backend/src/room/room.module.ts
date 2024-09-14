@@ -7,6 +7,7 @@ import { ParticipantModule } from "../participant/participant.module";
 import { LinkPreviewModule } from "../link-preview/link-preview.module";
 import { FileModule } from "../file/file.module";
 import { UserModule } from "../user/user.module";
+import { ChatModule } from "../chat/chat.module";
 
 @Module({
     imports: [
@@ -15,6 +16,7 @@ import { UserModule } from "../user/user.module";
         MessageModule,
         ParticipantModule,
         LinkPreviewModule,
+        forwardRef(() => ChatModule),
         forwardRef(() => UserModule),
     ],
     controllers: [RoomController],

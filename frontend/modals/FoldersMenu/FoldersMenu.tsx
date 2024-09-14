@@ -8,7 +8,6 @@ import {
 import { TRemoveFolder } from "@/models/rooms-on-folders/IRoomOnFolders.store";
 import { FlexButton } from "@/components/Button/FlexButton";
 import { useAppDispatch, useAppSelector } from "@/hooks/store.hook";
-import { modalInfoSelector } from "@/store/selectors/modalInfo.selector";
 import { closeModals, openModal } from "@/store/actions/modal-windows";
 import { foldersSelector } from "@/store/selectors/folders.selector";
 import { removeFolder } from "@/store/thunks/roomsOnFolders";
@@ -18,9 +17,7 @@ const { Text } = Typography;
 
 const FoldersMenu = () => {
     const dispatch = useAppDispatch();
-    const modalInfo = useAppSelector((state) =>
-        modalInfoSelector(state, "foldersMenu"),
-    );
+    const modalInfo = useAppSelector((state) => state.modalWindows.foldersMenu);
     const folders = useAppSelector(foldersSelector);
     const { token } = useToken();
 

@@ -15,8 +15,7 @@ const PinningMessage = () => {
     }, [dispatch]);
 
     const onOk = useCallback(() => {
-        onClose();
-        if (!modalInfo.messageId) {
+        if (!modalInfo.isOpen) {
             return;
         }
 
@@ -25,7 +24,9 @@ const PinningMessage = () => {
                 messageId: modalInfo.messageId,
             }),
         );
-    }, [dispatch, modalInfo.messageId, onClose]);
+
+        onClose();
+    }, [dispatch, modalInfo, onClose]);
 
     return (
         <Modal

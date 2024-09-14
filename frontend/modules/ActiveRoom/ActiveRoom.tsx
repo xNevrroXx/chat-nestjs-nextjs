@@ -15,14 +15,14 @@ import {
 import PinnedMessages from "../PinnedMessages/PinnedMessages";
 import { useAppDispatch, useAppSelector } from "@/hooks/store.hook";
 // actions
-import { openCallModal } from "@/store/actions/modal-windows";
-import { interlocutorSelector } from "@/store/selectors/interlocutor.selector";
+import { findInterlocutorSelector } from "@/store/selectors/findInterlocutor.selector";
 import { resetCurrentRoomId } from "@/store/actions/recent-rooms";
 import { TValueOf } from "@/models/TUtils";
 // styles
 import "./active-room.scss";
 import UserStatuses from "@/components/UserStatuses/UserStatuses";
 import { joinRoomAndSetActive } from "@/store/thunks/recent-rooms";
+import { openModalWithRoomId } from "@/store/actions/modal-windows";
 
 const { Header, Footer } = Layout;
 const { Title } = Typography;
@@ -36,7 +36,7 @@ const ActiveRoom: FC<IActiveChatProps> = ({ user, room }) => {
     const dispatch = useAppDispatch();
     const deviceDimensions = useAppSelector((state) => state.device);
     const interlocutor = useAppSelector((state) =>
-        interlocutorSelector(state, room.type, room.participants),
+        findInterlocutorSelector(state, room.type, room.participants),
     );
     const [isVisibleScrollButtonState, setIsVisibleScrollButtonState] =
         useState<boolean>(true);
@@ -89,7 +89,12 @@ const ActiveRoom: FC<IActiveChatProps> = ({ user, room }) => {
             return;
         }
 
-        dispatch(openCallModal({ roomId: room.id }));
+        dispatch(
+            openModalWithRoomId({
+                modalName: "call",
+                roomId: room.id,
+            }),
+        );
     }, [dispatch, room]);
 
     const onClickScrollButton = () => {

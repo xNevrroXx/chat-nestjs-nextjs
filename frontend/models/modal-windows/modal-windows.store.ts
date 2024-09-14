@@ -11,6 +11,7 @@ type TModalWindowsStore = {
     messageForwarding: TModalWithMessageId;
     messageDeletion: TModalDeletionInfo;
     groupCreationMenu: TIsOpen;
+    roomDeletion: TModalWithRoomId;
 };
 
 type TIsOpen = {
@@ -34,15 +35,20 @@ interface IModalWithRoomIdOpened {
 interface IOpenModal {
     modalName: Exclude<
         keyof TModalWindowsStore,
-        "messageForwarding" | "call" | "pinningMessage"
+        "messageForwarding" | "call" | "pinningMessage" | "groupDeletion"
     >;
     // @defaultValue true
     closeOthers?: boolean;
 }
 interface IOpenModalWithRoomId {
+    modalName: Extract<keyof TModalWindowsStore, "call" | "groupDeletion">;
     roomId: TValueOf<Pick<IRoom, "id">>;
 }
 interface IOpenModalWithMessageId {
+    modalName: Extract<
+        keyof TModalWindowsStore,
+        "messageForwarding" | "pinningMessage"
+    >;
     messageId: string;
 }
 

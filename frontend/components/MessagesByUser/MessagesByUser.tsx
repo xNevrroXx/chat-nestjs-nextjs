@@ -6,7 +6,6 @@ import {
 } from "@/models/room/IRoom.store";
 import { TValueOf } from "@/models/TUtils";
 import { IUserDto } from "@/models/auth/IAuth.store";
-import { TMessageForEditOrReply } from "@/models/room/IRoom.general";
 import MessageHOC, { TPaddings } from "@/HOC/MessageHOC";
 import { Avatar } from "antd";
 import { getNameInitials } from "@/utils/getNameInitials";

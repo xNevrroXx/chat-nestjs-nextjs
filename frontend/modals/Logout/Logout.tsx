@@ -3,27 +3,25 @@ import { Modal } from "antd";
 import { useAppDispatch, useAppSelector } from "@/hooks/store.hook";
 import { logout } from "@/store/thunks/authentication";
 import { closeModals } from "@/store/actions/modal-windows";
-import { modalInfoSelector } from "@/store/selectors/modalInfo.selector";
 
 const Logout = () => {
     const dispatch = useAppDispatch();
-    const modalInfo = useAppSelector((state) =>
-        modalInfoSelector(state, "logout"),
-    );
-
-    const onLogout = useCallback(() => {
-        void dispatch(logout());
-    }, [dispatch]);
+    const modalInfo = useAppSelector((state) => state.modalWindows.call);
 
     const onClose = useCallback(() => {
         dispatch(closeModals());
     }, [dispatch]);
 
+    const onOk = useCallback(() => {
+        void dispatch(logout());
+        onClose();
+    }, [dispatch, onClose]);
+
     return (
         <Modal
             title="Выйти"
             open={modalInfo.isOpen}
-            onOk={onLogout}
+            onOk={onOk}
             onCancel={onClose}
         ></Modal>
     );

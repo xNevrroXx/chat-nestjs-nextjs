@@ -51,11 +51,11 @@ export interface IRoom {
     color: string;
     userId: TValueOf<Pick<IUserDto, "id">>;
     type: RoomType;
-    folderIds: TValueOf<Pick<IFolder, "id">>[];
-    creatorUser?: TValueOf<Pick<IUserDto, "id">>;
     days: IMessagesByDays;
     participants: TParticipant[];
     pinnedMessages: TPinnedMessage[];
+    folderIds: TValueOf<Pick<IFolder, "id">>[];
+    creatorUserId: TValueOf<Pick<IUserDto, "id">> | null;
 
     createdAt: string;
     updatedAt: string | undefined | null;
@@ -229,6 +229,11 @@ export type TCreateGroupRoom = {
     name: TValueOf<Pick<IRoom, "name">>;
     type: RoomType.GROUP;
     memberIds: TValueOf<Pick<IUserDto, "id">>[];
+};
+
+export type TDeleteRoom = {
+    id: string;
+    isOnlyForMe?: boolean;
 };
 
 export type TSendUserTyping = Omit<IUserTyping, "updatedAt" | "userId">;

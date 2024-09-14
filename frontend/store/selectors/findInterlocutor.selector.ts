@@ -2,7 +2,7 @@ import { createSelector } from "@reduxjs/toolkit";
 import { TRootState } from "@/store";
 import { RoomType, TParticipant } from "@/models/room/IRoom.store";
 
-const interlocutorSelector = createSelector(
+const findInterlocutorSelector = createSelector(
     [
         (state: TRootState) => state.authentication,
         (state: TRootState) => state.users,
@@ -27,4 +27,4 @@ const interlocutorSelector = createSelector(
     },
 );
 
-export { interlocutorSelector };
+export { findInterlocutorSelector };

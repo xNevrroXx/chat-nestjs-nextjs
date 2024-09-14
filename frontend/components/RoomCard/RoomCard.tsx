@@ -4,10 +4,10 @@ import { Avatar, Typography } from "antd";
 // own modules
 import { useAppSelector } from "@/hooks/store.hook";
 import { IRoom, RoomType } from "@/models/room/IRoom.store";
+import { getNameInitials } from "@/utils/getNameInitials";
+import { findInterlocutorSelector } from "@/store/selectors/findInterlocutor.selector";
 // styles
 import "./room-card.scss";
-import { getNameInitials } from "@/utils/getNameInitials";
-import { interlocutorSelector } from "@/store/selectors/interlocutor.selector";
 
 const { Title, Text } = Typography;
 
@@ -18,7 +18,7 @@ interface IUserCardProps {
 
 const RoomCard: FC<IUserCardProps> = ({ room, onClick }) => {
     const interlocutor = useAppSelector((state) =>
-        interlocutorSelector(state, room.type, room.participants),
+        findInterlocutorSelector(state, room.type, room.participants),
     );
 
     return (

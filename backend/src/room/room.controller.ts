@@ -5,6 +5,7 @@ import {
     Get,
     HttpCode,
     HttpStatus,
+    Param,
     Post,
     Query,
     Req,
@@ -15,7 +16,7 @@ import { stringSimilarity } from "string-similarity-js";
 import { Request } from "express";
 import { AuthGuard } from "../auth/auth.guard";
 import { RoomService } from "./room.service";
-import { Prisma, RoomType, User } from "@prisma/client";
+import { Message, Prisma, RoomType, User } from "@prisma/client";
 import {
     IRoom,
     TRoomPreview,
@@ -28,13 +29,15 @@ import { TNormalizedList } from "../models/TNormalizedList";
 import { generateRandomBrightColor } from "../utils/generateRandomBrightColor";
 import { MessageService } from "../message/message.service";
 import { WsExceptionFilter } from "../exceptions/ws-exception.filter";
+import { ChatGateway } from "../chat/chat.gateway";
 
 @Controller("room")
 export class RoomController {
     constructor(
         private readonly messageService: MessageService,
         private readonly roomService: RoomService,
-        private readonly prismaService: DatabaseService
+        private readonly prismaService: DatabaseService,
+        private readonly socketService: ChatGateway
     ) {}
 
     @Delete("clear-my-history")
@@ -46,35 +49,113 @@ export class RoomController {
     ) {
         const userInfo = request.user;
 
-        const messages = await this.messageService.findMany({
-            where: {
-                roomId,
-            },
+        const messageIdsWithUserIds = (
+            (await this.messageService.findMany({
+                where: {
+                    roomId,
+                    room: {
+                        participants: {
+                            some: {
+                                userId: userInfo.id,
+                            },
+                        },
+                    },
+                },
+            })) as Message[]
+        ).map((msg) => {
+            return {
+                userId: userInfo.id,
+                messageId: msg.id,
+            };
         });
 
-        for (let i = 0; i < messages.length; i++) {
-            const msg = messages[i];
+        await this.prismaService.userOnDeletedMessage.createMany({
+            data: messageIdsWithUserIds,
+        });
+    }
 
-            await this.prismaService.userOnDeletedMessage.upsert({
-                update: {},
-                create: {
-                    user: {
-                        connect: {
-                            id: userInfo.id,
-                        },
-                    },
-                    message: {
-                        connect: {
-                            id: msg.id,
-                        },
-                    },
-                },
+    @Delete(":id")
+    @UseGuards(AuthGuard)
+    async delete(
+        @Req() request,
+        @Body("isOnlyForMe") isOnlyForMe: boolean,
+        @Param("id") roomId: string
+    ) {
+        const userInfo = request.user;
+
+        const userWhoLeft =
+            this.socketService.socketRoomsInfo.leaveRoomByUserId(
+                userInfo.id,
+                roomId
+            );
+        userWhoLeft.clientIds.forEach((socketId) => {
+            const client = this.socketService.server.sockets.get(socketId);
+            client.leave(roomId);
+            client.emit("room:delete", { id: roomId });
+        });
+
+        if (!isOnlyForMe) {
+            // delete all records about the room
+            await this.prismaService.room.delete({
                 where: {
-                    userId_messageId: {
-                        userId: userInfo.id,
-                        messageId: msg.id,
-                    },
+                    id: roomId,
+                    OR: [
+                        {
+                            creatorUserId: userInfo.id,
+                        },
+                        {
+                            type: RoomType.PRIVATE,
+                            participants: {
+                                some: {
+                                    userId: userInfo.id,
+                                },
+                            },
+                        },
+                    ],
                 },
+            });
+
+            this.socketService.server
+                .to(roomId)
+                .emit("room:delete", { id: roomId });
+        } else {
+            // clear a history and leave the room
+            const messageIdsWithUserIds = (
+                (await this.messageService.findMany({
+                    where: {
+                        roomId: roomId,
+                        room: {
+                            participants: {
+                                some: {
+                                    userId: userInfo.id,
+                                },
+                            },
+                        },
+                    },
+                })) as Message[]
+            ).map((msg) => {
+                return {
+                    userId: userInfo.id,
+                    messageId: msg.id,
+                };
+            });
+
+            await this.prismaService.userOnDeletedMessage.createMany({
+                data: messageIdsWithUserIds,
+                skipDuplicates: true,
+            });
+
+            await this.roomService.leave(userInfo.id, roomId);
+
+            void this.socketService.toggleTypingStatus({
+                userId: userWhoLeft.userId,
+                isTyping: false,
+                roomId: roomId,
+            });
+
+            this.socketService.server.to(roomId).emit("room:user-left", {
+                roomId: roomId,
+                userId: userWhoLeft.userId,
             });
         }
     }
@@ -91,6 +172,11 @@ export class RoomController {
             data: {
                 type,
                 name,
+                creatorUser: {
+                    connect: {
+                        id: userInfo.id,
+                    },
+                },
                 color: generateRandomBrightColor(),
                 participants: {
                     createMany: {

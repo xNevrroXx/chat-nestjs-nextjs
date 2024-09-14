@@ -33,6 +33,7 @@ import {
     IInnerForwardedMessage,
     IUnpinMessage,
     TJoinRoom,
+    TDeleteRoom,
 } from "@/models/room/IRoom.store";
 import { TRootState } from "@/store";
 import { TValueOf } from "@/models/TUtils";
@@ -68,6 +69,9 @@ const connectSocket = createAsyncThunk<void, void, { state: TRootState }>(
             socket?.on("room:user-left", (data) => {
                 thunkApi.dispatch(handleUserLeftRoomSocket(data));
             });
+            socket?.on("room:delete", (data) => {
+                void thunkApi.dispatch(handleDeleteRoom(data.id));
+            });
             socket?.on("room:toggle-typing", (data) => {
                 thunkApi.dispatch(handleChangeUserTypingSocket(data));
             });
@@ -102,6 +106,20 @@ const connectSocket = createAsyncThunk<void, void, { state: TRootState }>(
     },
 );
 
+const handleDeleteRoom = createAsyncThunk<
+    TValueOf<Pick<IRoom, "id">>,
+    TValueOf<Pick<IRoom, "id">>,
+    { state: TRootState }
+>("room/socket:delete", (roomId, thunkAPI) => {
+    try {
+        thunkAPI.dispatch(removeRecentRoomData(roomId));
+        thunkAPI.dispatch(excludeRoomFromFolders(roomId));
+        return roomId;
+    }
+    catch (error) {
+        return thunkAPI.rejectWithValue(error);
+    }
+});
 const disconnectSocket = createAsyncThunk<void, void, { state: TRootState }>(
     "room/socket:disconnect",
     async (_, thunkApi) => {
@@ -340,6 +358,24 @@ const createRoom = createAsyncThunk<
     }
 });
 
+const deleteGroup = createAsyncThunk<
+    Pick<IRoom, "id">,
+    TDeleteRoom,
+    { state: TRootState }
+>("room/delete", async (roomData, thunkAPI) => {
+    try {
+        await RoomService.delete(roomData);
+
+        thunkAPI.dispatch(removeRecentRoomData(roomData.id));
+        thunkAPI.dispatch(excludeRoomFromFolders(roomData.id));
+
+        return roomData;
+    }
+    catch (error) {
+        return thunkAPI.rejectWithValue(error);
+    }
+});
+
 const joinRoom = createAsyncThunk<IRoom, TJoinRoom, { state: TRootState }>(
     "room/join",
     async (roomData, thunkAPI) => {
@@ -408,10 +444,12 @@ export {
     joinRoom,
     leaveRoom,
     createRoom,
+    deleteGroup,
     clearMyHistory,
     createSocketInstance,
     disconnectSocket,
     connectSocket,
+    handleDeleteRoom,
     readMessageSocket,
     sendMessageSocket,
     pinMessageSocket,

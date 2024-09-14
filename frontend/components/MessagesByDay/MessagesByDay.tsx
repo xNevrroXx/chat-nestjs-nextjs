@@ -8,7 +8,6 @@ import {
 } from "@/models/room/IRoom.store";
 import { TValueOf } from "@/models/TUtils";
 import { IUserDto } from "@/models/auth/IAuth.store";
-import { TMessageForEditOrReply } from "@/models/room/IRoom.general";
 import MessagesByUser from "@/components/MessagesByUser/MessagesByUser";
 import "./messages-by-day.scss";
 

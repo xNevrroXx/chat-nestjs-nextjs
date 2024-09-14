@@ -242,13 +242,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
             });
         });
 
-        const userWhoLeft = this.socketRoomsInfo.leaveRoomByUser(
-            client.id,
+        const userWhoLeft = this.socketRoomsInfo.leaveRoomByUserId(
+            userId,
             roomId
         );
         client.leave(roomId);
 
-        void this.toggleTypingStatus(client, {
+        void this.toggleTypingStatus({
             userId: userWhoLeft.userId,
             isTyping: false,
             roomId,
@@ -257,7 +257,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
             .to(roomId)
             .emit("room:user-left", { roomId, userId: userWhoLeft.userId });
         // after notification - it will disconnect another user's devices.
-        userWhoLeft.cliendIds.forEach((socketId) => {
+        userWhoLeft.clientIds.forEach((socketId) => {
             this.server.sockets.get(socketId).leave(roomId);
         });
     }
@@ -269,16 +269,17 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         @MessageBody() typingInfo: Omit<TToggleUserTyping, "userId">
     ) {
         const userPayload: IUserSessionPayload = client.user;
-        void this.toggleTypingStatus(client, {
+        void this.toggleTypingStatus({
             userId: userPayload.id,
             ...typingInfo,
         });
     }
 
-    async toggleTypingStatus(
-        client,
-        { userId: senderUserId, roomId, isTyping }: TToggleUserTyping
-    ) {
+    async toggleTypingStatus({
+        userId: senderUserId,
+        roomId,
+        isTyping,
+    }: TToggleUserTyping) {
         try {
             await this.userService.updateTypingStatus({
                 userId: senderUserId,
@@ -304,7 +305,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
                 this.participantService.normalize
             );
 
-            client.broadcast
+            this.server
                 .to(roomId)
                 .emit("room:toggle-typing", normalizedParticipants);
         } catch (error) {
@@ -825,7 +826,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
             throw new WsException("Комната не найдена");
         }
 
-        void this.toggleTypingStatus(client, {
+        void this.toggleTypingStatus({
             userId: sender.id,
             roomId: room.id,
             isTyping: false,

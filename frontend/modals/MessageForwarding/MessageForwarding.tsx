@@ -23,14 +23,14 @@ const MessageForwarding = () => {
                 return;
             }
 
-            onClose();
-
             void dispatch(
                 forwardMessageSocket({
                     roomId: room.id,
                     forwardedMessageId: modalInfo.messageId,
                 }),
             );
+
+            onClose();
         },
         [dispatch, onClose, modalInfo],
     );

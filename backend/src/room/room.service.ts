@@ -19,6 +19,20 @@ export class RoomService {
         private readonly messageService: MessageService
     ) {}
 
+    async leave(userId: string, roomId: string) {
+        return this.participantService.update({
+            where: {
+                userId_roomId: {
+                    userId,
+                    roomId,
+                },
+            },
+            data: {
+                isStillMember: false,
+            },
+        });
+    }
+
     async normalize(
         userId: string,
         unnormalizedRoom: Prisma.RoomGetPayload<{

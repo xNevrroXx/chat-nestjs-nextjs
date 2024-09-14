@@ -26,8 +26,7 @@ import {
 import { useAppDispatch } from "@/hooks/store.hook";
 import {
     openDeletingMessageModal,
-    openMessageForwardingModal,
-    openPinningMessageModal,
+    openModalWithMessageId,
 } from "@/store/actions/modal-windows";
 import { updateMessageForAction } from "@/store/actions/recent-rooms";
 
@@ -126,7 +125,8 @@ const MessageHOC = forwardRef<HTMLDivElement, TMessageProps>(
 
         const onChooseMessageForForward = useCallback(() => {
             dispatch(
-                openMessageForwardingModal({
+                openModalWithMessageId({
+                    modalName: "messageForwarding",
                     messageId: message.id,
                 }),
             );
@@ -134,7 +134,8 @@ const MessageHOC = forwardRef<HTMLDivElement, TMessageProps>(
 
         const onPinMessage = useCallback(() => {
             dispatch(
-                openPinningMessageModal({
+                openModalWithMessageId({
+                    modalName: "pinningMessage",
                     messageId: message.id,
                 }),
             );

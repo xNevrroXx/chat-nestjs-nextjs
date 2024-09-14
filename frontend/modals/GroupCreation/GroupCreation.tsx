@@ -6,7 +6,6 @@ import { Form, Input, Mentions, Modal } from "antd";
 import { useAppDispatch, useAppSelector } from "@/hooks/store.hook";
 import { filteredUsersSelector } from "@/store/selectors/filteredUsers.selector";
 import { getMentionIds } from "@/utils/getMentionIds";
-import { modalInfoSelector } from "@/store/selectors/modalInfo.selector";
 import { closeModals } from "@/store/actions/modal-windows";
 import { createRoom } from "@/store/thunks/room";
 import { addRecentRoomData } from "@/store/actions/recent-rooms";
@@ -25,8 +24,8 @@ const COUNT_STAGES = Object.keys(STAGES).length;
 
 const GroupCreation = () => {
     const dispatch = useAppDispatch();
-    const modalInfo = useAppSelector((state) =>
-        modalInfoSelector(state, "groupCreationMenu"),
+    const modalInfo = useAppSelector(
+        (state) => state.modalWindows.groupCreationMenu,
     );
     const users = useAppSelector((state) => filteredUsersSelector(state));
     const [roomNameInputMessage, setRoomNameInputMessage] = useState<
@@ -58,7 +57,7 @@ const GroupCreation = () => {
         [dispatch],
     );
 
-    const onCloseModal = useCallback(() => {
+    const onClose = useCallback(() => {
         dispatch(closeModals());
     }, [dispatch]);
 
@@ -84,17 +83,18 @@ const GroupCreation = () => {
             memberIds: memberIds,
             type: RoomType.GROUP,
         });
+        onClose();
         setStage(0);
         setRoomName("");
         setRoomNameInputMessage(null);
         setMemberIds([]);
-    }, [onCreateRoom, roomName, memberIds, stage]);
+    }, [stage, roomName, onClose, onCreateRoom, memberIds]);
 
     return (
         <Modal
             title="Новая группа"
             open={modalInfo.isOpen}
-            onCancel={onCloseModal}
+            onCancel={onClose}
             okText={stage === COUNT_STAGES - 1 ? "Создать" : "Далее"}
             onOk={onOk}
         >

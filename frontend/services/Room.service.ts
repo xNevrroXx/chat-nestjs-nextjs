@@ -6,6 +6,7 @@ import {
     ILeaveRoom,
     IRoom,
     TCreateGroupRoom,
+    TDeleteRoom,
     TJoinRoom,
     TPreviewExistingRoom,
 } from "@/models/room/IRoom.store";
@@ -28,6 +29,10 @@ class RoomService {
 
     static async create(data: TCreateGroupRoom): Promise<AxiosResponse<IRoom>> {
         return $api.post<IRoom>(this.base + "/create", data);
+    }
+
+    static async delete(data: TDeleteRoom): Promise<AxiosResponse<void>> {
+        return $api.delete(this.base + "/" + data.id, { data });
     }
 
     static async leave(

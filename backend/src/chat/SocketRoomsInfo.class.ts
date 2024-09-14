@@ -38,7 +38,6 @@ class SocketRoomsInfo {
     initConnection(userId: string, socketId: string): void {
         this._socketIdToUserId[socketId] = userId;
 
-        console.log("previous connections: ", this._userIdToSocketIds[userId]);
         if (!this._userIdToSocketIds[userId]) {
             this._userIdToSocketIds[userId] = new Set<TUserClientId>();
             this._userIdToRoomIds[userId] = new Set<
@@ -91,7 +90,6 @@ class SocketRoomsInfo {
      * */
     leaveAll(socketId: string): IUserIdWithRoomIds | null {
         const userId = this._socketIdToUserId[socketId];
-        console.log("userId: ", userId);
         if (!userId) {
             return;
         }
@@ -109,7 +107,6 @@ class SocketRoomsInfo {
          * delete the room-user socket data.
          * */
         const roomIds = this._userIdToRoomIds[userId];
-        console.log("roomIds: ", roomIds);
         const returnValue = {
             userId,
             roomIds: new Set(roomIds),
@@ -124,26 +121,24 @@ class SocketRoomsInfo {
 
     /**
      * Leaving a room by a user.
-     * @param {string} socketId - id of the user socket;
+     * @param {string} userId - id of the user;
      * @param {string} roomId - room id to leave a group;
      * @return {IUserIdToRoomIds} - the object contains the user id and the remaining rooms;
      * */
-    leaveRoomByUser(
-        socketId: string,
+    leaveRoomByUserId(
+        userId: string,
         roomId: string
     ): {
         userId: string;
         roomIds: Set<TValueOf<Pick<Room, "id">>>;
-        cliendIds: Set<string>;
+        clientIds: Set<string>;
     } {
-        const userId = this._socketIdToUserId[socketId];
-
         this._roomIdToUserIds[roomId].delete(userId);
         this._userIdToRoomIds[userId].delete(roomId);
 
         return {
             userId: userId,
-            cliendIds: this._userIdToSocketIds[userId],
+            clientIds: this._userIdToSocketIds[userId],
             roomIds: this._userIdToRoomIds[userId],
         };
     }
