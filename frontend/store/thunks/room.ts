@@ -22,18 +22,18 @@ import {
     IDeleteMessage,
     IEditMessage,
     IForwardMessage,
+    IInnerForwardedMessage,
+    IInnerStandardMessage,
+    IMessageRead,
     IPinMessage,
     IRoom,
+    IUnpinMessage,
     TCreateGroupRoom,
+    TDeleteRoom,
+    TJoinRoom,
+    TPreviewExistingRoom,
     TSendMessage,
     TSendUserTyping,
-    TPreviewExistingRoom,
-    IMessageRead,
-    IInnerStandardMessage,
-    IInnerForwardedMessage,
-    IUnpinMessage,
-    TJoinRoom,
-    TDeleteRoom,
 } from "@/models/room/IRoom.store";
 import { TRootState } from "@/store";
 import { TValueOf } from "@/models/TUtils";
@@ -45,10 +45,11 @@ const createSocketInstance = createAsyncThunk<
     SocketIOService,
     string,
     { state: TRootState }
->("room/socket:create-instance", (sessionId: string, thunkAPI) => {
+>("room/socket:create-instance", async (sessionId: string, thunkAPI) => {
     try {
         const socket = new SocketIOService(sessionId);
-        void thunkAPI.dispatch(connectSocket());
+        await socket.connect();
+
         return socket;
     }
     catch (error) {
@@ -56,61 +57,59 @@ const createSocketInstance = createAsyncThunk<
     }
 });
 
-const connectSocket = createAsyncThunk<void, void, { state: TRootState }>(
-    "room/socket:connect",
-    async (_, thunkApi) => {
-        try {
-            const socket = thunkApi.getState().room.socket;
-            await socket?.connect();
-
-            socket?.on("user:toggle-online", (data) => {
-                thunkApi.dispatch(handleChangeUserOnlineSocket(data));
-            });
-            socket?.on("room:user-left", (data) => {
-                thunkApi.dispatch(handleUserLeftRoomSocket(data));
-            });
-            socket?.on("room:delete", (data) => {
-                void thunkApi.dispatch(handleDeleteRoom(data.id));
-            });
-            socket?.on("room:toggle-typing", (data) => {
-                thunkApi.dispatch(handleChangeUserTypingSocket(data));
-            });
-            socket?.on("room:add-or-update", (data) => {
-                thunkApi.dispatch(addOrUpdateRoomSocket(data));
-            });
-            socket?.on("message:read", (data) => {
-                thunkApi.dispatch(handleMessageRead(data));
-            });
-            socket?.on("message:standard", (data) => {
-                thunkApi.dispatch(handleMessageSocket(data));
-            });
-            socket?.on("message:pinned", (data) => {
-                thunkApi.dispatch(handlePinnedMessageSocket(data));
-            });
-            socket?.on("message:unpinned", (data) => {
-                thunkApi.dispatch(handleUnpinnedMessageSocket(data));
-            });
-            socket?.on("message:edited", (data) => {
-                thunkApi.dispatch(handleEditedMessageSocket(data));
-            });
-            socket?.on("message:deleted", (data) => {
-                thunkApi.dispatch(handleDeletedMessageSocket(data));
-            });
-            socket?.on("message:forwarded", (data) => {
-                thunkApi.dispatch(handleForwardedMessageSocket(data));
-            });
-        }
-        catch (error) {
-            return thunkApi.rejectWithValue(error);
-        }
-    },
-);
+const listenSocketEvents = createAsyncThunk<
+    void,
+    SocketIOService,
+    { state: TRootState }
+>("room/socket:connect", (socket, thunkApi) => {
+    try {
+        socket.on("user:toggle-online", (data) => {
+            thunkApi.dispatch(handleChangeUserOnlineSocket(data));
+        });
+        socket.on("room:user-left", (data) => {
+            thunkApi.dispatch(handleUserLeftRoomSocket(data));
+        });
+        socket.on("room:delete", (data) => {
+            void thunkApi.dispatch(handleDeleteRoom(data.id));
+        });
+        socket.on("room:toggle-typing", (data) => {
+            thunkApi.dispatch(handleChangeUserTypingSocket(data));
+        });
+        socket.on("room:add-or-update", (data) => {
+            thunkApi.dispatch(addOrUpdateRoomSocket(data));
+        });
+        socket.on("message:read", (data) => {
+            thunkApi.dispatch(handleMessageRead(data));
+        });
+        socket.on("message:standard", (data) => {
+            thunkApi.dispatch(handleMessageSocket(data));
+        });
+        socket.on("message:pinned", (data) => {
+            thunkApi.dispatch(handlePinnedMessageSocket(data));
+        });
+        socket.on("message:unpinned", (data) => {
+            thunkApi.dispatch(handleUnpinnedMessageSocket(data));
+        });
+        socket.on("message:edited", (data) => {
+            thunkApi.dispatch(handleEditedMessageSocket(data));
+        });
+        socket.on("message:deleted", (data) => {
+            thunkApi.dispatch(handleDeletedMessageSocket(data));
+        });
+        socket.on("message:forwarded", (data) => {
+            thunkApi.dispatch(handleForwardedMessageSocket(data));
+        });
+    }
+    catch (error) {
+        return thunkApi.rejectWithValue(error);
+    }
+});
 
 const handleDeleteRoom = createAsyncThunk<
     TValueOf<Pick<IRoom, "id">>,
     TValueOf<Pick<IRoom, "id">>,
     { state: TRootState }
->("room/socket:delete", (roomId, thunkAPI) => {
+>("room/handle-delete", (roomId, thunkAPI) => {
     try {
         thunkAPI.dispatch(removeRecentRoomData(roomId));
         thunkAPI.dispatch(excludeRoomFromFolders(roomId));
@@ -125,7 +124,7 @@ const disconnectSocket = createAsyncThunk<void, void, { state: TRootState }>(
     async (_, thunkApi) => {
         try {
             const socket = thunkApi.getState().room.socket;
-            await socket?.disconnect();
+            void socket?.disconnect();
             return;
         }
         catch (error) {
@@ -448,7 +447,7 @@ export {
     clearMyHistory,
     createSocketInstance,
     disconnectSocket,
-    connectSocket,
+    listenSocketEvents,
     handleDeleteRoom,
     readMessageSocket,
     sendMessageSocket,

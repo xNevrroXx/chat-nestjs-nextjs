@@ -31,17 +31,8 @@ const store = configureStore({
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware({
             serializableCheck: {
-                ignoredActionPaths: ["authentication/login/rejected"],
-                ignoredActions: [
-                    "room/socket:create-instance/fulfilled",
-                    "room/get-all/fulfilled",
-                    "room/socket:handle-message",
-                    "room/socket:send-message/pending",
-                    "room/socket:send-message/fulfilled",
-
-                    "users/get-all/fulfilled",
-                ],
-                ignoredPaths: ["room.socket", "room.rooms", "users"],
+                ignoredActions: ["room/socket:create-instance/fulfilled"],
+                ignoredPaths: ["room.socket"],
             },
         }).concat(reduxThunk, loggerMiddleware),
     enhancers: [],

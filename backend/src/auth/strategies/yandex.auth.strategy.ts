@@ -1,7 +1,7 @@
 import { PassportStrategy } from "@nestjs/passport";
 import { Strategy, Profile } from "passport-yandex";
 import { Injectable } from "@nestjs/common";
-import { UserRegisterOAuth } from "../../user/userDto";
+import { UserRegisterOAuth } from "../../user/user.dto";
 import { UserService } from "../../user/user.service";
 import { AppConstantsService } from "../../app.constants.service";
 import { generateRandomBrightColor } from "../../utils/generateRandomBrightColor";

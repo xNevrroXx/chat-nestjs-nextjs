@@ -10,7 +10,7 @@ import {
 import { MessageService } from "./message.service";
 import { AuthGuard } from "../auth/auth.guard";
 import { ParticipantService } from "../participant/participant.service";
-import { PrismaIncludeFullRoomInfo } from "../room/IRooms";
+import { PrismaIncludeFullRoomInfo } from "../room/room.model";
 import { Prisma } from "@prisma/client";
 
 @Controller("message")

@@ -1,14 +1,9 @@
-import { TUserDto } from "../user/IUser";
+import { TUserDto } from "../user/user.model";
 import { TValueOf } from "../models/TUtils";
 import { FileType, Message, Prisma, Room, User } from "@prisma/client";
-import { TFileToClient } from "../file/IFile";
-import { IRoom } from "../room/IRooms";
-import { ILinkPreviewInfo } from "../link-preview/ILinkPreview";
-
-export interface IChat {
-    userId: TValueOf<Pick<TUserDto, "id">>;
-    rooms: IRoom[];
-}
+import { TFileToClient } from "../file/file.model";
+import { IRoom } from "../room/room.model";
+import { ILinkPreviewInfo } from "../link-preview/link-preview.model";
 
 export type TMessage = IInnerStandardMessage | IInnerForwardedMessage;
 
@@ -121,18 +116,6 @@ export type TNormalizeMessageArgument =
           };
       }>;
 
-// export interface IStandardMessage extends IInnerStandardMessage {
-//     replyToMessage:
-//         | IInnerStandardMessage
-//         | IInnerForwardedMessage
-//         | undefined
-//         | null;
-// }
-//
-// export interface IForwardedMessage extends IInnerForwardedMessage {
-//     forwardedMessage: IInnerStandardMessage | IInnerForwardedMessage;
-// }
-
 export interface IInnerStandardMessage extends IOriginalMessage {
     files: TFileToClient[];
     replyToMessage:
@@ -191,22 +174,8 @@ export interface IFile {
     createdAt: string;
 }
 
-export function isInnerMessage(
-    obj: IInnerStandardMessage | IInnerForwardedMessage
-): obj is IInnerStandardMessage {
-    return !!(obj as IInnerStandardMessage).files;
-}
-
 // forwarded types check
 export function isForwardedMessagePrisma(
-    obj: TMessageWithoutFileBlobs | TForwardMessageWithoutFileBlobs
-): obj is TForwardMessageWithoutFileBlobs {
-    return (
-        (obj as TForwardMessageWithoutFileBlobs).forwardedMessage &&
-        (obj as TForwardMessageWithoutFileBlobs).forwardedMessage !== null
-    );
-}
-export function isForwardedMessagePrisma2(
     obj: Prisma.MessageGetPayload<{
         include: typeof ForwardedMessagePrisma | typeof ReplyMessagePrisma;
     }>
@@ -224,15 +193,6 @@ export function isForwardedMessagePrisma2(
         ).forwardedMessage !== null
     );
 }
-
-// export function isForwardedMessage(
-//     obj: IStandardMessage | IForwardedMessage
-// ): obj is IForwardedMessage {
-//     return (
-//         !!(obj as IForwardedMessage).forwardedMessage &&
-//         (obj as IForwardedMessage).forwardedMessage !== null
-//     );
-// }
 
 export function isInnerForwardedMessage(
     obj: IInnerStandardMessage | IInnerForwardedMessage

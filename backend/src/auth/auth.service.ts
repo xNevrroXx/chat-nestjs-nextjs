@@ -4,10 +4,10 @@ import {
     UnauthorizedException,
 } from "@nestjs/common";
 import * as bcrypt from "bcrypt";
-import { IUserSessionPayload } from "../user/IUser";
+import { IUserSessionPayload } from "../user/user.model";
 import { UserService } from "../user/user.service";
 import { SessionService } from "../session/session.service";
-import { ISessionData } from "../session/ISession";
+import { ISessionData } from "../session/session.model";
 
 @Injectable()
 export class AuthService {

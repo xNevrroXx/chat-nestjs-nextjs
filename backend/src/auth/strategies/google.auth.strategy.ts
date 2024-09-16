@@ -1,7 +1,7 @@
 import { PassportStrategy } from "@nestjs/passport";
 import { Profile, Strategy, VerifyCallback } from "passport-google-oauth20";
 import { UserService } from "../../user/user.service";
-import { UserRegisterOAuth } from "../../user/userDto";
+import { UserRegisterOAuth } from "../../user/user.dto";
 import { Injectable } from "@nestjs/common";
 import { AppConstantsService } from "../../app.constants.service";
 import { generateRandomBrightColor } from "../../utils/generateRandomBrightColor";

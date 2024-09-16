@@ -1,4 +1,4 @@
-import { TUserDto } from "../user/IUser";
+import { TUserDto } from "../user/user.model";
 import { TValueOf } from "../models/TUtils";
 import { Message, File, UserTyping, Room, PinnedMessage } from "@prisma/client";
 
@@ -7,7 +7,7 @@ export interface INewVoiceMessage {
     blob: ArrayBuffer;
 }
 
-export type TNewMessage = {
+export type TMessage = {
     roomId: TValueOf<Pick<Room, "id">>;
     text: TValueOf<Pick<Message, "text">>;
     replyToMessageId: TValueOf<Pick<Message, "id">> | null;

@@ -6,7 +6,7 @@ import {
     IsString,
 } from "class-validator";
 import { Sex } from "@prisma/client";
-import type { TUserLogin, TUserDto, TUser } from "./IUser";
+import type { TUserLogin, TUserDto, TUser } from "./user.model";
 
 export class UserDto implements TUserDto {
     id: string;

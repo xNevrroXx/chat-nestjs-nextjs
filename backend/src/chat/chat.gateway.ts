@@ -8,8 +8,14 @@ import {
     ConnectedSocket,
     WsException,
 } from "@nestjs/websockets";
-import { UseFilters, UseGuards } from "@nestjs/common";
-import { Namespace, Socket } from "socket.io";
+import {
+    Logger,
+    UseFilters,
+    UseGuards,
+    UsePipes,
+    ValidationPipe,
+} from "@nestjs/common";
+import { Namespace } from "socket.io";
 // own modules
 import { WsAuthGuard } from "../auth/ws-auth.guard";
 import { UserService } from "../user/user.service";
@@ -17,35 +23,37 @@ import { AuthService } from "../auth/auth.service";
 import { MessageService } from "../message/message.service";
 import { RoomService } from "../room/room.service";
 import { ParticipantService } from "../participant/participant.service";
-import { FileService } from "../file/file.service";
 import { SocketRoomsInfo } from "./SocketRoomsInfo.class";
 import { brToNewLineChars } from "../utils/brToNewLineChars ";
 import { codeBlocksToHTML } from "../utils/codeBlocksToHTML";
 // types
-import { IUserSessionPayload } from "../user/IUser";
 import {
-    TNewMessage,
     TToggleUserTyping,
     TNewForwardedMessage,
     TNewEditedMessage,
     TDeleteMessage,
-    TReadMessage,
     TPinMessage,
     TUnpinnedMessage,
     TUnpinMessage,
-} from "./chat.models";
-import { FileProcessedMessages, Prisma } from "@prisma/client";
-import { PrismaIncludeFullRoomInfo } from "../room/IRooms";
+} from "./chat.model";
+import { FileProcessedMessages, Prisma, Room } from "@prisma/client";
+import { PrismaIncludeFullRoomInfo } from "../room/room.model";
 import {
     ForwardedMessagePrisma,
+    isInnerForwardedMessage,
     TPinnedMessagesByRoom,
-} from "../message/IMessage";
+} from "../message/message.model";
 import { DATE_FORMATTER_DATE } from "../utils/normalizeDate";
 import { RoomsOnFoldersService } from "../rooms-on-folders/rooms-on-folders.service";
 import { WsExceptionFilter } from "../exceptions/ws-exception.filter";
 import { IInitCall, ILeaveCall, IRelayIce, IRelaySdp } from "./webrtc.models";
-import { S3Service } from "../s3/s3.service";
 import { excludeSensitiveFields } from "../utils/excludeSensitiveFields";
+import {
+    IClientToServerEvents,
+    IServerToClientEvents,
+    TSocketWithPayload,
+} from "./socket.model";
+import { MessageDto } from "../message/message.dto";
 
 @WebSocketGateway({
     namespace: "api/chat",
@@ -55,15 +63,14 @@ import { excludeSensitiveFields } from "../utils/excludeSensitiveFields";
 })
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @WebSocketServer()
-    server: Namespace;
+    server: Namespace<IClientToServerEvents, IServerToClientEvents>;
     socketRoomsInfo: SocketRoomsInfo;
+    private logger = new Logger("ChatGateway");
 
     constructor(
-        private readonly s3Service: S3Service,
         private readonly roomService: RoomService,
         private readonly userService: UserService,
         private readonly authService: AuthService,
-        private readonly fileService: FileService,
         private readonly messageService: MessageService,
         private readonly participantService: ParticipantService,
         private readonly roomsOnFoldersService: RoomsOnFoldersService
@@ -71,13 +78,19 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         this.socketRoomsInfo = new SocketRoomsInfo();
     }
 
-    async handleConnection(@ConnectedSocket() client: Socket) {
+    async handleConnection(@ConnectedSocket() client: TSocketWithPayload) {
         const userInfo = await this.authService.verify(
             client.handshake.headers.sessionid as string
         );
+        client.join(userInfo.id);
         this.socketRoomsInfo.initConnection(userInfo.id, client.id);
+        this.logger.log("handle connection: ", userInfo.id);
 
-        const userRooms = await this.roomService.findMany({
+        const clientIds = this.socketRoomsInfo.getSocketIdsByUserId(
+            userInfo.id
+        );
+
+        const userRooms: Room[] = await this.roomService.findMany({
             where: {
                 participants: {
                     some: {
@@ -98,41 +111,51 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
             },
         });
 
+        const roomIds = userRooms.map((room) => room.id);
+        this.server.in(userInfo.id).socketsJoin(roomIds);
+
         const userOnline = await this.userService.updateOnlineStatus({
             userId: userInfo.id,
             isOnline: true,
         });
 
-        userRooms.forEach((room) => {
-            this.socketRoomsInfo.join(room.id, userInfo.id);
-            client.join(room.id);
+        if (clientIds.size > 1) {
+            // if this is not the user's first device connected to the server
+            return;
+        }
 
-            client.broadcast.to(room.id).emit("user:toggle-online", userOnline);
-        });
+        this.socketRoomsInfo.join(userInfo.id, roomIds);
+        this.server
+            .to(roomIds)
+            .except(userInfo.id)
+            .emit("user:toggle-online", userOnline);
     }
 
-    async handleDisconnect(@ConnectedSocket() client) {
+    async handleDisconnect(@ConnectedSocket() client: TSocketWithPayload) {
+        const userId = this.socketRoomsInfo.getUserIdBySocketId(client.id);
+        client.leave(userId);
+
         const userToRoomInfo = this.socketRoomsInfo.leaveAll(client.id);
         if (!userToRoomInfo) {
             // so, the user has other devices connected to the server.
             return;
         }
-        const { userId, roomIds } = userToRoomInfo;
+        const { roomIds } = userToRoomInfo;
 
         const userOnline = await this.userService.updateOnlineStatus({
             userId: userId,
             isOnline: false,
         });
 
-        roomIds.forEach((roomId) => {
-            this.server.to(roomId).emit("user:toggle-online", userOnline);
-        });
+        this.server
+            .to(Array.from(roomIds))
+            .emit("user:toggle-online", userOnline);
     }
 
     @UseGuards(WsAuthGuard)
     @SubscribeMessage("room:join-or-create")
     async joinNewRoom(
-        @ConnectedSocket() client,
+        @ConnectedSocket() client: TSocketWithPayload,
         @MessageBody() socketMessage: { id: string }
     ) {
         const unnormalizedRoom = (await this.roomService.findOne({
@@ -144,55 +167,33 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
             include: typeof PrismaIncludeFullRoomInfo;
         }>;
 
-        unnormalizedRoom.participants.forEach((participant) => {
-            // the participant maybe didn't connect to the new room.
-            const participantSocketIds = this.socketRoomsInfo.joinIfConnected(
+        for (let i = 0; i < unnormalizedRoom.participants.length; i++) {
+            const participant = unnormalizedRoom.participants[i];
+            if (!participant.isStillMember) {
+                continue;
+            }
+            // the participants of the new room aren't connected to it
+            this.server.in(participant.userId).socketsJoin(unnormalizedRoom.id);
+            this.socketRoomsInfo.joinIfConnected(
                 unnormalizedRoom.id,
                 participant.userId
             );
-            const participantSockets = Array.from(participantSocketIds).map(
-                (socketId) => {
-                    return this.server.sockets.get(socketId);
-                }
-            );
-
-            if (participantSockets && participantSockets.length > 0) {
-                // participant is online - we have to manually join this one to the room.
-                participantSockets.forEach((participantSocket) => {
-                    participantSocket.join(unnormalizedRoom.id);
-                });
-            }
-        });
-
-        unnormalizedRoom.participants.forEach((participant) => {
-            const userIdToSocketId = Object.entries(
-                this.socketRoomsInfo.getUserIdsWithSocketIdsByRoomId(
-                    unnormalizedRoom.id
-                )
-            ).find(
-                ([userId, socketId]) =>
-                    participant.userId === userId && socketId !== client.id
-            );
-
-            if (!userIdToSocketId) return;
-            const [userId, clientIds] = userIdToSocketId;
 
             this.roomService
-                .normalize(userId, unnormalizedRoom)
+                .normalize(participant.userId, unnormalizedRoom)
                 .then((room) => {
-                    clientIds.forEach((clientId) =>
-                        this.server.sockets
-                            .get(clientId)
-                            .emit("room:add-or-update", room)
-                    );
+                    this.server
+                        .to(participant.userId)
+                        .except(client.id)
+                        .emit("room:add-or-update", room);
                 });
-        });
+        }
     }
 
     @UseGuards(WsAuthGuard)
     @SubscribeMessage("room:leave")
     async leaveRoom(
-        @ConnectedSocket() client,
+        @ConnectedSocket() client: TSocketWithPayload,
         @MessageBody() { roomId }: { roomId: string }
     ) {
         const userId = client.user.id;
@@ -265,10 +266,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @UseGuards(WsAuthGuard)
     @SubscribeMessage("user:toggle-typing")
     async handleTyping(
-        @ConnectedSocket() client,
+        @ConnectedSocket() client: TSocketWithPayload,
         @MessageBody() typingInfo: Omit<TToggleUserTyping, "userId">
     ) {
-        const userPayload: IUserSessionPayload = client.user;
+        const userPayload = client.user;
         void this.toggleTypingStatus({
             userId: userPayload.id,
             ...typingInfo,
@@ -307,6 +308,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
             this.server
                 .to(roomId)
+                .except(senderUserId)
                 .emit("room:toggle-typing", normalizedParticipants);
         } catch (error) {
             console.warn("error: ", error);
@@ -316,10 +318,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @UseGuards(WsAuthGuard)
     @SubscribeMessage("message:read")
     async handleReadMessage(
-        @ConnectedSocket() client,
-        @MessageBody() data: TReadMessage
+        @ConnectedSocket() client: TSocketWithPayload,
+        @MessageBody() data
     ) {
-        const senderPayload: IUserSessionPayload = client.user;
+        const senderPayload = client.user;
 
         const sender = await this.userService.findOne({
             id: senderPayload.id,
@@ -376,10 +378,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @UseGuards(WsAuthGuard)
     @SubscribeMessage("message:pin")
     async handlePinMessage(
-        @ConnectedSocket() client,
+        @ConnectedSocket() client: TSocketWithPayload,
         @MessageBody() message: TPinMessage
     ) {
-        const senderPayloadJWT: IUserSessionPayload = client.user;
+        const senderPayloadJWT = client.user;
 
         const sender = await this.userService.findOne({
             id: senderPayloadJWT.id,
@@ -469,10 +471,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @UseGuards(WsAuthGuard)
     @SubscribeMessage("message:unpin")
     async handleUnpinMessage(
-        @ConnectedSocket() client,
+        @ConnectedSocket() client: TSocketWithPayload,
         @MessageBody() message: TUnpinMessage
     ) {
-        const senderPayloadJWT: IUserSessionPayload = client.user;
+        const senderPayloadJWT = client.user;
 
         const sender = await this.userService.findOne({
             id: senderPayloadJWT.id,
@@ -526,14 +528,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @UseGuards(WsAuthGuard)
     @SubscribeMessage("message:delete")
     async handleDeleteMessage(
-        @ConnectedSocket() client,
+        @ConnectedSocket() client: TSocketWithPayload,
         @MessageBody() message: TDeleteMessage
     ) {
         // todo
         //  if this one shouldn't be delete for everyone -
         //      check if there are users who have deleted this message.
         //          And if every user deleted this message - clear all data about this one.
-        const senderPayloadJWT: IUserSessionPayload = client.user;
+        const senderPayloadJWT = client.user;
 
         const sender = await this.userService.findOne({
             id: senderPayloadJWT.id,
@@ -623,10 +625,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @UseGuards(WsAuthGuard)
     @SubscribeMessage("message:edit")
     async handleEditMessage(
-        @ConnectedSocket() client,
+        @ConnectedSocket() client: TSocketWithPayload,
         @MessageBody() message: TNewEditedMessage
     ) {
-        const senderPayloadJWT: IUserSessionPayload = client.user;
+        const senderPayloadJWT = client.user;
 
         if (message.text && message.text.length > 0) {
             message.text = brToNewLineChars(message.text).trim();
@@ -707,10 +709,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @UseFilters(new WsExceptionFilter())
     @SubscribeMessage("message:forward")
     async handleForwardMessage(
-        @ConnectedSocket() client,
+        @ConnectedSocket() client: TSocketWithPayload,
         @MessageBody() message: TNewForwardedMessage
     ) {
-        const senderPayloadJWT: IUserSessionPayload = client.user;
+        const senderPayloadJWT = client.user;
 
         const sender = await this.userService.findOne({
             id: senderPayloadJWT.id,
@@ -752,27 +754,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
                     },
                 },
             },
-            include: {
-                forwardedMessage: {
-                    include: {
-                        files: true,
-                        replyToMessage: {
-                            include: {
-                                files: true,
-                                userDeletedThisMessage: true,
-                            },
-                        },
-                        forwardedMessage: {
-                            include: {
-                                files: true,
-                                userDeletedThisMessage: true,
-                            },
-                        },
-                        userDeletedThisMessage: true,
-                    },
-                },
-                userDeletedThisMessage: true,
-            },
+            include: ForwardedMessagePrisma,
         })) as Prisma.MessageGetPayload<{
             include: typeof ForwardedMessagePrisma;
         }>;
@@ -787,6 +769,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
             newMessage.forwardedMessage
         );
 
+        if (!isInnerForwardedMessage(normalizedMessage)) {
+            throw new WsException("Что-то пошло не так.");
+        }
+
         this.server.to(normalizedMessage.roomId).emit("message:forwarded", {
             message: normalizedMessage,
             forwardedMessage: normalizedForwardedMessage,
@@ -798,18 +784,17 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     @UseGuards(WsAuthGuard)
     @UseFilters(new WsExceptionFilter())
+    @UsePipes(new ValidationPipe())
     @SubscribeMessage("message:standard")
     async handleMessage(
-        @ConnectedSocket() client,
-        @MessageBody() message: TNewMessage
+        @ConnectedSocket() client: TSocketWithPayload,
+        @MessageBody() message: MessageDto
     ) {
-        const senderPayloadJWT: IUserSessionPayload = client.user;
+        const senderPayloadJWT = client.user;
 
-        if (message.text && message.text.length > 0) {
-            message.text = brToNewLineChars(message.text).trim();
-            if (message.text.length === 0) {
-                return;
-            }
+        message.text = brToNewLineChars(message.text).trim();
+        if (!message.text && !message.attachmentIds.length) {
+            throw new Error("Вы отправили пустое сообщение");
         }
 
         const sender = await this.userService.findOne({
@@ -862,7 +847,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
                 infoAttachments.push(redactedFileInfo);
             });
 
-            void this.messageService.deleteProcessedMessage({
+            void this.messageService.deleteProcessed({
                 senderId_roomId: {
                     senderId: sender.id,
                     roomId: room.id,
@@ -938,6 +923,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
             newMessage
         );
 
+        if (isInnerForwardedMessage(normalizedMessage)) {
+            throw new WsException("Что-то пошло не по плану");
+        }
+
         this.server.to(message.roomId).emit("message:standard", {
             message: normalizedMessage,
             date: DATE_FORMATTER_DATE.format(
@@ -950,7 +939,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @UseGuards(WsAuthGuard)
     @SubscribeMessage("webrtc:join")
     async webrtcJoin(
-        @ConnectedSocket() client,
+        @ConnectedSocket() client: TSocketWithPayload,
         @MessageBody() { roomId }: IInitCall
     ) {
         console.log("join");
@@ -964,17 +953,17 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
             }
 
             // todo: send call request to the all of the client's socket ids and then leave one which accepted the call
-            this.server.to(socketIds[0]).emit("webrtc:add-peer", {
+            this.server.to(Array.from(socketIds)).emit("webrtc:add-peer", {
                 peerId: client.id,
                 shouldCreateOffer: false,
             });
 
             console.log(" client for offer: ", {
                 userId: userId,
-                socketId: socketIds[0],
+                socketId: Array.from(socketIds),
             });
             client.emit("webrtc:add-peer", {
-                peerId: socketIds[0],
+                peerId: Array.from(socketIds),
                 shouldCreateOffer: true,
             });
         }
@@ -983,7 +972,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @UseGuards(WsAuthGuard)
     @SubscribeMessage("webrtc:relay-sdp")
     async webrtcRelaySdp(
-        @ConnectedSocket() client,
+        @ConnectedSocket() client: TSocketWithPayload,
         @MessageBody() { peerId, sessionDescription }: IRelaySdp
     ) {
         console.log("relay-sdp: ", {
@@ -999,11 +988,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @UseGuards(WsAuthGuard)
     @SubscribeMessage("webrtc:relay-ice")
     async webrtcRelayIce(
-        @ConnectedSocket() client,
+        @ConnectedSocket() client: TSocketWithPayload,
         @MessageBody() { peerId, iceCandidate }: IRelayIce
     ) {
         this.server.to(peerId).emit("webrtc:relay-ice", {
-            peerId: client.id,
+            peerID: client.id,
             iceCandidate,
         });
     }
@@ -1011,18 +1000,18 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @UseGuards(WsAuthGuard)
     @SubscribeMessage("webrtc:leave")
     async webrtcLeave(
-        @ConnectedSocket() client,
+        @ConnectedSocket() client: TSocketWithPayload,
         @MessageBody() { roomId }: ILeaveCall
     ) {
-        const clients =
+        const memberInformation =
             this.socketRoomsInfo.getUserIdsWithSocketIdsByRoomId(roomId);
-        for (const [, socketIds] of Object.entries(clients)) {
-            this.server.to(socketIds[0]).emit("webrtc:remove-peer", {
+        for (const [, socketIds] of Object.entries(memberInformation)) {
+            this.server.to(Array.from(socketIds)).emit("webrtc:remove-peer", {
                 peerId: client.id,
             });
 
             client.emit("webrtc:remove-peer", {
-                peerId: socketIds[0],
+                peerId: Array.from(socketIds),
             });
         }
     }

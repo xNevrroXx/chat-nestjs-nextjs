@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { Participant, Prisma } from "@prisma/client";
 import { DatabaseService } from "../database/database.service";
-import { TNormalizedParticipant } from "./IParticipant";
+import { TNormalizedParticipant } from "./participant.model";
 
 @Injectable()
 export class ParticipantService {

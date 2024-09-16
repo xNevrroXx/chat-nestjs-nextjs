@@ -22,9 +22,9 @@ import {
     TRoomPreview,
     NewRoom,
     PrismaIncludeFullRoomInfo,
-} from "./IRooms";
+} from "./room.model";
 import { DatabaseService } from "../database/database.service";
-import { IUserSessionPayload } from "../user/IUser";
+import { IUserSessionPayload } from "../user/user.model";
 import { TNormalizedList } from "../models/TNormalizedList";
 import { generateRandomBrightColor } from "../utils/generateRandomBrightColor";
 import { MessageService } from "../message/message.service";
@@ -81,18 +81,18 @@ export class RoomController {
         @Body("isOnlyForMe") isOnlyForMe: boolean,
         @Param("id") roomId: string
     ) {
-        const userInfo = request.user;
+        const userId = request.user.id;
 
         const userWhoLeft =
             this.socketService.socketRoomsInfo.leaveRoomByUserId(
-                userInfo.id,
+                userId,
                 roomId
             );
-        userWhoLeft.clientIds.forEach((socketId) => {
-            const client = this.socketService.server.sockets.get(socketId);
-            client.leave(roomId);
-            client.emit("room:delete", { id: roomId });
-        });
+
+        this.socketService.server
+            .to(userWhoLeft.userId)
+            .emit("room:delete", { id: roomId });
+        this.socketService.server.in(userWhoLeft.userId).socketsLeave(roomId);
 
         if (!isOnlyForMe) {
             // delete all records about the room
@@ -101,13 +101,13 @@ export class RoomController {
                     id: roomId,
                     OR: [
                         {
-                            creatorUserId: userInfo.id,
+                            creatorUserId: userId,
                         },
                         {
                             type: RoomType.PRIVATE,
                             participants: {
                                 some: {
-                                    userId: userInfo.id,
+                                    userId: userId,
                                 },
                             },
                         },
@@ -117,47 +117,50 @@ export class RoomController {
 
             this.socketService.server
                 .to(roomId)
+                .except(userWhoLeft.userId)
                 .emit("room:delete", { id: roomId });
-        } else {
-            // clear a history and leave the room
-            const messageIdsWithUserIds = (
-                (await this.messageService.findMany({
-                    where: {
-                        roomId: roomId,
-                        room: {
-                            participants: {
-                                some: {
-                                    userId: userInfo.id,
-                                },
+            this.socketService.server.in(roomId).socketsLeave(roomId);
+            return;
+        }
+
+        // clear a history and leave the room
+        const messageIdsWithUserIds = (
+            (await this.messageService.findMany({
+                where: {
+                    roomId: roomId,
+                    room: {
+                        participants: {
+                            some: {
+                                userId: userId,
                             },
                         },
                     },
-                })) as Message[]
-            ).map((msg) => {
-                return {
-                    userId: userInfo.id,
-                    messageId: msg.id,
-                };
-            });
+                },
+            })) as Message[]
+        ).map((msg) => {
+            return {
+                userId: userId,
+                messageId: msg.id,
+            };
+        });
 
-            await this.prismaService.userOnDeletedMessage.createMany({
-                data: messageIdsWithUserIds,
-                skipDuplicates: true,
-            });
+        await this.prismaService.userOnDeletedMessage.createMany({
+            data: messageIdsWithUserIds,
+            skipDuplicates: true,
+        });
 
-            await this.roomService.leave(userInfo.id, roomId);
+        await this.roomService.leave(userId, roomId);
 
-            void this.socketService.toggleTypingStatus({
-                userId: userWhoLeft.userId,
-                isTyping: false,
-                roomId: roomId,
-            });
+        void this.socketService.toggleTypingStatus({
+            userId: userWhoLeft.userId,
+            isTyping: false,
+            roomId: roomId,
+        });
 
-            this.socketService.server.to(roomId).emit("room:user-left", {
-                roomId: roomId,
-                userId: userWhoLeft.userId,
-            });
-        }
+        this.socketService.server.to(roomId).emit("room:user-left", {
+            roomId: roomId,
+            userId: userWhoLeft.userId,
+        });
     }
 
     @Post("create")

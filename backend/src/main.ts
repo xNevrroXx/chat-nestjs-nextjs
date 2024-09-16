@@ -4,8 +4,6 @@ import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
 import { ValidationPipe } from "@nestjs/common";
 import { HttpExceptionFilter } from "./exceptions/http-exception.filter";
-import { SocketIoAdapter } from "./socket.adapter";
-import { ConfigService } from "@nestjs/config";
 import * as passport from "passport";
 import { PrismaSessionStore } from "@quixo3/prisma-session-store";
 import { PrismaClient } from "@prisma/client";
@@ -17,7 +15,6 @@ async function bootstrap() {
             origin: process.env.CLIENT_URL,
         },
     });
-    const configService = app.get(ConfigService);
     app.setGlobalPrefix("api");
     app.use(cookieParser());
     app.useGlobalPipes(new ValidationPipe());
@@ -43,7 +40,6 @@ async function bootstrap() {
     app.use(passport.initialize());
     app.use(passport.session());
 
-    app.useWebSocketAdapter(new SocketIoAdapter(app, configService));
     app.useGlobalFilters(new HttpExceptionFilter());
 
     app.enableShutdownHooks();

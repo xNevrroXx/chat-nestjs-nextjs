@@ -14,7 +14,7 @@ import { UserService } from "../user/user.service";
 import { GoogleOAuthGuard } from "./strategies/google.auth.guard";
 import { AuthGuard } from "./auth.guard";
 import { YandexOAuthGuard } from "./strategies/yandex.auth.guard";
-import { UserDto, UserRegister } from "../user/userDto";
+import { UserDto, UserRegister } from "../user/user.dto";
 import { LocalAuthGuard } from "./strategies/local.auth.guard";
 import { Response } from "express";
 import { generateRandomBrightColor } from "../utils/generateRandomBrightColor";

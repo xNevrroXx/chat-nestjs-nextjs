@@ -12,7 +12,7 @@ import {
 } from "@prisma/client";
 import { DatabaseService } from "../database/database.service";
 import { TValueOf } from "../models/TUtils";
-import { IUserSessionPayload } from "./IUser";
+import { IUserSessionPayload } from "./user.model";
 
 @Injectable()
 export class UserService implements BeforeApplicationShutdown {

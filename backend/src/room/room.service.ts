@@ -6,7 +6,7 @@ import {
     IRoom,
     TRoomPreview,
     IMessagesByDays,
-} from "./IRooms";
+} from "./room.model";
 import { ParticipantService } from "../participant/participant.service";
 import { MessageService } from "../message/message.service";
 import { DATE_FORMATTER_DATE } from "../utils/normalizeDate";

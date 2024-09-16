@@ -4,7 +4,7 @@ export type TValueOf<T> = T[keyof T];
 type TPrimitives = string | number | boolean | symbol;
 
 /**
- * Get all valid nested pathes of object
+ * Get all valid nested path's of an object
  */
 export type TAllProps<
     Obj,

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { IUserSessionPayload } from "../user/IUser";
+import { IUserSessionPayload } from "../user/user.model";
 
 declare global {
     namespace NestJS {

@@ -9,7 +9,7 @@ import {
     MessageBeingProcessed,
     Prisma,
 } from "@prisma/client";
-import { TFileToClient } from "./IFile";
+import { TFileToClient } from "./file.model";
 import { excludeSensitiveFields } from "../utils/excludeSensitiveFields";
 import { byteSize } from "../utils/byteSize";
 import { S3Service } from "../s3/s3.service";

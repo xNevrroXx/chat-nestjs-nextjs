@@ -9,7 +9,7 @@ import { setUserId } from "@/store/actions/room";
 import { getAllFolders } from "@/store/thunks/roomsOnFolders";
 import { UserService } from "@/services/UserService";
 import {
-    connectSocket,
+    listenSocketEvents,
     createSocketInstance,
     disconnectSocket,
     getAll as getAllChats,
@@ -19,6 +19,8 @@ import type { IUserAuth, TLoginFormData } from "@/models/auth/IAuth.store";
 import { IAuthResponse } from "@/models/auth/IAuth.response";
 import { TRootState } from "@/store";
 import { IDepersonalizeOrDeleteAccount } from "@/models/users/IUsers.store";
+import { AxiosError } from "axios";
+import { IAxiosErrorResponseWithMessage } from "@/http";
 
 const login = createAsyncThunk<
     IAuthResponse,
@@ -36,11 +38,14 @@ const login = createAsyncThunk<
             void dispatch(getAllChats()).then(() => {
                 void dispatch(getAllFolders());
             });
+
             void dispatch(
                 createSocketInstance(getCookie("connect.sid") as string),
-            ).then(() => {
-                void dispatch(connectSocket());
-            });
+            )
+                .unwrap()
+                .then((socketInstance) => {
+                    void dispatch(listenSocketEvents(socketInstance));
+                });
 
             return response.data;
         }
@@ -128,16 +133,31 @@ const checkAuthentication = createAsyncThunk<
         void dispatch(getAllChats()).then(() => {
             void dispatch(getAllFolders());
         });
-        void dispatch(
-            createSocketInstance(getCookie("connect.sid") as string),
-        ).then(() => {
-            void dispatch(connectSocket());
-        });
+
+        void dispatch(createSocketInstance(getCookie("connect.sid") as string))
+            .unwrap()
+            .then((socketInstance) => {
+                void dispatch(listenSocketEvents(socketInstance));
+            });
 
         return response.data;
     }
     catch (error) {
-        return thunkAPI.rejectWithValue(error);
+        const boundRejectFn = thunkAPI.rejectWithValue.bind(null);
+
+        if (error instanceof AxiosError) {
+            return boundRejectFn(
+                error.response &&
+                    error.response.data &&
+                    (error.response.data as IAxiosErrorResponseWithMessage)
+                        .message,
+            );
+        }
+        else if (error instanceof Error) {
+            return boundRejectFn(error.message);
+        }
+
+        throw error;
     }
 });
 

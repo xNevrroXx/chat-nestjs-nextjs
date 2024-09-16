@@ -12,11 +12,11 @@ import {
     IInnerForwardedMessage,
     IInnerStandardMessage,
     IOriginalMessage,
-    isForwardedMessagePrisma2,
+    isForwardedMessagePrisma,
     isReplyMessagePrisma,
     TMessage,
     TNormalizeMessageArgument,
-} from "./IMessage";
+} from "./message.model";
 import { excludeSensitiveFields } from "../utils/excludeSensitiveFields";
 import { FileService } from "../file/file.service";
 import { findLinksInText } from "../utils/findLinksInText";
@@ -136,10 +136,18 @@ export class MessageService {
         });
     }
 
-    async deleteProcessedMessage(
+    async deleteProcessed(
         where: Prisma.MessageBeingProcessedWhereUniqueInput
     ): Promise<MessageBeingProcessed> {
         return this.prisma.messageBeingProcessed.delete({
+            where,
+        });
+    }
+
+    async deleteProcessedMany(
+        where: Prisma.MessageBeingProcessedWhereInput
+    ): Promise<PrismaPromise<Prisma.BatchPayload>> {
+        return this.prisma.messageBeingProcessed.deleteMany({
             where,
         });
     }
@@ -200,7 +208,7 @@ export class MessageService {
         let normalizedInnerMessage:
             | IInnerStandardMessage
             | IInnerForwardedMessage;
-        if (isForwardedMessagePrisma2(inputMessagePrisma)) {
+        if (isForwardedMessagePrisma(inputMessagePrisma)) {
             const date = DATE_FORMATTER_DATE.format(
                 new Date(inputMessagePrisma.forwardedMessage.createdAt)
             );

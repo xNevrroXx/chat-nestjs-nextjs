@@ -62,25 +62,27 @@ class SocketRoomsInfo {
             return new Set();
         }
 
-        this.join(roomId, userId);
+        this.join(userId, [roomId]);
         return socketIds;
     }
 
     /**
      * Joining a user to a room.
-     * @param {string} roomId - Socket.IO room id;
+     * @param {string[]} roomIds - Socket.IO room ids;
      * @param {string} userId - The user's ID connecting to the aforementioned room;
      * */
-    join(roomId: string, userId: string) {
-        this._userIdToRoomIds[userId].add(roomId);
+    join(userId: string, roomIds: string[]) {
+        roomIds.forEach((roomId) => {
+            this._userIdToRoomIds[userId].add(roomId);
 
-        if (!this._roomIdToUserIds[roomId]) {
-            // if there are no users connected to this room.
-            this._roomIdToUserIds[roomId] = new Set<
-                TValueOf<Pick<User, "id">>
-            >();
-        }
-        this._roomIdToUserIds[roomId].add(userId);
+            if (!this._roomIdToUserIds[roomId]) {
+                // if there are no users connected to this room.
+                this._roomIdToUserIds[roomId] = new Set<
+                    TValueOf<Pick<User, "id">>
+                >();
+            }
+            this._roomIdToUserIds[roomId].add(userId);
+        });
     }
 
     /**
@@ -99,6 +101,7 @@ class SocketRoomsInfo {
 
         const otherConnections = this.getSocketIdsByUserId(userId);
         if (otherConnections.size) {
+            // this means that there are other connected devices
             return null;
         }
 
@@ -160,12 +163,21 @@ class SocketRoomsInfo {
         );
     }
 
+    getUserRoomsByUserId(userId: string): Readonly<Set<TSocketRoomId>> {
+        return this._userIdToRoomIds[userId] || new Set();
+    }
     getUserRoomsBySocketId(clientId: string): Readonly<Set<TSocketRoomId>> {
         const userId = this._socketIdToUserId[clientId];
         return this._userIdToRoomIds[userId];
     }
     getSocketIdsByUserId(userId: string): Readonly<Set<TUserClientId>> {
         return this._userIdToSocketIds[userId] || new Set();
+    }
+
+    getUserIdBySocketId(
+        clientId: string
+    ): TValueOf<Pick<User, "id">> | undefined {
+        return this._socketIdToUserId[clientId];
     }
 
     isUserInRoom(userId: string, roomId: string): boolean {

@@ -11,7 +11,7 @@ import {
 import { UserService } from "./user.service";
 import { AuthGuard } from "../auth/auth.guard";
 import { excludeSensitiveFields } from "../utils/excludeSensitiveFields";
-import { IUserSessionPayload, TDepersonalizeOrDelete } from "./IUser";
+import { IUserSessionPayload, TDepersonalizeOrDelete } from "./user.model";
 import { RoomType, User } from "@prisma/client";
 import { RoomService } from "../room/room.service";
 

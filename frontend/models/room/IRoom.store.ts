@@ -142,17 +142,6 @@ export type TPreviewRoomWithFlag = TPreviewExistingRoom & {
     isPreview: true;
 };
 
-export interface IGetStandardMessage {
-    message: IInnerStandardMessage;
-    date: keyof IMessagesByDays;
-}
-
-export interface IGetForwardedMessage {
-    message: IInnerForwardedMessage;
-    forwardedMessage: IOriginalMessage;
-    date: keyof IMessagesByDays;
-}
-
 export interface IReadMessageSocket {
     message: {
         id: string;

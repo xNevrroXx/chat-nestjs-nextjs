@@ -6,7 +6,7 @@ import { closeModals } from "@/store/actions/modal-windows";
 
 const Logout = () => {
     const dispatch = useAppDispatch();
-    const modalInfo = useAppSelector((state) => state.modalWindows.call);
+    const modalInfo = useAppSelector((state) => state.modalWindows.logout);
 
     const onClose = useCallback(() => {
         dispatch(closeModals());

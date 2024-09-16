@@ -46,12 +46,10 @@ const useSendMessage = ({
     }, [dispatch, room]);
 
     const sendEditedMessage = useCallback(
-        (text: string) => {
+        (messageForAction: TMessageForEditOrReply, text: string) => {
             if (!messageForAction) {
                 return;
             }
-
-            beforeSendingCb();
 
             void dispatch(
                 editMessageSocket({
@@ -59,10 +57,8 @@ const useSendMessage = ({
                     text: text,
                 }),
             );
-
-            afterSendingCb();
         },
-        [afterSendingCb, beforeSendingCb, dispatch, messageForAction],
+        [dispatch],
     );
 
     const sendStandardMessage = useCallback(
@@ -70,8 +66,6 @@ const useSendMessage = ({
             text: TValueOf<Pick<TSendMessage, "text">>,
             attachmentIds: string[],
         ) => {
-            beforeSendingCb();
-
             const messageWithoutRoomId: Omit<TSendMessage, "roomId"> = {
                 text,
                 attachmentIds,
@@ -97,21 +91,14 @@ const useSendMessage = ({
             }
 
             void dispatch(sendMessageSocket(message));
-
-            afterSendingCb();
         },
-        [
-            room,
-            dispatch,
-            afterSendingCb,
-            beforeSendingCb,
-            messageForAction,
-            onJoinRoomAndSetActive,
-        ],
+        [room, dispatch, messageForAction, onJoinRoomAndSetActive],
     );
 
     const sendVoiceMessage = useCallback(
         async (record: Blob) => {
+            beforeSendingCb();
+
             const file = new File([record], "", {
                 type: "audio/webm",
             });
@@ -131,28 +118,42 @@ const useSendMessage = ({
                 return;
             }
             void sendStandardMessage(null, [response.id]);
+
+            afterSendingCb();
         },
-        [request, room.id, sendStandardMessage],
+        [
+            afterSendingCb,
+            beforeSendingCb,
+            request,
+            room.id,
+            sendStandardMessage,
+        ],
     );
 
     const sendMessage = useCallback(
         (text: string, fileList: UploadFile[]) => {
+            const trimmedMessage = text ? text.trim() : null;
+
+            if (
+                (!trimmedMessage && !fileList.length) ||
+                fileList.some((file) => file.status === "uploading")
+            ) {
+                return;
+            }
+
             beforeSendingCb();
 
             if (
                 messageForAction &&
                 messageForAction.action === MessageAction.EDIT
             ) {
-                sendEditedMessage(text);
+                if (!trimmedMessage) {
+                    return;
+                }
+                sendEditedMessage(messageForAction, trimmedMessage);
                 afterSendingCb();
                 return;
             }
-
-            if (fileList.some((file) => file.status === "uploading")) {
-                return;
-            }
-
-            const trimmedMessage = text ? text.trim() : null;
 
             const attachmentIds = fileList.map<string>(
                 (file) => (file.response as { id: string }).id,

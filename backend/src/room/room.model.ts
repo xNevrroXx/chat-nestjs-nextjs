@@ -1,7 +1,7 @@
 import { Room, RoomType, User } from "@prisma/client";
-import { TMessage, TPinnedMessagesByRoom } from "../message/IMessage";
+import { TMessage, TPinnedMessagesByRoom } from "../message/message.model";
 import { TValueOf } from "../models/TUtils";
-import { TNormalizedParticipant } from "../participant/IParticipant";
+import { TNormalizedParticipant } from "../participant/participant.model";
 import { IsString, Length } from "class-validator";
 
 export interface IRoom extends Room {
