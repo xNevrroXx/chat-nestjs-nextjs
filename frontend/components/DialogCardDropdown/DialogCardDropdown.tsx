@@ -64,6 +64,15 @@ const DialogCardDropdown: FC<IDialogCardDropdownProps> = ({
             case "4": {
                 void dispatch(
                     openModalWithRoomId({
+                        modalName: "invitationUsers",
+                        roomId: roomId,
+                    }),
+                );
+                break;
+            }
+            case "5": {
+                void dispatch(
+                    openModalWithRoomId({
                         modalName: "roomDeletion",
                         roomId: roomId,
                     }),
@@ -78,12 +87,19 @@ const DialogCardDropdown: FC<IDialogCardDropdownProps> = ({
             return;
         }
 
-        const hasDeleteGroupButton =
+        const inviteUsersButton =
+            room.type === RoomType.GROUP
+                ? {
+                      label: "Пригласить пользователей",
+                      key: "4",
+                  }
+                : null;
+        const deleteGroupButton =
             room.type === RoomType.PRIVATE ||
             (room.creatorUserId && room.creatorUserId == user.id)
                 ? {
                       label: "Удалить чат",
-                      key: "4",
+                      key: "5",
                   }
                 : null;
 
@@ -110,11 +126,12 @@ const DialogCardDropdown: FC<IDialogCardDropdownProps> = ({
                 label: "Очистить историю",
                 key: "2",
             },
+            inviteUsersButton,
             {
                 label: "Покинуть чат",
                 key: "3",
             },
-            hasDeleteGroupButton,
+            deleteGroupButton,
         ];
     }, [folderSuggestions, room, user.id]);
 

@@ -7,8 +7,10 @@ import {
     IRoom,
     TCreateGroupRoom,
     TDeleteRoom,
+    TInviteUsers,
     TJoinRoom,
     TPreviewExistingRoom,
+    TResultInvitingUsers,
 } from "@/models/room/IRoom.store";
 import { TValueOf } from "@/models/TUtils";
 
@@ -53,6 +55,13 @@ class RoomService {
                 query,
             },
         });
+    }
+
+    static async inviteUsers(data: TInviteUsers) {
+        return $api.post<TResultInvitingUsers>(
+            this.base + "/participant/invite",
+            data,
+        );
     }
 }
 

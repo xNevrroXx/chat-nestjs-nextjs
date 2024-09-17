@@ -175,11 +175,14 @@ export class RoomController {
             data: {
                 type,
                 name,
-                creatorUser: {
-                    connect: {
-                        id: userInfo.id,
-                    },
-                },
+                creatorUser:
+                    type === RoomType.GROUP
+                        ? {
+                              connect: {
+                                  id: userInfo.id,
+                              },
+                          }
+                        : null,
                 color: generateRandomBrightColor(),
                 participants: {
                     createMany: {

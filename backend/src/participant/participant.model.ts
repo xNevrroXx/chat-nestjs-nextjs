@@ -5,3 +5,13 @@ export type TNormalizedParticipant = Participant & {
     displayName: string;
     color: string;
 };
+
+export type TInviteUsers = {
+    roomId: string;
+    mentionIds: string[];
+};
+export type TRequestedMember = PromiseSettledResult<TNormalizedParticipant>;
+export type TResultInvitingUsers = {
+    roomId: string;
+    requestedMembers: TRequestedMember[];
+};

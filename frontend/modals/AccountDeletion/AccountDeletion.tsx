@@ -5,10 +5,15 @@ import { closeModals } from "@/store/actions/modal-windows";
 import { Checkbox, Flex, Modal, Typography } from "antd";
 import { IDepersonalizeOrDeleteAccount } from "@/models/users/IUsers.store";
 import { TValueOf } from "@/models/TUtils";
+import { isRejected } from "@reduxjs/toolkit";
+import { createRoute } from "@/router/createRoute";
+import { ROUTES } from "@/router/routes";
+import { useRouter } from "next/navigation";
 
 const { Text } = Typography;
 
 const AccountDeletion = () => {
+    const router = useRouter();
     const dispatch = useAppDispatch();
     const modalInfo = useAppSelector(
         (state) => state.modalWindows.accountDeletion,
@@ -30,8 +35,18 @@ const AccountDeletion = () => {
             deleteAccount({
                 whetherDepersonalize,
             }),
-        );
-    }, [dispatch, onCancel, whetherDepersonalize]);
+        ).then((data) => {
+            if (isRejected(data)) {
+                return;
+            }
+
+            router.push(
+                createRoute({
+                    path: ROUTES.AUTH,
+                }),
+            );
+        });
+    }, [dispatch, onCancel, router, whetherDepersonalize]);
 
     const toggleCheckbox = useCallback(() => {
         setWhetherDepersonalize((prev) =>

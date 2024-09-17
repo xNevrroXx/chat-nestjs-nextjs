@@ -32,9 +32,13 @@ export class UserController {
     ) {
         const user = request.user as IUserSessionPayload;
 
+        request.session.destroy();
         if (depersonalizeOrDelete === "delete") {
             await this.roomService.deleteMany({
                 where: {
+                    // AND: [
+                    //     {}
+                    // ]
                     type: RoomType.PRIVATE,
                     participants: {
                         some: {
@@ -95,7 +99,6 @@ export class UserController {
                 },
             },
         });
-        request.session.destroy();
     }
 
     @UseGuards(AuthGuard)

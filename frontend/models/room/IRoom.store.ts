@@ -219,6 +219,15 @@ export type TCreateGroupRoom = {
     type: RoomType.GROUP;
     memberIds: TValueOf<Pick<IUserDto, "id">>[];
 };
+export type TInviteUsers = {
+    roomId: TValueOf<Pick<IRoom, "id">>;
+    mentionIds: TValueOf<Pick<IUserDto, "id">>[];
+};
+export type TRequestedMember = PromiseSettledResult<TParticipant>;
+export type TResultInvitingUsers = {
+    roomId: TValueOf<Pick<IRoom, "id">>;
+    requestedMembers: TRequestedMember[];
+};
 
 export type TDeleteRoom = {
     id: string;

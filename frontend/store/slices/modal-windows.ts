@@ -39,6 +39,9 @@ const initialState: TModalWindowsStore = {
     messageDeletion: {
         isOpen: false,
     },
+    invitationUsers: {
+        isOpen: false,
+    },
 };
 
 const modalWindows = createSlice({

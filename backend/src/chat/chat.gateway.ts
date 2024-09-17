@@ -794,7 +794,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
         message.text = brToNewLineChars(message.text).trim();
         if (!message.text && !message.attachmentIds.length) {
-            throw new Error("Вы отправили пустое сообщение");
+            throw new WsException("Вы отправили пустое сообщение");
         }
 
         const sender = await this.userService.findOne({

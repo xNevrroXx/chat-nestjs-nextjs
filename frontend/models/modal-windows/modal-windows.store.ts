@@ -12,6 +12,7 @@ type TModalWindowsStore = {
     messageDeletion: TModalDeletionInfo;
     groupCreationMenu: TIsOpen;
     roomDeletion: TModalWithRoomId;
+    invitationUsers: TModalWithRoomId;
 };
 
 type TIsOpen = {
@@ -33,15 +34,22 @@ interface IModalWithRoomIdOpened {
 }
 
 interface IOpenModal {
-    modalName: Exclude<
+    modalName: Extract<
         keyof TModalWindowsStore,
-        "messageForwarding" | "call" | "pinningMessage" | "groupDeletion"
+        | "logout"
+        | "foldersMenu"
+        | "accountDeletion"
+        | "folderCreation"
+        | "groupCreationMenu"
     >;
     // @defaultValue true
     closeOthers?: boolean;
 }
 interface IOpenModalWithRoomId {
-    modalName: Extract<keyof TModalWindowsStore, "call" | "groupDeletion">;
+    modalName: Extract<
+        keyof TModalWindowsStore,
+        "call" | "groupDeletion" | "invitationUsers" | "roomDeletion"
+    >;
     roomId: TValueOf<Pick<IRoom, "id">>;
 }
 interface IOpenModalWithMessageId {

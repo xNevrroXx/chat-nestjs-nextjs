@@ -22,7 +22,9 @@ const users = createSlice({
                 const targetUser = state.users.find(
                     (user) => user.id === action.payload.userId,
                 );
-                if (!targetUser) return;
+                if (!targetUser || targetUser.isDeleted) {
+                    return;
+                }
                 targetUser.userOnline = action.payload;
             });
     },

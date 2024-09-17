@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 // interfaces
-import { IRoomSlice } from "@/models/room/IRoom.store";
+import { IRoomSlice, TParticipant } from "@/models/room/IRoom.store";
 // actions
 import {
     clearMyHistory,
@@ -11,6 +11,7 @@ import {
     getMessageById,
     getPreviewRoomsByQuery,
     handleDeleteRoom,
+    inviteUsers,
     joinRoom,
     leaveRoom,
 } from "@/store/thunks/room";
@@ -111,6 +112,19 @@ const room = createSlice({
             .addCase(createRoom.fulfilled, (state, action) => {
                 state.local.allIds.push(action.payload.id);
                 state.local.rooms.byId[action.payload.id] = action.payload;
+            })
+            .addCase(inviteUsers.fulfilled, (state, action) => {
+                const room = state.local.rooms.byId[action.payload.roomId];
+
+                const successfullyInvitedUsers = action.payload.requestedMembers
+                    .filter(
+                        (
+                            invitationUserInfo,
+                        ): invitationUserInfo is PromiseFulfilledResult<TParticipant> =>
+                            invitationUserInfo.status === "fulfilled",
+                    )
+                    .map<TParticipant>((invitedUser) => invitedUser.value);
+                room.participants.push(...successfullyInvitedUsers);
             })
             .addCase(deleteGroup.fulfilled, (state, action) => {
                 state.local.allIds = state.local.allIds.filter(

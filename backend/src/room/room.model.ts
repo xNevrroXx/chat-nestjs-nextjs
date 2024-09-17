@@ -1,4 +1,4 @@
-import { Room, RoomType, User } from "@prisma/client";
+import { Prisma, Room, RoomType, User } from "@prisma/client";
 import { TMessage, TPinnedMessagesByRoom } from "../message/message.model";
 import { TValueOf } from "../models/TUtils";
 import { TNormalizedParticipant } from "../participant/participant.model";
@@ -52,7 +52,6 @@ export const PrismaIncludeFullRoomInfo = {
         },
     },
     usersTyping: true,
-    creatorUser: true,
     pinnedMessages: {
         include: {
             message: true,

@@ -30,8 +30,10 @@ import {
     IUnpinMessage,
     TCreateGroupRoom,
     TDeleteRoom,
+    TInviteUsers,
     TJoinRoom,
     TPreviewExistingRoom,
+    TResultInvitingUsers,
     TSendMessage,
     TSendUserTyping,
 } from "@/models/room/IRoom.store";
@@ -124,8 +126,7 @@ const disconnectSocket = createAsyncThunk<void, void, { state: TRootState }>(
     async (_, thunkApi) => {
         try {
             const socket = thunkApi.getState().room.socket;
-            void socket?.disconnect();
-            return;
+            await socket?.disconnect();
         }
         catch (error) {
             return thunkApi.rejectWithValue(error);
@@ -357,6 +358,20 @@ const createRoom = createAsyncThunk<
     }
 });
 
+const inviteUsers = createAsyncThunk<
+    TResultInvitingUsers,
+    TInviteUsers,
+    { state: TRootState }
+>("room/invite-users", async (data, thunkAPI) => {
+    try {
+        const response = await RoomService.inviteUsers(data);
+        return response.data;
+    }
+    catch (error) {
+        return thunkAPI.rejectWithValue(error);
+    }
+});
+
 const deleteGroup = createAsyncThunk<
     Pick<IRoom, "id">,
     TDeleteRoom,
@@ -443,6 +458,7 @@ export {
     joinRoom,
     leaveRoom,
     createRoom,
+    inviteUsers,
     deleteGroup,
     clearMyHistory,
     createSocketInstance,

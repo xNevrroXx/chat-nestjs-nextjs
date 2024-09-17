@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { RoomType, TCreateGroupRoom } from "@/models/room/IRoom.store";
 import { Form, Input, Mentions, Modal } from "antd";
 import { useAppDispatch, useAppSelector } from "@/hooks/store.hook";
@@ -23,6 +23,7 @@ const STAGES: IStages = {
 const COUNT_STAGES = Object.keys(STAGES).length;
 
 const GroupCreation = () => {
+    const [form] = Form.useForm();
     const dispatch = useAppDispatch();
     const modalInfo = useAppSelector(
         (state) => state.modalWindows.groupCreationMenu,
@@ -36,9 +37,11 @@ const GroupCreation = () => {
     const [memberIds, setMemberIds] = useState<string[]>([]);
 
     const onCreateRoom = useCallback(
-        async (remoteRoom: TCreateGroupRoom) => {
+        async (newRoomData: TCreateGroupRoom) => {
             try {
-                const newRoom = await dispatch(createRoom(remoteRoom)).unwrap();
+                const newRoom = await dispatch(
+                    createRoom(newRoomData),
+                ).unwrap();
 
                 dispatch(
                     addRecentRoomData({
@@ -59,7 +62,9 @@ const GroupCreation = () => {
 
     const onClose = useCallback(() => {
         dispatch(closeModals());
-    }, [dispatch]);
+
+        form.resetFields();
+    }, [dispatch, form]);
 
     const onChangeMembers = useCallback((str: string) => {
         const ids = getMentionIds(str);
@@ -83,12 +88,28 @@ const GroupCreation = () => {
             memberIds: memberIds,
             type: RoomType.GROUP,
         });
-        onClose();
         setStage(0);
         setRoomName("");
         setRoomNameInputMessage(null);
         setMemberIds([]);
+        onClose();
     }, [stage, roomName, onClose, onCreateRoom, memberIds]);
+
+    const mentionOptions = useMemo(() => {
+        return users
+            .filter((user) => !memberIds.includes(user.id))
+            .map(({ displayName, id }) => {
+                const slicedId = id;
+                const formattedName = displayName.match(/ /)
+                    ? '"' + displayName + '"'
+                    : displayName;
+                return {
+                    key: id,
+                    value: formattedName + "-" + slicedId,
+                    label: `${formattedName}-${slicedId}`,
+                };
+            });
+    }, [memberIds, users]);
 
     return (
         <Modal
@@ -98,7 +119,7 @@ const GroupCreation = () => {
             okText={stage === COUNT_STAGES - 1 ? "Создать" : "Далее"}
             onOk={onOk}
         >
-            <Form>
+            <Form form={form}>
                 <Form.Item<TCreateGroupRoom>
                     style={{ display: stage === 0 ? "block" : "none" }}
                     label="Название"
@@ -118,8 +139,14 @@ const GroupCreation = () => {
                     label="Участники"
                     name="memberIds"
                     style={{ display: stage === 1 ? "block" : "none" }}
+                    rules={[
+                        {
+                            required: false,
+                        },
+                    ]}
                 >
                     <Mentions
+                        allowClear={true}
                         placeholder="@username-1 @username-2 ..."
                         autoSize={true}
                         value={memberIds
@@ -127,28 +154,11 @@ const GroupCreation = () => {
                                 const user = users.find(
                                     (user) => user.id === id,
                                 )!;
-                                return "@" + user.name + " ";
+                                return "@" + user.displayName;
                             })
-                            .join("")}
+                            .join(" ")}
                         onChange={onChangeMembers}
-                        options={users /*.concat(data || [])*/
-                            .map(({ name, id }) => {
-                                const slicedId = id;
-                                const formattedName = name.match(/ /)
-                                    ? '"' + name + '"'
-                                    : name;
-                                return {
-                                    key: id,
-                                    value: formattedName + "-" + slicedId,
-                                    label: (
-                                        <>
-                                            <span>
-                                                {formattedName}-{slicedId}
-                                            </span>
-                                        </>
-                                    ),
-                                };
-                            })}
+                        options={mentionOptions}
                     />
                 </Form.Item>
             </Form>
