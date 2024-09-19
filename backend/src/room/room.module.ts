@@ -8,6 +8,7 @@ import { LinkPreviewModule } from "../link-preview/link-preview.module";
 import { FileModule } from "../file/file.module";
 import { UserModule } from "../user/user.module";
 import { ChatModule } from "../chat/chat.module";
+import { MessageBeingProcessedModule } from "../message-being-processed/message-being-processed.module";
 
 @Module({
     imports: [
@@ -16,6 +17,7 @@ import { ChatModule } from "../chat/chat.module";
         MessageModule,
         ParticipantModule,
         LinkPreviewModule,
+        MessageBeingProcessedModule,
         forwardRef(() => ChatModule),
         forwardRef(() => UserModule),
     ],

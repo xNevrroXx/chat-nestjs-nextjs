@@ -4,9 +4,9 @@ import {
     addRecentRoomData,
     removeRecentRoomData,
     resetCurrentRoomId,
-    updateMessageForAction,
     updateRecentRoomData,
 } from "@/store/actions/recent-rooms";
+import { updateMessageForAction } from "@/store/thunks/recent-rooms";
 
 const initialState: IRecentRooms = {
     rooms: {
@@ -55,7 +55,7 @@ const recentRooms = createSlice({
                     ...action.payload.input,
                 };
             })
-            .addCase(updateMessageForAction, (state, action) => {
+            .addCase(updateMessageForAction.fulfilled, (state, action) => {
                 if (!state.currentRoomId) {
                     return;
                 }

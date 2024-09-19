@@ -20,6 +20,10 @@ import {
 } from "@/models/room/IRoom.store";
 import { TUserOnline } from "@/models/auth/IAuth.store";
 
+export interface IWithSocketId {
+    socketId: string;
+}
+
 export interface IServerToClientEvents {
     // user
     "user:toggle-online": (data: TUserOnline) => void;

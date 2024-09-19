@@ -38,15 +38,15 @@ const InputDuringMessage = forwardRef<HTMLDivElement, IInputDuringMessageProps>(
         },
         ref,
     ) => {
-        const buttonAddFilesRef = useRef<HTMLButtonElement | null>(null);
+        const buttonAddAttachmentRef = useRef<HTMLButtonElement | null>(null);
 
         const onClickButtonFiles = useCallback(() => {
-            if (!buttonAddFilesRef.current) {
+            if (!buttonAddAttachmentRef.current) {
                 return;
             }
 
-            buttonAddFilesRef.current.click();
-        }, [buttonAddFilesRef]);
+            buttonAddAttachmentRef.current.click();
+        }, [buttonAddAttachmentRef]);
 
         return (
             <Fragment>
@@ -99,7 +99,7 @@ const InputDuringMessage = forwardRef<HTMLDivElement, IInputDuringMessageProps>(
                     </div>
                 </Flex>
                 <UploadFiles
-                    ref={buttonAddFilesRef}
+                    ref={buttonAddAttachmentRef}
                     updateFileList={updateFileList}
                     fileList={fileList}
                 />

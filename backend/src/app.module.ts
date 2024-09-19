@@ -15,6 +15,8 @@ import { SessionModule } from "./session/session.module";
 import { RoomsOnFoldersModule } from "./rooms-on-folders/rooms-on-folders.module";
 import { S3Module } from "./s3/s3.module";
 import { S3Module as S3ModulePackage } from "nestjs-s3";
+import { MessageBeingProcessedModule } from "./message-being-processed/message-being-processed.module";
+import { FileProcessedMessagesModule } from "./file-processed-messages/file-processed-messages.module";
 
 @Global()
 @Module({
@@ -49,6 +51,8 @@ import { S3Module as S3ModulePackage } from "nestjs-s3";
         SessionModule,
         RoomsOnFoldersModule,
         S3Module,
+        MessageBeingProcessedModule,
+        FileProcessedMessagesModule,
     ],
     providers: [AppConstantsService],
     exports: [AppConstantsService],

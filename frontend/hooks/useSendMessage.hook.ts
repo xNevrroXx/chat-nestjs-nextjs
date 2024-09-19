@@ -24,6 +24,7 @@ interface IProps {
     messageForAction: TMessageForEditOrReply | undefined | null;
 }
 
+const ENDPOINT_URL = process.env.NEXT_PUBLIC_BASE_URL + "/file-processed";
 const useSendMessage = ({
     beforeSendingCb,
     afterSendingCb,
@@ -31,9 +32,7 @@ const useSendMessage = ({
     room,
 }: IProps) => {
     const dispatch = useAppDispatch();
-    const { request } = useFetch<{ id: string }>(
-        process.env.NEXT_PUBLIC_BASE_URL + "/file/upload",
-    );
+    const { request } = useFetch<{ id: string }>(ENDPOINT_URL);
 
     const onJoinRoomAndSetActive = useCallback(async () => {
         return await dispatch(

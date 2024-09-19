@@ -2,17 +2,6 @@ import { TUserDto } from "../user/user.model";
 import { TValueOf } from "../models/TUtils";
 import { Message, File, UserTyping, Room, PinnedMessage } from "@prisma/client";
 
-export interface INewVoiceMessage {
-    interlocutorId: TValueOf<Pick<TUserDto, "id">>;
-    blob: ArrayBuffer;
-}
-
-export type TMessage = {
-    roomId: TValueOf<Pick<Room, "id">>;
-    text: TValueOf<Pick<Message, "text">>;
-    replyToMessageId: TValueOf<Pick<Message, "id">> | null;
-} & IGetAttachments;
-
 export type TNewForwardedMessage = {
     roomId: TValueOf<Pick<Room, "id">>;
     forwardedMessageId: TValueOf<Pick<Message, "id">>;

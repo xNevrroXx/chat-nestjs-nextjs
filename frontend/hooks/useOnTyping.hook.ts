@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { toggleUserTypingSocket } from "@/store/thunks/room";
 import { useDebounceCallback } from "@/hooks/useDebounceCallback.hook";
 import { useAppDispatch } from "@/hooks/store.hook";
@@ -7,12 +7,18 @@ import { usePrevious } from "@/hooks/usePrevious";
 interface IProps {
     roomId: string;
     isPreviewRoom: boolean;
+    extraFnOnResetDebounced?: (roomId: string) => void;
 }
 
-const useOnTyping: ({ roomId, isPreviewRoom }: IProps) => {
+const useOnTyping: ({
+    roomId,
+    isPreviewRoom,
+    extraFnOnResetDebounced,
+}: IProps) => {
     onTyping: () => void;
     resetDebouncedOnTypingFunction: () => void;
-} = ({ roomId, isPreviewRoom = true }) => {
+}
+= ({ roomId, isPreviewRoom = true, extraFnOnResetDebounced = () => {} }) => {
     const dispatch = useAppDispatch();
     const previousRoomId = usePrevious(roomId);
     const { debounced, resetDebounceProcessing, isDebounceProcessing } =
@@ -27,12 +33,15 @@ const useOnTyping: ({ roomId, isPreviewRoom }: IProps) => {
                     isTyping: false,
                 }),
             );
+            extraFnOnResetDebounced(roomId);
         }, 4000);
 
     useEffect(() => {
         if (!previousRoomId || !isDebounceProcessing()) {
             return;
         }
+        console.log(3);
+        console.log("isDebounceProcessing(): ", isDebounceProcessing());
         /**
          * when a user changes an active room and onTyping debounced function is processing -
          * it should be fired. (before a user changes a room)

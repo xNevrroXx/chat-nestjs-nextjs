@@ -28,7 +28,7 @@ import {
     openDeletingMessageModal,
     openModalWithMessageId,
 } from "@/store/actions/modal-windows";
-import { updateMessageForAction } from "@/store/actions/recent-rooms";
+import { updateMessageForAction } from "@/store/thunks/recent-rooms";
 
 export type TPaddings = {
     bottom: "small" | "large";
@@ -142,8 +142,9 @@ const MessageHOC = forwardRef<HTMLDivElement, TMessageProps>(
         }, [dispatch, message.id]);
 
         const onClickMessageForReply = useCallback(() => {
-            dispatch(
+            void dispatch(
                 updateMessageForAction({
+                    roomId: message.roomId,
                     messageForAction: {
                         message,
                         action: MessageAction.REPLY,
@@ -155,8 +156,9 @@ const MessageHOC = forwardRef<HTMLDivElement, TMessageProps>(
         const onEditingMessage = useCallback(() => {
             if (!checkIsStandardMessage(message)) return;
 
-            dispatch(
+            void dispatch(
                 updateMessageForAction({
+                    roomId: message.roomId,
                     messageForAction: {
                         message,
                         action: MessageAction.EDIT,

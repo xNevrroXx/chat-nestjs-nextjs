@@ -16,12 +16,27 @@ import { AuthGuard } from "./auth.guard";
 import { YandexOAuthGuard } from "./strategies/yandex.auth.guard";
 import { UserDto, UserRegister } from "../user/user.dto";
 import { LocalAuthGuard } from "./strategies/local.auth.guard";
-import { Response } from "express";
+import { Response, Request } from "express";
 import { generateRandomBrightColor } from "../utils/generateRandomBrightColor";
 
 @Controller("auth")
 export class AuthController {
     constructor(private readonly userService: UserService) {}
+
+    @Post("set-socket-id")
+    @UseGuards(AuthGuard)
+    async setSocketId(
+        @Req() request: Request,
+        @Res() response: Response,
+        @Body("socketId") socketId: string
+    ) {
+        response.cookie("socket_id", socketId, {
+            path: "/",
+            httpOnly: true,
+            sameSite: "lax",
+        });
+        response.sendStatus(200);
+    }
 
     @Get("google")
     @UseGuards(GoogleOAuthGuard)

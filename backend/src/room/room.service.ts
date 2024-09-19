@@ -10,12 +10,15 @@ import {
 import { ParticipantService } from "../participant/participant.service";
 import { MessageService } from "../message/message.service";
 import { DATE_FORMATTER_DATE } from "../utils/normalizeDate";
+import { IRecentMessageInput } from "../message/message.model";
+import { MessageBeingProcessedService } from "../message-being-processed/message-being-processed.service";
 
 @Injectable()
 export class RoomService {
     constructor(
         private readonly prisma: DatabaseService,
         private readonly participantService: ParticipantService,
+        private readonly messageBeingProcessedService: MessageBeingProcessedService,
         private readonly messageService: MessageService
     ) {}
 
@@ -85,11 +88,27 @@ export class RoomService {
             }
         }
 
-        const result: IRoom & { roomOnFolder: unknown } = {
+        const unnormalizedProcessedMessage =
+            unnormalizedRoom.messageBeingProcessed.find(
+                (unsentMessage) => unsentMessage.senderId === userId
+            );
+        const normalizedProcessedMessage: IRecentMessageInput | null =
+            unnormalizedProcessedMessage
+                ? this.messageBeingProcessedService.normalize(
+                      unnormalizedProcessedMessage
+                  )
+                : null;
+
+        const result: IRoom & {
+            roomOnFolder: unknown;
+            messageBeingProcessed: unknown;
+            messages: unknown;
+        } = {
             ...unnormalizedRoom,
             name: roomName,
             color: roomColor,
             participants: normalizedParticipants,
+            processedMessage: normalizedProcessedMessage,
             days: normalizedMessagesByDays,
             folderIds: unnormalizedRoom.roomOnFolder.map(
                 (roomOnFolder) => roomOnFolder.folderId
@@ -108,9 +127,10 @@ export class RoomService {
                 })
             ),
         };
+        delete result.messageBeingProcessed;
         delete result.roomOnFolder;
-        delete (result as IRoom & { messages: unknown; roomOnFolder: unknown })
-            .messages;
+        delete result.messages;
+
         return result;
     }
 

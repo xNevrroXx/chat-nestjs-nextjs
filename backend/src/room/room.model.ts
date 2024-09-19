@@ -1,5 +1,9 @@
-import { Prisma, Room, RoomType, User } from "@prisma/client";
-import { TMessage, TPinnedMessagesByRoom } from "../message/message.model";
+import { MessageBeingProcessed, Room, RoomType, User } from "@prisma/client";
+import {
+    IRecentMessageInput,
+    TMessage,
+    TPinnedMessagesByRoom,
+} from "../message/message.model";
 import { TValueOf } from "../models/TUtils";
 import { TNormalizedParticipant } from "../participant/participant.model";
 import { IsString, Length } from "class-validator";
@@ -9,6 +13,7 @@ export interface IRoom extends Room {
     participants: TNormalizedParticipant[];
     pinnedMessages: TValueOf<Pick<TPinnedMessagesByRoom, "messages">>;
     folderIds: string[];
+    processedMessage: IRecentMessageInput | null;
 }
 
 export interface IMessagesByDays {
@@ -55,6 +60,11 @@ export const PrismaIncludeFullRoomInfo = {
     pinnedMessages: {
         include: {
             message: true,
+        },
+    },
+    messageBeingProcessed: {
+        include: {
+            files: true,
         },
     },
     messages: {

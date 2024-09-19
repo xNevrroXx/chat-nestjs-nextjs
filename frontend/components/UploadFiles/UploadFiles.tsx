@@ -16,6 +16,8 @@ function getBase64(file: File): Promise<string | null> {
     });
 }
 
+const ENDPOINT_URL = process.env.NEXT_PUBLIC_BASE_URL + "/file-processed";
+
 interface IUploadFilesProps {
     updateFileList: (files: UploadFile[]) => void;
     fileList: UploadFile[];
@@ -61,7 +63,7 @@ const UploadFiles = forwardRef<HTMLButtonElement, IUploadFilesProps>(
             <div className="attachments">
                 <Upload
                     listType="picture-card"
-                    action={process.env.NEXT_PUBLIC_BASE_URL + "/file/upload"}
+                    action={ENDPOINT_URL}
                     data={(file) => {
                         return {
                             ...file,
@@ -73,16 +75,12 @@ const UploadFiles = forwardRef<HTMLButtonElement, IUploadFilesProps>(
                     onPreview={handlePreview}
                     onChange={handleChange}
                     onRemove={async (file) => {
-                        await $api.delete(
-                            process.env.NEXT_PUBLIC_BASE_URL + "/file/waited",
-                            {
-                                data: {
-                                    roomId: room.id,
-                                    fileId: (file.response as { id: string })
-                                        .id,
-                                },
+                        await $api.delete(ENDPOINT_URL, {
+                            data: {
+                                roomId: room.id,
+                                fileId: (file.response as { id: string }).id,
                             },
-                        );
+                        });
                     }}
                     withCredentials
                     multiple

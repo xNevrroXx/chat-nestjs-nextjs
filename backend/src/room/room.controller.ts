@@ -423,6 +423,7 @@ export class RoomController {
                             updatedAt: null,
                         },
                     ],
+                    messageBeingProcessed: [],
                     usersTyping: [],
                     pinnedMessages: [],
                     messages: [],

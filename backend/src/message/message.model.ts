@@ -1,43 +1,43 @@
-import { TUserDto } from "../user/user.model";
 import { TValueOf } from "../models/TUtils";
-import { FileType, Message, Prisma, Room, User } from "@prisma/client";
+import {
+    FileType,
+    Message,
+    MessageBeingProcessed,
+    Prisma,
+    Room,
+    User,
+} from "@prisma/client";
 import { TFileToClient } from "../file/file.model";
 import { IRoom } from "../room/room.model";
 import { ILinkPreviewInfo } from "../link-preview/link-preview.model";
+import { IGetAttachments } from "../chat/chat.model";
 
 export type TMessage = IInnerStandardMessage | IInnerForwardedMessage;
 
-export type TMessageWithoutFileBlobs = Prisma.MessageGetPayload<{
-    include: {
-        files: true;
-        replyToMessage: {
-            include: {
-                files: true;
-            };
-        };
-    };
-}>;
+export type TNewMessage = {
+    roomId: TValueOf<Pick<Room, "id">>;
+    text: TValueOf<Pick<Message, "text">>;
+    replyToMessageId: TValueOf<Pick<Message, "id">> | null;
+} & IGetAttachments;
 
-export type TForwardMessageWithoutFileBlobs = Prisma.MessageGetPayload<{
-    include: {
-        forwardedMessage: {
-            include: {
-                files: true;
-                replyToMessage: {
-                    include: {
-                        files: true;
-                    };
-                };
-            };
-            userDeletedThisMessage: true;
-        };
-    };
-}>;
-
-export const OriginalMessagePrisma = {
-    userDeletedThisMessage: true,
-    files: true,
+export type TRecentMessage = Pick<MessageBeingProcessed, "roomId" | "text"> & {
+    messageForAction?: TMessageForAction;
 };
+
+export type TMessageForAction = {
+    action: MessageAction;
+    id: string;
+};
+
+export enum MessageAction {
+    EDIT = "EDIT",
+    REPLY = "REPLY",
+}
+
+export interface IRecentMessageInput {
+    text: TValueOf<Pick<MessageBeingProcessed, "text">>;
+    files: TFileToClient[];
+}
 
 export const ReplyMessagePrisma = {
     files: true,

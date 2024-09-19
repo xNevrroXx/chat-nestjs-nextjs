@@ -3,7 +3,6 @@ import {
     ForbiddenException,
     Get,
     Param,
-    Query,
     Req,
     UseGuards,
 } from "@nestjs/common";
@@ -19,30 +18,6 @@ export class MessageController {
         private readonly participantService: ParticipantService,
         private readonly messageService: MessageService
     ) {}
-
-    @Get("waited")
-    @UseGuards(AuthGuard)
-    async getWaitedInfo(@Req() request, @Query("roomId") roomId: string) {
-        const userId = request.user.id;
-
-        try {
-            const response = await this.messageService.findOneProcessed({
-                where: {
-                    senderId_roomId: {
-                        senderId: userId,
-                        roomId: roomId,
-                    },
-                },
-                include: {
-                    files: true,
-                },
-            });
-
-            return response;
-        } catch (error) {
-            console.log(error);
-        }
-    }
 
     @Get(":id")
     @UseGuards(AuthGuard)

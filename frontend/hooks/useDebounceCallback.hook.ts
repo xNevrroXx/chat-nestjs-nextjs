@@ -7,22 +7,21 @@ const useDebounceCallback = <Args extends unknown[]>(
     const timeoutIdRef = useRef<NodeJS.Timeout | null>(null);
 
     const resetDebounceProcessing = useCallback(() => {
-        if (!timeoutIdRef.current) {
-            return;
-        }
-
-        clearTimeout(timeoutIdRef.current);
+        clearTimeout(timeoutIdRef.current!);
         timeoutIdRef.current = null;
     }, []);
 
-    const debounced = (...args: Args) => {
-        resetDebounceProcessing();
+    const debounced = useCallback(
+        (...args: Args) => {
+            resetDebounceProcessing();
 
-        timeoutIdRef.current = setTimeout(() => {
-            cb(...args);
-            timeoutIdRef.current = null;
-        }, delay);
-    };
+            timeoutIdRef.current = setTimeout(() => {
+                timeoutIdRef.current = null;
+                cb(...args);
+            }, delay);
+        },
+        [cb, delay, resetDebounceProcessing],
+    );
 
     const isDebounceProcessing = useCallback(() => {
         return !!timeoutIdRef.current;

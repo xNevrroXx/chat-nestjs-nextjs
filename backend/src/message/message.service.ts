@@ -2,7 +2,6 @@ import { Injectable } from "@nestjs/common";
 import { DatabaseService } from "../database/database.service";
 import {
     type Message,
-    MessageBeingProcessed,
     PinnedMessage,
     Prisma,
     PrismaPromise,
@@ -54,24 +53,6 @@ export class MessageService {
         const { where, include } = params;
 
         return this.prisma.pinnedMessage.findUnique({
-            where,
-            include,
-        });
-    }
-
-    async findOneProcessed<
-        T extends Prisma.MessageBeingProcessedInclude
-    >(params: {
-        where: Prisma.MessageBeingProcessedWhereUniqueInput;
-        include?: T;
-    }): Promise<
-        | MessageBeingProcessed
-        | Prisma.MessageBeingProcessedGetPayload<{ include: T }>
-        | null
-    > {
-        const { where, include } = params;
-
-        return this.prisma.messageBeingProcessed.findUnique({
             where,
             include,
         });
@@ -132,22 +113,6 @@ export class MessageService {
 
     async delete(where: Prisma.MessageWhereUniqueInput): Promise<Message> {
         return this.prisma.message.delete({
-            where,
-        });
-    }
-
-    async deleteProcessed(
-        where: Prisma.MessageBeingProcessedWhereUniqueInput
-    ): Promise<MessageBeingProcessed> {
-        return this.prisma.messageBeingProcessed.delete({
-            where,
-        });
-    }
-
-    async deleteProcessedMany(
-        where: Prisma.MessageBeingProcessedWhereInput
-    ): Promise<PrismaPromise<Prisma.BatchPayload>> {
-        return this.prisma.messageBeingProcessed.deleteMany({
             where,
         });
     }

@@ -4,6 +4,7 @@ import {
     IServerToClientEvents,
 } from "@/models/ISocket-io";
 import { TValueOf } from "@/models/TUtils";
+import $api from "@/http";
 
 class SocketIOService {
     public socket: Socket<IServerToClientEvents, IClientToServerEvents>;
@@ -23,7 +24,13 @@ class SocketIOService {
 
     async connect(): Promise<void> {
         return new Promise((resolve, reject) => {
-            this.socket.on("connect", () => {
+            this.socket.on("connect", async () => {
+                await $api.post(
+                    process.env.NEXT_PUBLIC_BASE_URL + "/auth/set-socket-id",
+                    {
+                        socketId: this.socket.id,
+                    },
+                );
                 resolve();
             });
             this.socket.on("connect_error", (error) => {

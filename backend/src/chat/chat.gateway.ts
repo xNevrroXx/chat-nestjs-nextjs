@@ -54,6 +54,7 @@ import {
     TSocketWithPayload,
 } from "./socket.model";
 import { MessageDto } from "../message/message.dto";
+import { MessageBeingProcessedService } from "../message-being-processed/message-being-processed.service";
 
 @WebSocketGateway({
     namespace: "api/chat",
@@ -72,6 +73,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         private readonly userService: UserService,
         private readonly authService: AuthService,
         private readonly messageService: MessageService,
+        private readonly MessageBeingProcessedService: MessageBeingProcessedService,
         private readonly participantService: ParticipantService,
         private readonly roomsOnFoldersService: RoomsOnFoldersService
     ) {
@@ -818,7 +820,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         });
 
         const messageBeingProcessedInfo =
-            (await this.messageService.findOneProcessed({
+            (await this.MessageBeingProcessedService.findOne({
                 where: {
                     senderId_roomId: {
                         senderId: sender.id,
@@ -847,7 +849,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
                 infoAttachments.push(redactedFileInfo);
             });
 
-            void this.messageService.deleteProcessed({
+            void this.MessageBeingProcessedService.delete({
                 senderId_roomId: {
                     senderId: sender.id,
                     roomId: room.id,

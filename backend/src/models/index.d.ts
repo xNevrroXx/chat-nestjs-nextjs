@@ -2,15 +2,6 @@
 import { IUserSessionPayload } from "../user/user.model";
 
 declare global {
-    namespace NestJS {
-        export interface ExecutionContext {
-            user?: IUserSessionPayload;
-        }
-        export interface Socket {
-            user?: IUserSessionPayload;
-        }
-    }
-
     namespace SocketIO {
         // todo: how to properly do this one?
         export interface Socket {
@@ -20,7 +11,7 @@ declare global {
 
     namespace Express {
         export interface Request {
-            user?: IUserSessionPayload;
+            user: IUserSessionPayload | undefined;
         }
     }
 
