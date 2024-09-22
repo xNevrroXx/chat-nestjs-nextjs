@@ -21,7 +21,10 @@ import { IRoom } from "../room/room.model";
 import { TNormalizedParticipant } from "../participant/participant.model";
 import { Socket } from "socket.io";
 import { IUserSessionPayload } from "../user/user.model";
-import { TRecentMessage } from "../message/message.model";
+import {
+    TNormalizedRecentMessageInput,
+    TRecentMessage,
+} from "../message/message.model";
 
 export type TSocketWithPayload = Socket & {
     user: IUserSessionPayload;
@@ -35,6 +38,9 @@ export interface IServerToClientEvents {
     "room:toggle-typing": (data: TNormalizedParticipant[]) => void;
     "room:add-or-update": (data: IRoom) => void;
     "room:delete": (data: Pick<IRoom, "id">) => void;
+    "recent-rooms:change-typing-info": (
+        data: TNormalizedRecentMessageInput
+    ) => void;
     // message
     "message:read": (data: IReadMessageSocket) => void;
     "message:pinned": (data: TPinnedMessagesSocket) => void;
@@ -43,7 +49,6 @@ export interface IServerToClientEvents {
     "message:deleted": (data: IDeletedMessageSocket) => void;
     "message:standard": (data: IStandardMessageSocket) => void;
     "message:forwarded": (data: IForwardedMessageSocket) => void;
-    "message:recent-typing-info": (data: TRecentMessage) => void;
     // WebRTC
     "webrtc:init-call": () => void;
     "webrtc:leave": () => void;

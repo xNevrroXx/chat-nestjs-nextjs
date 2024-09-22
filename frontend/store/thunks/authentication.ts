@@ -21,6 +21,7 @@ import { TRootState } from "@/store";
 import { IDepersonalizeOrDeleteAccount } from "@/models/users/IUsers.store";
 import { AxiosError } from "axios";
 import { IAxiosErrorResponseWithMessage } from "@/http";
+import { getAllRecentInputInfo } from "@/store/thunks/recent-rooms";
 
 const login = createAsyncThunk<
     IAuthResponse,
@@ -37,6 +38,7 @@ const login = createAsyncThunk<
             void dispatch(getAllUsers());
             void dispatch(getAllChats()).then(() => {
                 void dispatch(getAllFolders());
+                void dispatch(getAllRecentInputInfo());
             });
 
             void dispatch(
@@ -132,6 +134,7 @@ const checkAuthentication = createAsyncThunk<
         void dispatch(getAllUsers());
         void dispatch(getAllChats()).then(() => {
             void dispatch(getAllFolders());
+            void dispatch(getAllRecentInputInfo());
         });
 
         void dispatch(createSocketInstance(getCookie("connect.sid") as string))

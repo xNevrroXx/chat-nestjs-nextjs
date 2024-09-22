@@ -40,7 +40,10 @@ import {
 import { TRootState } from "@/store";
 import { TValueOf } from "@/models/TUtils";
 import { excludeRoomFromFolders } from "@/store/actions/rooms-on-folders";
-import { removeRecentRoomData } from "@/store/actions/recent-rooms";
+import {
+    handleRecentMessage,
+    removeRecentRoomData,
+} from "@/store/actions/recent-rooms";
 import { MessageService } from "@/services/Message.service";
 
 const createSocketInstance = createAsyncThunk<
@@ -100,6 +103,9 @@ const listenSocketEvents = createAsyncThunk<
         });
         socket.on("message:forwarded", (data) => {
             thunkApi.dispatch(handleForwardedMessageSocket(data));
+        });
+        socket.on("recent-rooms:change-typing-info", (data) => {
+            thunkApi.dispatch(handleRecentMessage(data));
         });
     }
     catch (error) {

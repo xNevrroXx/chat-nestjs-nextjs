@@ -21,12 +21,19 @@ export type TNewMessage = {
 } & IGetAttachments;
 
 export type TRecentMessage = Pick<MessageBeingProcessed, "roomId" | "text"> & {
-    messageForAction?: TMessageForAction;
+    messageForAction: TMessageForAction | null;
 };
 
 export type TMessageForAction = {
     action: MessageAction;
     id: string;
+};
+export type TMessageForActionWithDate = {
+    action: MessageAction;
+    message: {
+        id: string;
+        createdAt: string;
+    };
 };
 
 export enum MessageAction {
@@ -34,11 +41,18 @@ export enum MessageAction {
     REPLY = "REPLY",
 }
 
-export interface IRecentMessageInput {
-    text: TValueOf<Pick<MessageBeingProcessed, "text">>;
-    files: TFileToClient[];
-}
+export type TNormalizedRecentMessageInput = Omit<
+    TRecentMessage,
+    "messageForAction"
+> & { messageForAction: TMessageForActionWithDate | null } & {
+    uploadedFiles: TFileToClient[];
+};
 
+export const MessageBeingProcessedPrisma = {
+    files: true,
+    replyToMessage: true,
+    editMessage: true,
+};
 export const ReplyMessagePrisma = {
     files: true,
     replyToMessage: {

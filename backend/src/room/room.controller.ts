@@ -19,9 +19,9 @@ import { RoomService } from "./room.service";
 import { Message, Prisma, RoomType, User } from "@prisma/client";
 import {
     IRoom,
-    TRoomPreview,
     NewRoom,
     PrismaIncludeFullRoomInfo,
+    TRoomPreview,
 } from "./room.model";
 import { DatabaseService } from "../database/database.service";
 import { IUserSessionPayload } from "../user/user.model";
@@ -35,9 +35,9 @@ import { ChatGateway } from "../chat/chat.gateway";
 export class RoomController {
     constructor(
         private readonly messageService: MessageService,
-        private readonly roomService: RoomService,
         private readonly prismaService: DatabaseService,
-        private readonly socketService: ChatGateway
+        private readonly eventService: ChatGateway,
+        private readonly roomService: RoomService
     ) {}
 
     @Delete("clear-my-history")
@@ -83,16 +83,15 @@ export class RoomController {
     ) {
         const userId = request.user.id;
 
-        const userWhoLeft =
-            this.socketService.socketRoomsInfo.leaveRoomByUserId(
-                userId,
-                roomId
-            );
+        const userWhoLeft = this.eventService.socketRoomsInfo.leaveRoomByUserId(
+            userId,
+            roomId
+        );
 
-        this.socketService.server
+        this.eventService.server
             .to(userWhoLeft.userId)
             .emit("room:delete", { id: roomId });
-        this.socketService.server.in(userWhoLeft.userId).socketsLeave(roomId);
+        this.eventService.server.in(userWhoLeft.userId).socketsLeave(roomId);
 
         if (!isOnlyForMe) {
             // delete all records about the room
@@ -115,11 +114,11 @@ export class RoomController {
                 },
             });
 
-            this.socketService.server
+            this.eventService.server
                 .to(roomId)
                 .except(userWhoLeft.userId)
                 .emit("room:delete", { id: roomId });
-            this.socketService.server.in(roomId).socketsLeave(roomId);
+            this.eventService.server.in(roomId).socketsLeave(roomId);
             return;
         }
 
@@ -151,13 +150,13 @@ export class RoomController {
 
         await this.roomService.leave(userId, roomId);
 
-        void this.socketService.toggleTypingStatus({
+        void this.eventService.toggleTypingStatus({
             userId: userWhoLeft.userId,
             isTyping: false,
             roomId: roomId,
         });
 
-        this.socketService.server.to(roomId).emit("room:user-left", {
+        this.eventService.server.to(roomId).emit("room:user-left", {
             roomId: roomId,
             userId: userWhoLeft.userId,
         });
@@ -166,12 +165,13 @@ export class RoomController {
     @Post("create")
     @UseGuards(AuthGuard)
     async create(
-        @Req() request,
+        @Req() request: Request,
         @Body() { memberIds, name, type }: NewRoom
     ): Promise<IRoom> {
-        const userInfo = request.user;
+        const userId = (request.user as IUserSessionPayload).id;
+        const userSocketId = request.cookies["socket-id"];
 
-        const newRoom = (await this.roomService.create({
+        const unnormalizedRoom = (await this.roomService.create({
             data: {
                 type,
                 name,
@@ -179,7 +179,7 @@ export class RoomController {
                     type === RoomType.GROUP
                         ? {
                               connect: {
-                                  id: userInfo.id,
+                                  id: userId,
                               },
                           }
                         : null,
@@ -188,7 +188,7 @@ export class RoomController {
                     createMany: {
                         data: [
                             {
-                                userId: userInfo.id,
+                                userId,
                             },
                             ...memberIds.map((id) => ({
                                 userId: id,
@@ -202,7 +202,31 @@ export class RoomController {
             include: typeof PrismaIncludeFullRoomInfo;
         }>;
 
-        return await this.roomService.normalize(userInfo.id, newRoom);
+        for (let i = 0; i < unnormalizedRoom.participants.length; i++) {
+            const participant = unnormalizedRoom.participants[i];
+            if (!participant.isStillMember) {
+                continue;
+            }
+            // the participants of the new room aren't connected to it
+            this.eventService.server
+                .in(participant.userId)
+                .socketsJoin(unnormalizedRoom.id);
+            this.eventService.socketRoomsInfo.joinIfConnected(
+                unnormalizedRoom.id,
+                participant.userId
+            );
+
+            this.roomService
+                .normalize(participant.userId, unnormalizedRoom)
+                .then((room) => {
+                    this.eventService.server
+                        .to(participant.userId)
+                        .except(userSocketId)
+                        .emit("room:add-or-update", room);
+                });
+        }
+
+        return await this.roomService.normalize(userId, unnormalizedRoom);
     }
 
     @Post("join")

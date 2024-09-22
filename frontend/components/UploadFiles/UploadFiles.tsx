@@ -1,11 +1,12 @@
 import React, { useState, forwardRef } from "react";
-import { Upload, UploadFile, Image } from "antd";
-// styles
-import "./upload-files.scss";
+import { Upload, UploadFile, Image, Divider, Flex } from "antd";
 import { useAppSelector } from "@/hooks/store.hook";
 import { activeRoomSelector } from "@/store/selectors/activeRoom.selector";
 import $api from "@/http";
-import { FileType } from "@/models/room/IRoom.store";
+import { FileType, IFile } from "@/models/room/IRoom.store";
+import UploadedFiles from "@/components/UploadedFiles/UploadedFiles";
+// styles
+import "./upload-files.scss";
 
 function getBase64(file: File): Promise<string | null> {
     return new Promise((resolve, reject) => {
@@ -20,11 +21,13 @@ const ENDPOINT_URL = process.env.NEXT_PUBLIC_BASE_URL + "/file-processed";
 
 interface IUploadFilesProps {
     updateFileList: (files: UploadFile[]) => void;
-    fileList: UploadFile[];
+    files: UploadFile[];
+    uploadedFiles: IFile[];
+    onRemove: (file: UploadFile | IFile) => void;
 }
 
 const UploadFiles = forwardRef<HTMLButtonElement, IUploadFilesProps>(
-    ({ updateFileList, fileList }, ref) => {
+    ({ updateFileList, files, uploadedFiles, onRemove }, ref) => {
         const room = useAppSelector(activeRoomSelector);
         const [isPreviewOpen, setIsPreviewOpen] = useState<boolean>(false);
         const [previewImage, setPreviewImage] = useState<string>("");
@@ -60,7 +63,12 @@ const UploadFiles = forwardRef<HTMLButtonElement, IUploadFilesProps>(
         }
 
         return (
-            <div className="attachments">
+            <Flex
+                className="attachments"
+                wrap={"wrap"}
+                align={"center"}
+                gap={"large"}
+            >
                 <Upload
                     listType="picture-card"
                     action={ENDPOINT_URL}
@@ -71,22 +79,24 @@ const UploadFiles = forwardRef<HTMLButtonElement, IUploadFilesProps>(
                             fileType: FileType.ATTACHMENT,
                         };
                     }}
-                    fileList={fileList}
+                    fileList={files}
                     onPreview={handlePreview}
                     onChange={handleChange}
-                    onRemove={async (file) => {
-                        await $api.delete(ENDPOINT_URL, {
-                            data: {
-                                roomId: room.id,
-                                fileId: (file.response as { id: string }).id,
-                            },
-                        });
-                    }}
+                    onRemove={onRemove}
                     withCredentials
                     multiple
                 >
                     <button style={{ display: "none" }} ref={ref}></button>
                 </Upload>
+
+                {files.length > 0 && uploadedFiles.length > 0 && (
+                    <>
+                        <Divider type={"vertical"} />
+                    </>
+                )}
+
+                <UploadedFiles onRemove={onRemove} files={uploadedFiles} />
+
                 {isPreviewOpen && (
                     <Image
                         alt={"preview image"}
@@ -101,7 +111,7 @@ const UploadFiles = forwardRef<HTMLButtonElement, IUploadFilesProps>(
                         src={previewImage}
                     />
                 )}
-            </div>
+            </Flex>
         );
     },
 );

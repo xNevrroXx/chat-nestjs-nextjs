@@ -19,10 +19,7 @@ import {
     IUnpinMessage,
 } from "@/models/room/IRoom.store";
 import { TUserOnline } from "@/models/auth/IAuth.store";
-
-export interface IWithSocketId {
-    socketId: string;
-}
+import { THandleRecentMessage } from "@/models/recent-rooms/IRecentRooms.store";
 
 export interface IServerToClientEvents {
     // user
@@ -40,6 +37,8 @@ export interface IServerToClientEvents {
     "message:deleted": (data: IDeletedMessageSocket) => void;
     "message:standard": (data: IStandardMessageSocket) => void;
     "message:forwarded": (data: IForwardedMessageSocket) => void;
+    // recent-rooms
+    "recent-rooms:change-typing-info": (data: THandleRecentMessage) => void;
     // WebRTC
     "webrtc:init-call": () => void;
     "webrtc:leave": () => void;

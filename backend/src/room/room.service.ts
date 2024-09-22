@@ -10,7 +10,7 @@ import {
 import { ParticipantService } from "../participant/participant.service";
 import { MessageService } from "../message/message.service";
 import { DATE_FORMATTER_DATE } from "../utils/normalizeDate";
-import { IRecentMessageInput } from "../message/message.model";
+import { TNormalizedRecentMessageInput } from "../message/message.model";
 import { MessageBeingProcessedService } from "../message-being-processed/message-being-processed.service";
 
 @Injectable()
@@ -88,27 +88,14 @@ export class RoomService {
             }
         }
 
-        const unnormalizedProcessedMessage =
-            unnormalizedRoom.messageBeingProcessed.find(
-                (unsentMessage) => unsentMessage.senderId === userId
-            );
-        const normalizedProcessedMessage: IRecentMessageInput | null =
-            unnormalizedProcessedMessage
-                ? this.messageBeingProcessedService.normalize(
-                      unnormalizedProcessedMessage
-                  )
-                : null;
-
         const result: IRoom & {
             roomOnFolder: unknown;
-            messageBeingProcessed: unknown;
             messages: unknown;
         } = {
             ...unnormalizedRoom,
             name: roomName,
             color: roomColor,
             participants: normalizedParticipants,
-            processedMessage: normalizedProcessedMessage,
             days: normalizedMessagesByDays,
             folderIds: unnormalizedRoom.roomOnFolder.map(
                 (roomOnFolder) => roomOnFolder.folderId
@@ -127,7 +114,6 @@ export class RoomService {
                 })
             ),
         };
-        delete result.messageBeingProcessed;
         delete result.roomOnFolder;
         delete result.messages;
 

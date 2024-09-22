@@ -52,13 +52,7 @@ const AudioElement: FC<IVoiceRecording> = ({
         }
 
         async function getBlobInfo() {
-            const blob = await fetch(
-                process.env.NEXT_PUBLIC_BASE_URL +
-                    "/s3/file/" +
-                    originalName +
-                    "?path=" +
-                    url,
-            ).then((r) => r.blob());
+            const blob = await fetch(url).then((r) => r.blob());
             setBlob(blob);
             setBlobUrl(URL.createObjectURL(blob));
         }

@@ -4,7 +4,15 @@ export type TUseAudioRecorderReturnType = ReturnType<typeof useAudioRecorder>;
 
 const mimeType = "audio/webM" as const;
 
-const useAudioRecorder = () => {
+interface IArgs {
+    onStopCb?: (audio: Blob, url: string) => void;
+    onCleanAudioCb?: () => void;
+}
+
+const useAudioRecorder = ({
+    onStopCb = () => {},
+    onCleanAudioCb = () => {},
+}: IArgs) => {
     const mediaRecorder = useRef<MediaRecorder | null>(null);
     const [isRecording, setIsRecording] = useState<boolean>(false);
     const [stream, setStream] = useState<MediaStream | null>(null);
@@ -81,6 +89,7 @@ const useAudioRecorder = () => {
         setAudio(null);
         setAudioURL(null);
         setStream(null);
+        onCleanAudioCb();
     };
 
     const setAudioData = (audioBlob: Blob) => {
@@ -89,6 +98,7 @@ const useAudioRecorder = () => {
         setAudio(audioBlob);
         setAudioURL(audioUrl);
         setAudioChunks([]);
+        onStopCb(audioBlob, audioUrl);
     };
 
     return {

@@ -1,18 +1,10 @@
-import {
-    IFile,
-    IInnerForwardedMessage,
-    IInnerStandardMessage,
-} from "@/models/room/IRoom.store";
+import { IFile, IOriginalMessage } from "@/models/room/IRoom.store";
 
 export interface ILastMessageInfo {
     sender: string;
     text: string;
     hasRead: boolean;
 }
-
-// export interface IFileForRender extends IFile {
-//     blobUrl: string
-// }
 
 export type TAttachmentType = "video" | "audio" | "image" | "unknown";
 
@@ -28,12 +20,7 @@ export enum MessageAction {
     REPLY = "REPLY",
 }
 
-export type TMessageForEditOrReply =
-    | {
-          message: IInnerStandardMessage | IInnerForwardedMessage;
-          action: MessageAction.REPLY;
-      }
-    | {
-          message: IInnerStandardMessage;
-          action: MessageAction.EDIT;
-      };
+export type TMessageForEditOrReply = {
+    message: Pick<IOriginalMessage, "id" | "roomId" | "createdAt">;
+    action: MessageAction;
+};

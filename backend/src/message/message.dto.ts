@@ -14,8 +14,10 @@ import {
     TNewMessage,
     TRecentMessage,
 } from "./message.model";
+import { Type } from "class-transformer";
 
 export class MessageForAction implements TMessageForAction {
+    @IsString()
     @MinLength(1)
     id: string;
 
@@ -34,6 +36,7 @@ export class RecentMessageDto implements TRecentMessage {
 
     @IsOptional()
     @ValidateNested()
+    @Type(() => MessageForAction)
     messageForAction: MessageForAction;
 }
 

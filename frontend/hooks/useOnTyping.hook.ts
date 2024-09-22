@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect } from "react";
 import { toggleUserTypingSocket } from "@/store/thunks/room";
 import { useDebounceCallback } from "@/hooks/useDebounceCallback.hook";
 import { useAppDispatch } from "@/hooks/store.hook";
@@ -40,8 +40,6 @@ const useOnTyping: ({
         if (!previousRoomId || !isDebounceProcessing()) {
             return;
         }
-        console.log(3);
-        console.log("isDebounceProcessing(): ", isDebounceProcessing());
         /**
          * when a user changes an active room and onTyping debounced function is processing -
          * it should be fired. (before a user changes a room)

@@ -4,10 +4,28 @@ import { TRootState } from "@/store";
 import { joinRoom } from "@/store/thunks/room";
 import { addRecentRoomData } from "@/store/actions/recent-rooms";
 import {
-    TSendRecentMessageInfo,
+    IRecentRoom,
     TUpdateMessageForAction,
 } from "@/models/recent-rooms/IRecentRooms.store";
 import { MessageProcessedService } from "@/services/MessageProcessed.service";
+import {
+    IResponseGetAllRecentRoomInfo,
+    TDeleteProcessedFile,
+} from "@/models/recent-rooms/recent-rooms.response";
+
+const getAll = createAsyncThunk<
+    IResponseGetAllRecentRoomInfo,
+    void,
+    { state: TRootState }
+>("recent-rooms/get-all", async (_, thunkAPI) => {
+    try {
+        const response = await MessageProcessedService.getAll();
+        return response.data;
+    }
+    catch (error) {
+        return thunkAPI.rejectWithValue(error);
+    }
+});
 
 const joinRoomAndSetActive = createAsyncThunk<
     IRoom,
@@ -24,13 +42,28 @@ const joinRoomAndSetActive = createAsyncThunk<
     }
 });
 
-const updateRecentMessage = createAsyncThunk<
+const updateOnServerRecentRoomData = createAsyncThunk<
     void,
-    TSendRecentMessageInfo,
+    Pick<IRecentRoom, "roomId">,
     { state: TRootState }
->("recent-rooms/server:update-recent-message", async (data, thunkAPI) => {
+>("recent-rooms/server:update-input", async (data, thunkAPI) => {
     try {
-        await MessageProcessedService.update(data);
+        const recentRoomsData = thunkAPI.getState().recentRooms;
+        if (!recentRoomsData.allIds.includes(data.roomId)) {
+            return;
+        }
+        const targetRoomData = recentRoomsData.rooms.byId[data.roomId];
+
+        await MessageProcessedService.update({
+            roomId: targetRoomData.roomId,
+            text: !targetRoomData.input.isAudioRecord
+                ? targetRoomData.input.text
+                : null,
+            messageForAction: targetRoomData.input.messageForAction && {
+                action: targetRoomData.input.messageForAction.action,
+                id: targetRoomData.input.messageForAction.message.id,
+            },
+        });
         return;
     }
     catch (error) {
@@ -61,4 +94,24 @@ const updateMessageForAction = createAsyncThunk<
     }
 });
 
-export { joinRoomAndSetActive, updateRecentMessage, updateMessageForAction };
+const deleteUploadedFile = createAsyncThunk<
+    TDeleteProcessedFile,
+    TDeleteProcessedFile,
+    { state: TRootState }
+>("recent-rooms/remove-uploaded-file", async (data, thunkAPI) => {
+    try {
+        await MessageProcessedService.deleteWaitedFile(data);
+        return data;
+    }
+    catch (error) {
+        return thunkAPI.rejectWithValue(error);
+    }
+});
+
+export {
+    getAll as getAllRecentInputInfo,
+    updateOnServerRecentRoomData,
+    updateMessageForAction,
+    joinRoomAndSetActive,
+    deleteUploadedFile,
+};

@@ -8,6 +8,7 @@ import AudioRecorderButton from "@/components/AudioRecorderButton/AudioRecorderB
 import UploadFiles from "@/components/UploadFiles/UploadFiles";
 import { TUseAudioRecorderReturnType } from "@/hooks/useAudioRecorder.hook";
 import { TValueOf } from "@/models/TUtils";
+import { IFile } from "@/models/room/IRoom.store";
 
 interface IInputDuringMessageProps {
     message: string;
@@ -20,7 +21,9 @@ interface IInputDuringMessageProps {
     >;
     stopRecording: TValueOf<Pick<TUseAudioRecorderReturnType, "stopRecording">>;
     updateFileList: (files: UploadFile[]) => void;
-    fileList: UploadFile[];
+    files: UploadFile[];
+    uploadedFiles: IFile[];
+    onRemoveFile: (id: string) => void;
 }
 
 const InputDuringMessage = forwardRef<HTMLDivElement, IInputDuringMessageProps>(
@@ -33,8 +36,10 @@ const InputDuringMessage = forwardRef<HTMLDivElement, IInputDuringMessageProps>(
             startRecording,
             stopRecording,
             updateFileList,
-            fileList,
             onChange,
+            files,
+            uploadedFiles,
+            onRemoveFile,
         },
         ref,
     ) => {
@@ -82,7 +87,7 @@ const InputDuringMessage = forwardRef<HTMLDivElement, IInputDuringMessageProps>(
                         shouldConvertEmojiToImage={false}
                     />
                     <div className="input-message__btn-wrapper">
-                        {message || fileList.length > 0 ? (
+                        {message || files.length > 0 ? (
                             <Button
                                 type="text"
                                 icon={<SendOutlined className="custom" />}
@@ -101,7 +106,9 @@ const InputDuringMessage = forwardRef<HTMLDivElement, IInputDuringMessageProps>(
                 <UploadFiles
                     ref={buttonAddAttachmentRef}
                     updateFileList={updateFileList}
-                    fileList={fileList}
+                    files={files}
+                    uploadedFiles={uploadedFiles}
+                    onRemove={onRemoveFile}
                 />
             </Fragment>
         );

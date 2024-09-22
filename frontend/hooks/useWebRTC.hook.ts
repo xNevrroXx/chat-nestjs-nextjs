@@ -25,6 +25,7 @@ const useWebRTC = (roomId: string) => {
     const addNewClient = useCallback(
         (newClient: string, cb: () => void) => {
             if (!clients.includes(newClient)) {
+                console.log("new client: ", newClient);
                 updateClients((list) => [...list, newClient], cb);
             }
         },
@@ -182,9 +183,19 @@ const useWebRTC = (roomId: string) => {
                 return console.warn(`Already connected to peer: ${peerId}`);
             }
 
+            console.log(
+                'publicStunList["stun-list"]: ',
+                publicStunList["stun-list"],
+            );
             const configuration: RTCConfiguration = {
                 // @ts-ignore
-                iceServers: [{ urls: publicStunList["stun-list"] }],
+                iceServers: [
+                    {
+                        urls: publicStunList["stun-list"].map((stunUrl) =>
+                            "stun:".concat(stunUrl),
+                        ),
+                    },
+                ],
             };
             peerConnections.current[peerId] = new RTCPeerConnection(
                 configuration,

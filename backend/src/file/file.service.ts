@@ -4,10 +4,14 @@ import { type File, Prisma, PrismaPromise } from "@prisma/client";
 import { TFileToClient } from "./file.model";
 import { excludeSensitiveFields } from "../utils/excludeSensitiveFields";
 import { byteSize } from "../utils/byteSize";
+import { AppConstantsService } from "../app.constants.service";
 
 @Injectable()
 export class FileService {
-    constructor(private prisma: DatabaseService) {}
+    constructor(
+        private readonly prisma: DatabaseService,
+        private readonly appConstantsService: AppConstantsService
+    ) {}
 
     async findOne(
         fileWhereUniqueInput: Prisma.FileWhereUniqueInput
@@ -57,7 +61,12 @@ export class FileService {
                 "size",
             ]) as TFileToClient;
 
-            f.url = file.path;
+            f.url =
+                this.appConstantsService.BACKEND_URL +
+                "/api/s3/file/" +
+                file.originalName +
+                "?path=" +
+                file.path;
             f.size = byteSize({
                 sizeInBytes: file.size,
             });

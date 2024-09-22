@@ -7,60 +7,67 @@ import { usePrevious } from "@/hooks/usePrevious";
 import { activeRoomInputDataSelector } from "@/store/selectors/activeRoomInputData.selector";
 import { useAudioRecorder } from "@/hooks/useAudioRecorder.hook";
 import { useSendMessage } from "@/hooks/useSendMessage.hook";
-import { updateRecentRoomData } from "@/store/actions/recent-rooms";
 import { isSpecialKey } from "@/utils/checkIsNotSpecialKey";
-import { MessageAction } from "@/models/room/IRoom.general";
-import { TValueOf } from "@/models/TUtils";
-import { TUpdateInputData } from "@/models/recent-rooms/IRecentRooms.store";
 import {
+    deleteUploadedFile,
     updateMessageForAction,
-    updateRecentMessage,
+    updateOnServerRecentRoomData,
 } from "@/store/thunks/recent-rooms";
 import { usePreviousRenderState } from "@/hooks/usePreviousRender.hook";
+import { updateRecentRoomData } from "@/store/actions/recent-rooms";
+import { checkIsUploadedFile, IFile } from "@/models/room/IRoom.store";
 
 const useInput = () => {
     const dispatch = useAppDispatch();
     const activeRoom = useAppSelector(activeRoomSelector)!;
     const previousRoomId = usePrevious(activeRoom.id);
     const previousRenderRoomId = usePreviousRenderState(activeRoom.id);
-    const storedInputInfo = useAppSelector(activeRoomInputDataSelector);
-    const [messageText, setMessageText] = useState<string>("");
+    const storedInputInfo = useAppSelector(activeRoomInputDataSelector)!;
     const [fileList, setFileList] = useState<UploadFile[]>([]);
-    const audioRecorder = useAudioRecorder();
-
-    const updateRecentMessageOnServer = useCallback(
-        (roomId: string) => {
-            const messageForAction =
-                storedInputInfo && storedInputInfo.input.messageForAction;
-
-            void dispatch(
-                updateRecentMessage({
-                    roomId: roomId,
-                    text: messageText,
-                    messageForAction: messageForAction && {
-                        id: messageForAction.message.id,
-                        action: messageForAction.action,
+    const audioRecorder = useAudioRecorder({
+        onStopCb: (blob, url) => {
+            dispatch(
+                updateRecentRoomData({
+                    input: {
+                        isAudioRecord: true,
+                        blob,
+                        url,
                     },
                 }),
             );
         },
-        [dispatch, messageText, storedInputInfo],
-    );
+        onCleanAudioCb: () => {
+            dispatch(
+                updateRecentRoomData({
+                    input: {
+                        isAudioRecord: false,
+                        text: "",
+                        files: [],
+                        uploadedFiles: [],
+                    },
+                }),
+            );
+        },
+    });
+
     const { onTyping, resetDebouncedOnTypingFunction } = useOnTyping({
         roomId: activeRoom.id,
         isPreviewRoom: activeRoom.isPreview,
-        extraFnOnResetDebounced: updateRecentMessageOnServer,
     });
     const { sendMessage, sendVoiceMessage } = useSendMessage({
         beforeSendingCb: resetDebouncedOnTypingFunction,
         afterSendingCb: () => {
-            void dispatch(
-                updateMessageForAction({
-                    messageForAction: null,
-                    roomId: activeRoom.id,
+            dispatch(
+                updateRecentRoomData({
+                    input: {
+                        isAudioRecord: false,
+                        text: "",
+                        files: [],
+                        uploadedFiles: [],
+                        messageForAction: null,
+                    },
                 }),
             );
-            setMessageText("");
             setFileList([]);
             audioRecorder.cleanAudio();
         },
@@ -73,129 +80,68 @@ const useInput = () => {
         setFileList(files);
     }, []);
 
-    const onChangeMessage = useCallback((str: string) => {
-        setMessageText(str);
-    }, []);
-
-    const onKeyDown = (event: KeyboardEvent) => {
-        if (
-            event.key !== "Enter" ||
-            !(event.target instanceof HTMLDivElement) ||
-            !messageText ||
-            messageText.length === 0
-        ) {
-            if (!isSpecialKey(event)) {
-                onTyping();
-            }
-            return;
-        }
-
-        void sendMessage(messageText, fileList);
-    };
-
-    useEffect(() => {
-        if (
-            !storedInputInfo ||
-            !storedInputInfo.input.messageForAction ||
-            storedInputInfo.input.messageForAction.action !== MessageAction.EDIT
-        ) {
-            return;
-        }
-
-        onChangeMessage(
-            storedInputInfo.input.messageForAction.message.text || "",
-        );
-    }, [storedInputInfo, onChangeMessage]);
-
-    const updateInputStates = useCallback(() => {
-        if (!activeRoom.id || !storedInputInfo) {
-            return;
-        }
-        onChangeMessage("");
-        audioRecorder.cleanAudio();
-        setFileList([]);
-
-        const inputData = storedInputInfo.input;
-        if (inputData.isAudioRecord) {
-            audioRecorder.manualSetAudioData(inputData.blob);
-        }
-        else {
-            onChangeMessage(inputData.text);
-        }
-    }, [activeRoom.id, audioRecorder, onChangeMessage, storedInputInfo]);
-
-    const updateInputStore = useCallback(
-        ({
-            roomId,
-            audio,
-            audioURL,
-            messageText,
-        }: {
-            roomId: string;
-            messageText: string;
-            audio: Blob | null;
-            audioURL: string | null;
-        }) => {
-            if (!roomId) {
-                return;
-            }
-            let inputData: TValueOf<Pick<TUpdateInputData, "input">>;
-
-            if (audio && audioURL) {
-                inputData = {
-                    isAudioRecord: true,
-                    blob: audio,
-                    url: audioURL,
-                };
-            }
-            else {
-                inputData = {
-                    isAudioRecord: false,
-                    text: messageText,
-                    files: [],
-                };
-            }
-
+    const onChangeMessage = useCallback(
+        (str: string) => {
             dispatch(
                 updateRecentRoomData({
-                    id: roomId,
-                    input: inputData,
-                }),
-            );
-
-            void dispatch(
-                updateRecentMessage({
-                    roomId: roomId,
-                    text: messageText,
+                    input: {
+                        isAudioRecord: false,
+                        text: str,
+                        files: [],
+                    },
                 }),
             );
         },
         [dispatch],
     );
 
+    const onKeyDown = useCallback(
+        (event: KeyboardEvent) => {
+            if (
+                event.key !== "Enter" ||
+                (!storedInputInfo.input.isAudioRecord &&
+                    !storedInputInfo.input.text)
+            ) {
+                if (!isSpecialKey(event)) {
+                    onTyping();
+                }
+                return;
+            }
+
+            if (storedInputInfo.input.isAudioRecord) {
+                void sendVoiceMessage(storedInputInfo.input.blob);
+                return;
+            }
+            void sendMessage(storedInputInfo.input.text, fileList);
+        },
+        [
+            fileList,
+            onTyping,
+            sendMessage,
+            sendVoiceMessage,
+            storedInputInfo.input,
+        ],
+    );
+
     useEffect(() => {
-        if (activeRoom.id === previousRenderRoomId) {
+        if (storedInputInfo.roomId === previousRenderRoomId) {
             return;
         }
+        setFileList([]);
 
-        updateInputStates();
-        return () =>
-            updateInputStore({
-                messageText,
-                roomId: previousRenderRoomId,
-                audio: audioRecorder.audio,
-                audioURL: audioRecorder.audioURL,
-            });
-    }, [
-        activeRoom.id,
-        audioRecorder.audio,
-        audioRecorder.audioURL,
-        messageText,
-        previousRenderRoomId,
-        storedInputInfo,
-        updateInputStates,
-        updateInputStore,
-    ]);
+        const inputData = storedInputInfo.input;
+        if (inputData.isAudioRecord) {
+            audioRecorder.manualSetAudioData(inputData.blob);
+        }
+
+        return () => {
+            void dispatch(
+                updateOnServerRecentRoomData({
+                    roomId: previousRenderRoomId,
+                }),
+            );
+        };
+    }, [dispatch, storedInputInfo, previousRenderRoomId, audioRecorder]);
 
     const removeMessageForAction = useCallback(() => {
         void dispatch(
@@ -206,12 +152,32 @@ const useInput = () => {
         );
     }, [activeRoom.id, dispatch]);
 
+    const removeFile = useCallback(
+        async (file: UploadFile | IFile) => {
+            await dispatch(
+                deleteUploadedFile({
+                    fileId: checkIsUploadedFile(file)
+                        ? file.id
+                        : (file.response as { id: string }).id,
+                }),
+            );
+        },
+        [dispatch],
+    );
+
     return {
         // data
         activeRoom,
         previousRoomId,
         storedInputInfo,
-        messageText,
+        messageText:
+            (!storedInputInfo.input.isAudioRecord &&
+                storedInputInfo.input.text) ||
+            "",
+        uploadedFiles:
+            (!storedInputInfo.input.isAudioRecord &&
+                storedInputInfo.input.uploadedFiles) ||
+            [],
         fileList,
         // sending actions
         sendMessage,
@@ -222,6 +188,7 @@ const useInput = () => {
         removeMessageForAction,
         // attachment actions
         updateFiles,
+        removeFile,
         // audio recorded
         audioRecorder,
     };

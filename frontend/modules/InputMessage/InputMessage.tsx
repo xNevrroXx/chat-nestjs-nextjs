@@ -20,21 +20,21 @@ const InputMessage: FC<IInputMessage> = () => {
         storedInputInfo,
         messageText,
         fileList,
-        // sending actions
+        uploadedFiles,
+        // send actions
         sendMessage,
         sendVoiceMessage,
-        // message actions
+        // html input actions
         onKeyDown,
         onChangeMessage,
         removeMessageForAction,
         // attachment actions
         updateFiles,
+        removeFile,
         // audio recorded
         audioRecorder: {
             mediaRecorder,
             isRecording,
-            audio,
-            audioURL,
             startRecording,
             stopRecording,
             cleanAudio,
@@ -78,14 +78,22 @@ const InputMessage: FC<IInputMessage> = () => {
                     />
                 </Flex>
             )}
-            {isRecording || audioURL ? (
+            {isRecording || storedInputInfo.input.isAudioRecord ? (
                 <InputDuringAudio
-                    audio={audio}
+                    audio={
+                        storedInputInfo.input.isAudioRecord
+                            ? storedInputInfo.input.blob
+                            : null
+                    }
+                    audioURL={
+                        storedInputInfo.input.isAudioRecord
+                            ? storedInputInfo.input.url
+                            : null
+                    }
                     mediaRecorder={mediaRecorder.current}
                     stopRecording={stopRecording}
                     cleanAudio={cleanAudio}
                     isRecording={isRecording}
-                    audioURL={audioURL}
                     sendVoiceMessage={sendVoiceMessage}
                 />
             ) : (
@@ -98,8 +106,10 @@ const InputMessage: FC<IInputMessage> = () => {
                     startRecording={startRecording}
                     stopRecording={stopRecording}
                     updateFileList={updateFiles}
-                    fileList={fileList}
                     onChange={onChangeMessage}
+                    files={fileList}
+                    uploadedFiles={uploadedFiles}
+                    onRemoveFile={removeFile}
                 />
             )}
         </Flex>

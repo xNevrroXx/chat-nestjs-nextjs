@@ -1,6 +1,6 @@
 import { createSelector } from "@reduxjs/toolkit";
 import { TRootState } from "@/store";
-import { IUserDto } from "@/models/auth/IAuth.store";
+import { IUserDto, TDepersonalizedUser } from "@/models/auth/IAuth.store";
 
 const messageOwnerSelector = createSelector(
     [
@@ -8,7 +8,7 @@ const messageOwnerSelector = createSelector(
         (state: TRootState) => state.users.users,
         (_, senderId: string | undefined | null) => senderId,
     ],
-    (user, users, senderId): IUserDto | undefined => {
+    (user, users, senderId): IUserDto | TDepersonalizedUser | undefined => {
         if (!senderId) {
             return;
         }

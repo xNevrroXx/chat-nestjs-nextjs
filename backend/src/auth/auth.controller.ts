@@ -25,7 +25,7 @@ export class AuthController {
 
     @Post("set-socket-id")
     @UseGuards(AuthGuard)
-    async setSocketId(
+    setSocketId(
         @Req() request: Request,
         @Res() response: Response,
         @Body("socketId") socketId: string

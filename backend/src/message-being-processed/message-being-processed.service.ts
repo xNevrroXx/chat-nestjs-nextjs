@@ -1,9 +1,15 @@
 import { Injectable } from "@nestjs/common";
 import { MessageBeingProcessed, Prisma, PrismaPromise } from "@prisma/client";
 import { DatabaseService } from "../database/database.service";
-import { IRecentMessageInput, MessageAction } from "../message/message.model";
+import {
+    MessageAction,
+    MessageBeingProcessedPrisma,
+    TMessageForActionWithDate,
+    TNormalizedRecentMessageInput,
+} from "../message/message.model";
 import { FileService } from "../file/file.service";
 import { RecentMessageDto } from "../message/message.dto";
+import { DATE_FORMATTER_DATE } from "../utils/normalizeDate";
 
 @Injectable()
 export class MessageBeingProcessedService {
@@ -12,37 +18,99 @@ export class MessageBeingProcessedService {
         private readonly fileService: FileService
     ) {}
 
+    async getFullProcessedMessageInfo({
+        userId,
+        roomId,
+    }: {
+        userId: string;
+        roomId: string;
+    }): Promise<TNormalizedRecentMessageInput> {
+        const result = await this.prisma.messageBeingProcessed.findUnique({
+            where: {
+                senderId_roomId: {
+                    roomId,
+                    senderId: userId,
+                },
+            },
+            include: {
+                files: true,
+                replyToMessage: true,
+                editMessage: true,
+            },
+        });
+
+        if (!result) {
+            return {
+                roomId,
+                text: null,
+                messageForAction: null,
+                uploadedFiles: [],
+            };
+        }
+
+        return this.normalize(result);
+    }
+
     async upsert({ userId, ...data }: RecentMessageDto & { userId: string }) {
-        const replyToMessageQuery: Pick<
-            Prisma.MessageBeingProcessedCreateInput,
-            "replyToMessage"
-        > | null =
+        let messageForActionCreate:
+            | Pick<Prisma.MessageBeingProcessedCreateInput, "replyToMessage">
+            | Pick<Prisma.MessageBeingProcessedCreateInput, "editMessage">
+            | null = null;
+        if (
             data.messageForAction &&
             data.messageForAction.action === MessageAction.REPLY
-                ? {
-                      replyToMessage: {
-                          connect: {
-                              id: data.messageForAction.id,
-                          },
-                      },
-                  }
-                : null;
-
-        const editMessageQuery: Pick<
-            Prisma.MessageBeingProcessedCreateInput,
-            "editMessage"
-        > | null =
+        ) {
+            messageForActionCreate = {
+                replyToMessage: {
+                    connect: {
+                        id: data.messageForAction.id,
+                    },
+                },
+            };
+        } else if (
             data.messageForAction &&
             data.messageForAction.action === MessageAction.EDIT
-                ? {
-                      editMessage: {
-                          connect: {
-                              id: data.messageForAction.id,
-                          },
-                      },
-                  }
-                : null;
+        ) {
+            messageForActionCreate = {
+                editMessage: {
+                    connect: {
+                        id: data.messageForAction.id,
+                    },
+                },
+            };
+        }
 
+        /*
+         * we have to do one more query to reset reply and edited messages info.
+         * */
+        await this.prisma.messageBeingProcessed.upsert({
+            where: {
+                senderId_roomId: {
+                    senderId: userId,
+                    roomId: data.roomId,
+                },
+            },
+            update: {
+                replyToMessage: {
+                    disconnect: true,
+                },
+                editMessage: {
+                    disconnect: true,
+                },
+            },
+            create: {
+                room: {
+                    connect: {
+                        id: data.roomId,
+                    },
+                },
+                sender: {
+                    connect: {
+                        id: userId,
+                    },
+                },
+            },
+        });
         return this.prisma.messageBeingProcessed.upsert({
             where: {
                 senderId_roomId: {
@@ -60,8 +128,7 @@ export class MessageBeingProcessedService {
             },
             update: {
                 text: data.text,
-                ...replyToMessageQuery,
-                ...editMessageQuery,
+                ...messageForActionCreate,
             },
             create: {
                 room: {
@@ -75,8 +142,7 @@ export class MessageBeingProcessedService {
                     },
                 },
                 text: data.text,
-                ...replyToMessageQuery,
-                ...editMessageQuery,
+                ...messageForActionCreate,
             },
         });
     }
@@ -96,13 +162,29 @@ export class MessageBeingProcessedService {
             include,
         });
     }
+    async findMany<T extends Prisma.MessageBeingProcessedInclude>(params: {
+        skip?: number;
+        take?: number;
+        cursor?: Prisma.MessageBeingProcessedWhereUniqueInput;
+        where?: Prisma.MessageBeingProcessedWhereInput;
+        orderBy?: Prisma.MessageBeingProcessedOrderByWithRelationInput;
+        include?: T;
+    }): Promise<
+        | Prisma.MessageBeingProcessedGetPayload<{ include: T }>[]
+        | MessageBeingProcessed[]
+    > {
+        const { where, include } = params;
 
-    async delete(
-        where: Prisma.MessageBeingProcessedWhereUniqueInput
-    ): Promise<MessageBeingProcessed> {
-        return this.prisma.messageBeingProcessed.delete({
+        return this.prisma.messageBeingProcessed.findMany({
             where,
+            include,
         });
+    }
+
+    async delete(params: {
+        where: Prisma.MessageBeingProcessedWhereUniqueInput;
+    }): Promise<MessageBeingProcessed> {
+        return this.prisma.messageBeingProcessed.delete(params);
     }
 
     async deleteMany(
@@ -115,16 +197,41 @@ export class MessageBeingProcessedService {
 
     normalize(
         inputMessagePrisma: Prisma.MessageBeingProcessedGetPayload<{
-            include: {
-                files: true;
-            };
+            include: typeof MessageBeingProcessedPrisma;
         }>
-    ): IRecentMessageInput {
-        return {
-            text: inputMessagePrisma.text,
-            files: this.fileService.normalizeFiles(
-                inputMessagePrisma.files as any[]
-            ),
-        };
+    ): TNormalizedRecentMessageInput {
+        let messageForAction: TMessageForActionWithDate | null = null;
+
+        if (inputMessagePrisma.replyToMessageId) {
+            messageForAction = {
+                action: MessageAction.REPLY,
+                message: {
+                    id: inputMessagePrisma.replyToMessageId,
+                    createdAt: DATE_FORMATTER_DATE.format(
+                        new Date(inputMessagePrisma.replyToMessage.createdAt)
+                    ),
+                },
+            };
+        } else if (inputMessagePrisma.editMessageId) {
+            messageForAction = {
+                action: MessageAction.EDIT,
+                message: {
+                    id: inputMessagePrisma.editMessageId,
+                    createdAt: DATE_FORMATTER_DATE.format(
+                        new Date(inputMessagePrisma.editMessage.createdAt)
+                    ),
+                },
+            };
+        }
+
+        if (inputMessagePrisma)
+            return {
+                roomId: inputMessagePrisma.roomId,
+                text: inputMessagePrisma.text,
+                messageForAction: messageForAction,
+                uploadedFiles: this.fileService.normalizeFiles(
+                    inputMessagePrisma.files as any[]
+                ),
+            };
     }
 }

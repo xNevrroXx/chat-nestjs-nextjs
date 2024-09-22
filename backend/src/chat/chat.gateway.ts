@@ -850,9 +850,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
             });
 
             void this.MessageBeingProcessedService.delete({
-                senderId_roomId: {
-                    senderId: sender.id,
-                    roomId: room.id,
+                where: {
+                    senderId_roomId: {
+                        senderId: sender.id,
+                        roomId: room.id,
+                    },
                 },
             });
         }

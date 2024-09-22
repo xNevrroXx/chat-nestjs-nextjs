@@ -5,17 +5,26 @@ import { IRoom } from "@/models/room/IRoom.store";
 
 const findMessageForActionSelector = createSelector(
     [
-        (state: TRootState) => state.recentRooms,
-        (_, roomId: TValueOf<Pick<IRoom, "id">> | null | undefined) => roomId,
+        (state: TRootState) => state.room,
+        (
+            _,
+            roomId: TValueOf<Pick<IRoom, "id">> | null | undefined,
+            messageId: string,
+            date: string,
+        ) => ({
+            messageId,
+            roomId,
+            date,
+        }),
     ],
-    (recentRoomsSlice, roomId) => {
+    (roomSlice, { roomId, messageId, date }) => {
         if (!roomId) {
             return null;
         }
 
-        const roomData = recentRoomsSlice.rooms.byId[roomId];
-
-        return roomData && roomData.input.messageForAction;
+        return roomSlice.local.rooms.byId[roomId].days[date].find(
+            (msg) => msg.id === messageId,
+        );
     },
 );
 

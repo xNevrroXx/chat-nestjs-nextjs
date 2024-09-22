@@ -1,19 +1,17 @@
 import { TValueOf } from "@/models/TUtils";
-import { IOriginalMessage, IRoom } from "@/models/room/IRoom.store";
-import {
-    MessageAction,
-    TMessageForEditOrReply,
-} from "@/models/room/IRoom.general";
+import { IFile, IRoom } from "@/models/room/IRoom.store";
+import { TMessageForEditOrReply } from "@/models/room/IRoom.general";
 import { UploadFile } from "antd";
 
 export interface IRecentRoom {
-    id: TValueOf<Pick<IRoom, "id">>;
+    roomId: TValueOf<Pick<IRoom, "id">>;
     isPreview: boolean;
     input: IRecentRoomInputWithMessageForAction &
         (IRecentRoomInputWithVoiceRecord | IRecentRoomInputStandard);
 }
-interface IRecentRoomInputWithMessageForAction {
-    messageForAction?: TMessageForEditOrReply | null;
+
+export interface IRecentRoomInputWithMessageForAction {
+    messageForAction: TMessageForEditOrReply | null | undefined;
 }
 export interface IRecentRoomInputWithVoiceRecord {
     isAudioRecord: true;
@@ -24,6 +22,8 @@ export interface IRecentRoomInputStandard {
     isAudioRecord: false;
     text: string;
     files: UploadFile[];
+    // uploaded files from another device.
+    uploadedFiles: IFile[];
 }
 
 export interface IRecentRooms {
@@ -45,15 +45,3 @@ export type TUpdateMessageForAction = Pick<
     IRecentRoom["input"],
     "messageForAction"
 >;
-export type TSendRecentMessageInfo = {
-    roomId: TValueOf<Pick<IRoom, "id">>;
-} & (
-    | { text?: string }
-    | {
-          messageForAction: {
-              action: MessageAction;
-              id: string;
-          } | null;
-      }
-);
-export type TUpdateInputData = Omit<IRecentRoom, "isPreview">;

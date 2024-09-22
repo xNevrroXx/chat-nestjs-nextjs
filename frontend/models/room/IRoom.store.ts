@@ -4,6 +4,7 @@ import { SocketIOService } from "@/services/SocketIO.service";
 import { ILinkPreviewInfo } from "@/models/other/ILinkPreviewInfo";
 import { FetchingStatus } from "@/hooks/useFetch.hook";
 import { IFolder } from "@/models/rooms-on-folders/IRoomOnFolders.store";
+import { UploadFile } from "antd";
 
 export enum FileType {
     VOICE_RECORD = "VOICE_RECORD",
@@ -295,4 +296,9 @@ export function checkIsStandardMessage(
 ): obj is IInnerStandardMessage {
     const message = obj as IInnerStandardMessage;
     return message.files !== undefined;
+}
+
+export function checkIsUploadedFile(obj: UploadFile | IFile): obj is IFile {
+    const file = obj as IFile;
+    return !!(file.id && file.url);
 }

@@ -18,16 +18,16 @@ import { UploadFile } from "antd";
 import { joinRoomAndSetActive } from "@/store/thunks/recent-rooms";
 
 interface IProps {
-    beforeSendingCb: () => void;
-    afterSendingCb: () => void;
+    beforeSendingCb?: () => void;
+    afterSendingCb?: () => void;
     room: TPreviewRoomWithFlag | TRoomWithPreviewFlag;
     messageForAction: TMessageForEditOrReply | undefined | null;
 }
 
 const ENDPOINT_URL = process.env.NEXT_PUBLIC_BASE_URL + "/file-processed";
 const useSendMessage = ({
-    beforeSendingCb,
-    afterSendingCb,
+    beforeSendingCb = () => {},
+    afterSendingCb = () => {},
     messageForAction,
     room,
 }: IProps) => {
