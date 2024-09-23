@@ -11,6 +11,7 @@ import {
     removeRecentRoomData,
     resetCurrentRoomId,
     updateRecentRoomData,
+    push2UploadedFiles,
 } from "@/store/actions/recent-rooms";
 import {
     deleteUploadedFile,
@@ -119,6 +120,19 @@ const recentRooms = createSlice({
                         ).uploadedFiles = [];
                     }
                 }
+            })
+            .addCase(push2UploadedFiles, (state, action) => {
+                if (
+                    !state.currentRoomId ||
+                    state.rooms.byId[state.currentRoomId].input.isAudioRecord
+                ) {
+                    return;
+                }
+
+                (
+                    state.rooms.byId[state.currentRoomId]
+                        .input as IRecentRoomInputStandard
+                ).uploadedFiles.push(...action.payload.uploadedFiles);
             })
             .addCase(updateMessageForAction.fulfilled, (state, action) => {
                 if (!state.currentRoomId) {

@@ -549,6 +549,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
             message.isForEveryone
                 ? {
                       isDeleteForEveryone: true,
+                      forwardThisMessage: {
+                          deleteMany: {
+                              forwardedMessageId: message.messageId,
+                          },
+                      },
                   }
                 : {
                       userDeletedThisMessage: {

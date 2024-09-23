@@ -96,7 +96,6 @@ const Message = forwardRef<HTMLDivElement, IMessageProps>(
                         <FileTwoTone />
                         <p>
                             <Text className="message__attachment-file-name">
-                                {/*{fileInfo.originalName}*/}
                                 {truncateTheText({
                                     text: fileInfo.originalName,
                                     maxLength: 11,

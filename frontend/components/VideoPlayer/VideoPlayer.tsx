@@ -9,13 +9,7 @@ const VideoPlayer = (fileInfo: IFile) => {
             muted={true}
             loop={true}
             autoPlay={false}
-            src={
-                process.env.NEXT_PUBLIC_BASE_URL +
-                "/s3/file/" +
-                fileInfo.originalName +
-                "?path=" +
-                fileInfo.url
-            }
+            src={fileInfo.url}
         />
     );
 };

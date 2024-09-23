@@ -20,10 +20,11 @@ interface IInputDuringMessageProps {
         Pick<TUseAudioRecorderReturnType, "startRecording">
     >;
     stopRecording: TValueOf<Pick<TUseAudioRecorderReturnType, "stopRecording">>;
-    updateFileList: (files: UploadFile[]) => void;
-    files: UploadFile[];
+    localFiles: UploadFile[];
     uploadedFiles: IFile[];
-    onRemoveFile: (id: string) => void;
+    onRemoveFile: (file: UploadFile | IFile) => void;
+    updateFileList: (files: UploadFile[]) => void;
+    push2RemoteFiles: (files: IFile[]) => void;
 }
 
 const InputDuringMessage = forwardRef<HTMLDivElement, IInputDuringMessageProps>(
@@ -37,9 +38,10 @@ const InputDuringMessage = forwardRef<HTMLDivElement, IInputDuringMessageProps>(
             stopRecording,
             updateFileList,
             onChange,
-            files,
+            localFiles,
             uploadedFiles,
             onRemoveFile,
+            push2RemoteFiles,
         },
         ref,
     ) => {
@@ -87,7 +89,7 @@ const InputDuringMessage = forwardRef<HTMLDivElement, IInputDuringMessageProps>(
                         shouldConvertEmojiToImage={false}
                     />
                     <div className="input-message__btn-wrapper">
-                        {message || files.length > 0 ? (
+                        {message || localFiles.length > 0 ? (
                             <Button
                                 type="text"
                                 icon={<SendOutlined className="custom" />}
@@ -105,9 +107,10 @@ const InputDuringMessage = forwardRef<HTMLDivElement, IInputDuringMessageProps>(
                 </Flex>
                 <UploadFiles
                     ref={buttonAddAttachmentRef}
-                    updateFileList={updateFileList}
-                    files={files}
+                    updateLocalFileList={updateFileList}
+                    files={localFiles}
                     uploadedFiles={uploadedFiles}
+                    push2RemoteFiles={push2RemoteFiles}
                     onRemove={onRemoveFile}
                 />
             </Fragment>

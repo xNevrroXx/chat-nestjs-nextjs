@@ -23,6 +23,7 @@ import { LinkPreviewService } from "../link-preview/link-preview.service";
 import { TValueOf } from "../models/TUtils";
 import { DATE_FORMATTER_DATE } from "../utils/normalizeDate";
 import { codeBlocksToHTML } from "../utils/codeBlocksToHTML";
+import { TFileToClient } from "../file/file.model";
 
 @Injectable()
 export class MessageService {
@@ -207,8 +208,8 @@ export class MessageService {
 
             const hasFiles = inputMessagePrisma.files.length > 0;
             if (hasFiles) {
-                normalizedInnerMessage.files = this.fileService.normalizeFiles(
-                    inputMessagePrisma.files as any[]
+                normalizedInnerMessage.files = inputMessagePrisma.files.map(
+                    (rawFile) => this.fileService.normalize(rawFile)
                 );
             }
         }

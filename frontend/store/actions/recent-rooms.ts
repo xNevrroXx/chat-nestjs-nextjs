@@ -17,6 +17,10 @@ const update = createAction<{
         ) & { uploadedFiles?: IFile[] };
 }>("recent-rooms/update-input");
 
+const push2UploadedFiles = createAction<
+    Pick<IRecentRoomInputStandard, "uploadedFiles">
+>("recent-rooms/update-uploaded-files");
+
 const remove = createAction<TValueOf<Pick<IRoom, "id">>>(
     "recent-rooms/remove-by-id",
 );
@@ -32,5 +36,6 @@ export {
     remove as removeRecentRoomData,
     reset as resetCurrentRoomId,
     add as addRecentRoomData,
+    push2UploadedFiles,
     handleRecentMessage,
 };

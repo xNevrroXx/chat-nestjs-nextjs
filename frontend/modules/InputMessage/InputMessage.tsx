@@ -29,7 +29,8 @@ const InputMessage: FC<IInputMessage> = () => {
         onChangeMessage,
         removeMessageForAction,
         // attachment actions
-        updateFiles,
+        updateLocalFiles,
+        push2RemoteFiles,
         removeFile,
         // audio recorded
         audioRecorder: {
@@ -105,9 +106,10 @@ const InputMessage: FC<IInputMessage> = () => {
                     isRecording={isRecording}
                     startRecording={startRecording}
                     stopRecording={stopRecording}
-                    updateFileList={updateFiles}
+                    updateFileList={updateLocalFiles}
+                    push2RemoteFiles={push2RemoteFiles}
                     onChange={onChangeMessage}
-                    files={fileList}
+                    localFiles={fileList}
                     uploadedFiles={uploadedFiles}
                     onRemoveFile={removeFile}
                 />

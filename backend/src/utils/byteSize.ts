@@ -8,6 +8,7 @@ const METRIC = [
 
 interface IByteSizeParams {
     sizeInBytes: number;
+    // @default 1
     precision?: number;
 }
 

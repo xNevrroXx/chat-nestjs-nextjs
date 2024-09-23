@@ -84,7 +84,7 @@ export class FileProcessedMessagesController {
         );
         await this.s3Service.upload(fileInfo.path, file.buffer);
 
-        return { id: fileInfo.id };
+        return this.fileProcessedMessagesService.normalize(fileInfo);
     }
 
     @Delete()

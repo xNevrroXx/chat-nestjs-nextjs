@@ -1,9 +1,10 @@
-import { Module } from '@nestjs/common';
-import { FileProcessedMessagesService } from './file-processed-messages.service';
-import { FileProcessedMessagesController } from './file-processed-messages.controller';
+import { Module } from "@nestjs/common";
+import { FileProcessedMessagesController } from "./file-processed-messages.controller";
+import { FileProcessedMessagesService } from "./file-processed-messages.service";
 
 @Module({
-  providers: [FileProcessedMessagesService],
-  controllers: [FileProcessedMessagesController]
+    controllers: [FileProcessedMessagesController],
+    providers: [FileProcessedMessagesService],
+    exports: [FileProcessedMessagesService],
 })
 export class FileProcessedMessagesModule {}

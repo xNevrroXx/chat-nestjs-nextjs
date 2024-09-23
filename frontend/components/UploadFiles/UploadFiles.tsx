@@ -2,8 +2,11 @@ import React, { useState, forwardRef } from "react";
 import { Upload, UploadFile, Image, Divider, Flex } from "antd";
 import { useAppSelector } from "@/hooks/store.hook";
 import { activeRoomSelector } from "@/store/selectors/activeRoom.selector";
-import $api from "@/http";
-import { FileType, IFile } from "@/models/room/IRoom.store";
+import {
+    checkWhetherUploadedFile,
+    FileType,
+    IFile,
+} from "@/models/room/IRoom.store";
 import UploadedFiles from "@/components/UploadedFiles/UploadedFiles";
 // styles
 import "./upload-files.scss";
@@ -20,14 +23,24 @@ function getBase64(file: File): Promise<string | null> {
 const ENDPOINT_URL = process.env.NEXT_PUBLIC_BASE_URL + "/file-processed";
 
 interface IUploadFilesProps {
-    updateFileList: (files: UploadFile[]) => void;
+    updateLocalFileList: (files: UploadFile[]) => void;
     files: UploadFile[];
     uploadedFiles: IFile[];
+    push2RemoteFiles: (files: IFile[]) => void;
     onRemove: (file: UploadFile | IFile) => void;
 }
 
 const UploadFiles = forwardRef<HTMLButtonElement, IUploadFilesProps>(
-    ({ updateFileList, files, uploadedFiles, onRemove }, ref) => {
+    (
+        {
+            updateLocalFileList,
+            push2RemoteFiles,
+            files,
+            uploadedFiles,
+            onRemove,
+        },
+        ref,
+    ) => {
         const room = useAppSelector(activeRoomSelector);
         const [isPreviewOpen, setIsPreviewOpen] = useState<boolean>(false);
         const [previewImage, setPreviewImage] = useState<string>("");
@@ -43,19 +56,30 @@ const UploadFiles = forwardRef<HTMLButtonElement, IUploadFilesProps>(
         };
 
         const handleChange = ({ fileList }: { fileList: UploadFile[] }) => {
-            const tempFileList = fileList.map((file) => {
-                if (file.status === "error") {
-                    return {
+            const resultLocalList: UploadFile[] = [];
+            const newUploadedFiles: IFile[] = [];
+            fileList.forEach((file) => {
+                if (
+                    file.status === "done" &&
+                    file.response &&
+                    checkWhetherUploadedFile(file.response)
+                ) {
+                    newUploadedFiles.push(file.response);
+                }
+                else if (file.status === "error") {
+                    resultLocalList.push({
                         ...file,
                         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment
                         error: file.response.message,
-                    };
+                    });
                 }
-
-                return file;
+                else {
+                    resultLocalList.push(file);
+                }
             });
 
-            updateFileList(tempFileList);
+            push2RemoteFiles(newUploadedFiles);
+            updateLocalFileList(resultLocalList);
         };
 
         if (!room || !room.id) {

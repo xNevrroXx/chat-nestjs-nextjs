@@ -1,6 +1,6 @@
-import { Injectable } from "@nestjs/common";
-import * as path from "path";
+import { Global, Injectable } from "@nestjs/common";
 
+@Global()
 @Injectable()
 export class AppConstantsService {
     readonly CLIENT_URL = process.env.CLIENT_URL;
@@ -18,8 +18,6 @@ export class AppConstantsService {
     readonly GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
     readonly YANDEX_CLIENT_ID = process.env.YANDEX_CLIENT_ID;
     readonly YANDEX_CLIENT_SECRET = process.env.YANDEX_CLIENT_SECRET;
-
-    readonly USERS_DATA_FOLDER_PATH = path.resolve(__dirname, "users-data");
 
     readonly VK_BUCKET_NAME = process.env.VK_BUCKET_NAME;
     readonly VK_STORAGE_URL = process.env.VK_STORAGE_URL;

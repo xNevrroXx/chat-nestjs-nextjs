@@ -1,17 +1,35 @@
 import { Injectable } from "@nestjs/common";
-import { DatabaseService } from "../database/database.service";
 import { type File, Prisma, PrismaPromise } from "@prisma/client";
 import { TFileToClient } from "./file.model";
 import { excludeSensitiveFields } from "../utils/excludeSensitiveFields";
 import { byteSize } from "../utils/byteSize";
+import { DatabaseService } from "../database/database.service";
 import { AppConstantsService } from "../app.constants.service";
 
 @Injectable()
 export class FileService {
     constructor(
-        private readonly prisma: DatabaseService,
-        private readonly appConstantsService: AppConstantsService
+        private readonly appConstantsService: AppConstantsService,
+        private readonly prisma: DatabaseService
     ) {}
+
+    normalize(file: File): TFileToClient {
+        const f = excludeSensitiveFields(file, [
+            "path",
+            "size",
+        ]) as TFileToClient;
+
+        f.url =
+            this.appConstantsService.BACKEND_URL +
+            "/api/s3/file/" +
+            file.originalName +
+            "?path=" +
+            file.path;
+        f.size = byteSize({
+            sizeInBytes: file.size,
+        });
+        return f;
+    }
 
     async findOne(
         fileWhereUniqueInput: Prisma.FileWhereUniqueInput
@@ -51,26 +69,6 @@ export class FileService {
     }): Promise<PrismaPromise<Prisma.BatchPayload>> {
         return this.prisma.file.deleteMany({
             ...params,
-        });
-    }
-
-    normalizeFiles(files: File[]): TFileToClient[] {
-        return files.map<TFileToClient>((file) => {
-            const f = excludeSensitiveFields(file, [
-                "path",
-                "size",
-            ]) as TFileToClient;
-
-            f.url =
-                this.appConstantsService.BACKEND_URL +
-                "/api/s3/file/" +
-                file.originalName +
-                "?path=" +
-                file.path;
-            f.size = byteSize({
-                sizeInBytes: file.size,
-            });
-            return f;
         });
     }
 }

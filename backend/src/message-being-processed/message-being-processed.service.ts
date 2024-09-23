@@ -7,15 +7,15 @@ import {
     TMessageForActionWithDate,
     TNormalizedRecentMessageInput,
 } from "../message/message.model";
-import { FileService } from "../file/file.service";
 import { RecentMessageDto } from "../message/message.dto";
 import { DATE_FORMATTER_DATE } from "../utils/normalizeDate";
+import { FileProcessedMessagesService } from "../file-processed-messages/file-processed-messages.service";
 
 @Injectable()
 export class MessageBeingProcessedService {
     constructor(
         private readonly prisma: DatabaseService,
-        private readonly fileService: FileService
+        private readonly fileProcessedMessages: FileProcessedMessagesService
     ) {}
 
     async getFullProcessedMessageInfo({
@@ -229,8 +229,8 @@ export class MessageBeingProcessedService {
                 roomId: inputMessagePrisma.roomId,
                 text: inputMessagePrisma.text,
                 messageForAction: messageForAction,
-                uploadedFiles: this.fileService.normalizeFiles(
-                    inputMessagePrisma.files as any[]
+                uploadedFiles: inputMessagePrisma.files.map((rawFile) =>
+                    this.fileProcessedMessages.normalize(rawFile)
                 ),
             };
     }

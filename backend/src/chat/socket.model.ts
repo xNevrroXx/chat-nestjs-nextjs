@@ -21,10 +21,7 @@ import { IRoom } from "../room/room.model";
 import { TNormalizedParticipant } from "../participant/participant.model";
 import { Socket } from "socket.io";
 import { IUserSessionPayload } from "../user/user.model";
-import {
-    TNormalizedRecentMessageInput,
-    TRecentMessage,
-} from "../message/message.model";
+import { TNormalizedRecentMessageInput } from "../message/message.model";
 
 export type TSocketWithPayload = Socket & {
     user: IUserSessionPayload;

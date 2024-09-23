@@ -14,7 +14,10 @@ import {
     updateOnServerRecentRoomData,
 } from "@/store/thunks/recent-rooms";
 import { usePreviousRenderState } from "@/hooks/usePreviousRender.hook";
-import { updateRecentRoomData } from "@/store/actions/recent-rooms";
+import {
+    updateRecentRoomData,
+    push2UploadedFiles,
+} from "@/store/actions/recent-rooms";
 import { checkIsUploadedFile, IFile } from "@/models/room/IRoom.store";
 
 const useInput = () => {
@@ -76,9 +79,19 @@ const useInput = () => {
             storedInputInfo && storedInputInfo.input.messageForAction,
     });
 
-    const updateFiles = useCallback((files: UploadFile[]) => {
+    const updateLocalFiles = useCallback((files: UploadFile[]) => {
         setFileList(files);
     }, []);
+    const push2RemoteFiles = useCallback(
+        (files: IFile[]) => {
+            dispatch(
+                push2UploadedFiles({
+                    uploadedFiles: files,
+                }),
+            );
+        },
+        [dispatch],
+    );
 
     const onChangeMessage = useCallback(
         (str: string) => {
@@ -187,7 +200,8 @@ const useInput = () => {
         onChangeMessage,
         removeMessageForAction,
         // attachment actions
-        updateFiles,
+        updateLocalFiles,
+        push2RemoteFiles,
         removeFile,
         // audio recorded
         audioRecorder,

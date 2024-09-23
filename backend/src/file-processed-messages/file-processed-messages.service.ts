@@ -8,12 +8,16 @@ import {
 import { DatabaseService } from "../database/database.service";
 import { excludeSensitiveFields } from "../utils/excludeSensitiveFields";
 import { S3Service } from "../s3/s3.service";
+import { TFileToClient } from "../file/file.model";
+import { byteSize } from "../utils/byteSize";
+import { AppConstantsService } from "../app.constants.service";
 
 @Injectable()
 export class FileProcessedMessagesService {
     constructor(
         private readonly prisma: DatabaseService,
-        private s3Service: S3Service
+        private readonly s3Service: S3Service,
+        public readonly appConstantsService: AppConstantsService
     ) {}
 
     async create(
@@ -129,5 +133,25 @@ export class FileProcessedMessagesService {
             where,
             orderBy,
         });
+    }
+
+    normalize(file: FileProcessedMessages): TFileToClient {
+        const f = excludeSensitiveFields(file, [
+            "path",
+            "size",
+            "messageBeingProcessedId",
+        ]) as TFileToClient;
+        f.messageId = file.messageBeingProcessedId;
+
+        f.url =
+            this.appConstantsService.BACKEND_URL +
+            "/api/s3/file/" +
+            file.originalName +
+            "?path=" +
+            file.path;
+        f.size = byteSize({
+            sizeInBytes: file.size,
+        });
+        return f;
     }
 }

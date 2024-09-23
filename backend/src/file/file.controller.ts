@@ -1,35 +1,11 @@
-import {
-    BadRequestException,
-    Controller,
-    Get,
-    Query,
-    Req,
-    Res,
-} from "@nestjs/common";
+import { BadRequestException, Controller, Get, Req, Res } from "@nestjs/common";
 import { Request, Response } from "express";
 import * as fs from "fs";
-import { AppConstantsService } from "../app.constants.service";
 import * as path from "path";
 import * as mime from "mime-types";
 
 @Controller("file")
 export class FileController {
-    constructor(private appConstantsService: AppConstantsService) {}
-
-    @Get("download")
-    async getAttachment(
-        @Req() request: Request,
-        @Res() response: Response,
-        @Query("name") name: string
-    ) {
-        const filePath = path.join(
-            this.appConstantsService.USERS_DATA_FOLDER_PATH,
-            name as string
-        );
-
-        response.download(filePath);
-    }
-
     @Get("by-chunks")
     async getAttachmentByChunks(
         @Req() request: Request,
@@ -37,10 +13,8 @@ export class FileController {
     ) {
         const { name } = request.query;
         const mimeType = mime.lookup(name as string);
-        const filePath = path.join(
-            this.appConstantsService.USERS_DATA_FOLDER_PATH,
-            name as string
-        );
+        // todo add ability to stream files from S3
+        const filePath = path.join("plug-path", name as string);
         const fileInfo = fs.statSync(filePath);
         const fileSize = fileInfo.size;
         if (

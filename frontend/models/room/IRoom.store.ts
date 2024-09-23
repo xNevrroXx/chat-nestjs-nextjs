@@ -302,3 +302,8 @@ export function checkIsUploadedFile(obj: UploadFile | IFile): obj is IFile {
     const file = obj as IFile;
     return !!(file.id && file.url);
 }
+
+export function checkWhetherUploadedFile(obj: unknown): obj is IFile {
+    const file = obj as IFile;
+    return !!(file.id && file.url && file.size);
+}

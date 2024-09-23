@@ -3,8 +3,6 @@ import { InjectS3, S3 } from "nestjs-s3";
 import { AppConstantsService } from "../app.constants.service";
 import { Response, Request } from "express";
 import { Readable } from "stream";
-import { PipelinePromise } from "stream";
-import { pipeline } from "stream/promises";
 import { S3Service } from "./s3.service";
 
 @Controller("s3")
@@ -86,7 +84,7 @@ export class S3Controller {
 
             const fileSize = result.ContentLength;
             const range = request.headers.range || "0";
-            const chunkSize = 1e9;
+            const chunkSize = 1e6;
             const start = Number(range.replace(/\D/g, ""));
             const end = Math.min(start + chunkSize, fileSize - 1);
 
