@@ -6,7 +6,7 @@ import {
 } from "../message/message.model";
 import { TValueOf } from "../models/TUtils";
 import { TNormalizedParticipant } from "../participant/participant.model";
-import { IsString, Length } from "class-validator";
+import {IsArray, IsString, Length} from "class-validator";
 
 export interface IRoom extends Room {
     days: IMessagesByDays;
@@ -35,7 +35,10 @@ export class NewRoom {
     })
     name: string;
 
+    @IsString()
     type: typeof RoomType.GROUP;
+
+    @IsArray()
     memberIds: TValueOf<Pick<User, "id">>[];
 }
 

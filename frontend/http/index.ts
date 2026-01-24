@@ -15,7 +15,7 @@ const isAxiosRequestConfigExtra = (
 };
 
 export const API_URL = process.env.NEXT_PUBLIC_BASE_URL;
-
+console.log("API_URL: ", API_URL);
 const $api = axios.create({
     withCredentials: true,
     baseURL: API_URL,

@@ -11,6 +11,7 @@ class AuthService {
         email: string,
         password: string,
     ): Promise<AxiosResponse<IAuthResponse>> {
+        console.log("HERE: ", this.base);
         return $api.post<IAuthResponse>(this.base + "/login", {
             email,
             password,
@@ -20,6 +21,7 @@ class AuthService {
     static async registration(
         user: IUserAuth,
     ): Promise<AxiosResponse<IAuthResponse>> {
+        console.log("HERE: ", this.base);
         return $api.post<IAuthResponse>(this.base + "/sign-up", user);
     }
 

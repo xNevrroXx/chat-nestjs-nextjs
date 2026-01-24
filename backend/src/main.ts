@@ -7,14 +7,15 @@ import { HttpExceptionFilter } from "./exceptions/http-exception.filter";
 import * as passport from "passport";
 import { PrismaSessionStore } from "@quixo3/prisma-session-store";
 import { PrismaClient } from "@prisma/client";
+import {AppConstantsService} from "./app.constants.service";
 
 async function bootstrap() {
-    const app = await NestFactory.create(AppModule, {
-        cors: {
-            credentials: true,
-            origin: process.env.CLIENT_URL,
-        },
-    });
+    const app = await NestFactory.create(AppModule);
+    const appConstants = app.get(AppConstantsService);
+    app.enableCors({
+        credentials: true,
+        origin: appConstants.CLIENT_URL,
+    })
     app.setGlobalPrefix("api");
     app.use(cookieParser());
     app.useGlobalPipes(
@@ -28,7 +29,7 @@ async function bootstrap() {
     // passport auth configuration
     app.use(
         session({
-            secret: process.env.SESSION_SECRET,
+            secret: appConstants.SESSION_SECRET,
             resave: false,
             saveUninitialized: false,
             cookie: {
@@ -49,10 +50,12 @@ async function bootstrap() {
     app.useGlobalFilters(new HttpExceptionFilter());
 
     app.enableShutdownHooks();
-    await app.listen(3001);
+    await app.listen(appConstants.PORT);
 
     const url = new URL(await app.getUrl());
+    console.log("listening on:")
     console.log(`http://localhost:${url.port}`);
+    console.log(url);
 }
 
 void bootstrap();

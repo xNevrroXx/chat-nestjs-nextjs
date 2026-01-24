@@ -10,6 +10,7 @@ class SocketIOService {
     public socket: Socket<IServerToClientEvents, IClientToServerEvents>;
 
     constructor(sessionId: string) {
+        console.log("HERE");
         this.socket = io(process.env.NEXT_PUBLIC_BASE_SOCKET_URL || "", {
             autoConnect: false,
             transportOptions: {
