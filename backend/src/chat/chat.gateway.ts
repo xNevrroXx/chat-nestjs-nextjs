@@ -36,7 +36,7 @@ import {
     TUnpinnedMessage,
     TUnpinMessage,
 } from "./chat.model";
-import { FileProcessedMessages, Prisma, Room } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { PrismaIncludeFullRoomInfo } from "../room/room.model";
 import {
     ForwardedMessagePrisma,
@@ -55,6 +55,7 @@ import {
 } from "./socket.model";
 import { MessageDto } from "../message/message.dto";
 import { MessageBeingProcessedService } from "../message-being-processed/message-being-processed.service";
+import { Room } from "../../generated/prisma/client";
 
 @WebSocketGateway({
     namespace: "api/chat",
